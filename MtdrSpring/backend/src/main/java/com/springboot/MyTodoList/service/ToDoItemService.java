@@ -1,11 +1,14 @@
 package com.springboot.MyTodoList.service;
 
+import com.springboot.MyTodoList.model.SubToDoItem;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.repository.ToDoItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import com.springboot.MyTodoList.repository.SubToDoItemRepository;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -15,10 +18,15 @@ public class ToDoItemService {
 
     @Autowired
     private ToDoItemRepository toDoItemRepository;
+
+    @Autowired
+    private SubToDoItemRepository subToDoItemRepository;
+
     public List<ToDoItem> findAll(){
         List<ToDoItem> todoItems = toDoItemRepository.findAll();
         return todoItems;
     }
+
     public ResponseEntity<ToDoItem> getItemById(int id){
         Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
         if (todoData.isPresent()){
@@ -27,6 +35,7 @@ public class ToDoItemService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    
     public ToDoItem addToDoItem(ToDoItem toDoItem){
         return toDoItemRepository.save(toDoItem);
     }
@@ -52,5 +61,16 @@ public class ToDoItemService {
             return null;
         }
     }
+
+    public double getTaskProgress(int todoitemId){
+        List<SubToDoItem> subTasks = subToDoItemRepository.findByParentTask_ID(todoitemId);
+        if (subTasks.isEmpty()) {
+            return 0.0;
+        }
+        long completed = subTasks.stream().filter(SubToDoItem::isDone).count();
+        return ((double) completed / subTasks.size()) * 100;
+    }
+
+    
 
 }
