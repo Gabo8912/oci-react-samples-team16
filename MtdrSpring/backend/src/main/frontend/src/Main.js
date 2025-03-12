@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect,
+} from "react-router-dom";
 import Navbar from "./NavBar";
 import MyToDos from "./App";
 import Dashboard from "./Dashboard";
@@ -9,6 +14,7 @@ const Main = () => {
     <Router>
       <Navbar />
       <Switch>
+        <Route exact path="/" render={() => <Redirect to="/dashboard" />} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/todos" component={MyToDos} />
       </Switch>
