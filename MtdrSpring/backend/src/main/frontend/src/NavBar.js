@@ -1,8 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import oracleLogo from "./oracleLogo.png";
 
-const NavBar = () => {
+const NavBar = ({ onLogout }) => {
+  const history = useHistory();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Eliminar token
+    localStorage.removeItem("role"); // Eliminar rol
+    onLogout(); // Notificar a la app que el usuario cerró sesión
+    history.push("/login"); // Redirigir a login
+  };
+
   return (
     <nav style={styles.navbar}>
       <img src={oracleLogo} alt="Logo" style={styles.logo} />
@@ -13,7 +22,7 @@ const NavBar = () => {
         <Link to="/todos" style={styles.link}>
           MyToDos
         </Link>
-        <button style={styles.logoutButton} onClick={() => alert("Logout")}>
+        <button style={styles.logoutButton} onClick={handleLogout}>
           Logout
         </button>
       </div>
@@ -29,20 +38,19 @@ const styles = {
     padding: "10px 20px",
     backgroundColor: "#333",
     color: "white",
-    width: "100%", // Asegura que la barra ocupe todo el ancho
-    position: "fixed", // Mantiene la navbar fija en la parte superior
-    top: "0", // Asegura que esté en la parte superior
-    left: "0", // Evita desplazamiento horizontal
-    height: "60px", // Ajusta la altura de la navbar
-    zIndex: "1000", // Se mantiene por encima de otros elementos
+    width: "100%",
+    position: "fixed",
+    top: "0",
+    left: "0",
+    height: "60px",
+    zIndex: "1000",
   },
   logo: {
-    width: "125px", // Ajusta el tamaño según lo necesites
+    width: "125px",
     height: "125px",
-    objectFit: "contain", // Mantiene la proporción de la imagen
+    objectFit: "contain",
     userSelect: "none",
   },
-
   links: {
     alignItems: "center",
     display: "flex",
