@@ -39,6 +39,9 @@ function App() {
   const [subTasks, setSubTasks] = useState({});
   //To Know if the subtasks are been show
   const [expandedTasks, setExpandedTasks] = useState({});
+  //The subtitems of a new main item
+  const [newSubTaskText, setNewSubTaskText] = useState('');
+  const [showSubTaskForm, setShowSubTaskForm] = useState({});
 
   function deleteItem(deleteId) {
     // console.log("deleteItem("+deleteId+")")
@@ -76,7 +79,7 @@ function App() {
       window.alert("Error: All subtasks must be completed before marking the main task as done.");
     }
   }
-  
+
   function reloadOneIteam(id) {
     fetch(API_LIST + "/" + id)
       .then(response => {
@@ -153,7 +156,84 @@ function App() {
     }));
   }
 
+  //Function to the visibility of the form of the subtasks
+  function toggleSubTaskFormVisibility(taskId) {
+    setShowSubTaskForm(prevShowSubTaskForm => ({
+      ...prevShowSubTaskForm,
+      [taskId]: !prevShowSubTaskForm[taskId]
+    }));
+  }
 
+
+  //Function to add the subtasks
+  function addSubTask(taskId, text) {
+    if (!text.trim()) {
+      window.alert("Error: Subtasks cannot be empty");
+      return;
+    }
+    fetch(`/subtask/${taskId}/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ description: text, done: false })
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Something went wrong ...');
+        }
+      })
+      .then(
+        (result) => {
+          setSubTasks(prevSubTasks => ({
+            ...prevSubTasks,
+            [taskId]: [...(prevSubTasks[taskId] || []), result]
+          }));
+          setNewSubTaskText('');
+          setShowSubTaskForm(prevShowSubTaskForm => ({
+            ...prevShowSubTaskForm,
+            [taskId]: false
+          }));
+        },
+        (error) => {
+          setError(error);
+        }
+      );
+
+  }
+  //Fucntion to elemete subtasks
+  function deleteSubTask(taskId, subTaskId) {
+    fetch(`/subtask/${subTaskId}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (response.ok) {
+          return response;
+        } else {
+          throw new Error('Something went wrong ...');
+        }
+      })
+      .then(
+        () => {
+          // Actualizar el estado local eliminando la subtarea
+          setSubTasks(prevSubTasks => ({
+            ...prevSubTasks,
+            [taskId]: prevSubTasks[taskId].filter(subTask => subTask.id !== subTaskId)
+          }));
+        },
+        (error) => {
+          setError(error);
+        }
+      );
+  }
+
+  function calculateProgress(subTasks) {
+    if (!subTasks || subTasks.length === 0) return 0;
+    const completed = subTasks.filter(subTask => subTask.done).length;
+    return (completed / subTasks.length) * 100;
+  }
 
   /*
   To simulate slow network, call sleep before making API calls.
@@ -238,10 +318,10 @@ function App() {
     const checked = event.target.checked;
     fetch(`/subtask/${subTaskId}/toggle`, {
       method: 'PUT',
-      headers:{
+      headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({done:checked})
+      body: JSON.stringify({ done: checked })
     })
       .then(response => {
         if (response.ok) {
@@ -285,16 +365,25 @@ function App() {
                 !item.done && (
                   <React.Fragment key={item.id}>
                     <tr>
-                      <td className="description">{item.description}
+                      <td className="description">
+                        {item.description}
                         <Button onClick={() => toggleSubtasksVisibility(item.id)}>
                           {expandedTasks[item.id] ? '▼' : '►'}
                         </Button>
+                        <div className="progress">
+                          <div
+                            className="progress-bar"
+                            style={{ width: `${calculateProgress(subTasks[item.id])}%` }}
+                          ></div>
+                        </div>
                       </td>
                       <td className="date"><Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment></td>
                       <td>
-                        <Button variant="contained" className="DoneButton" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
-                          Done
-                        </Button>
+                        {(!subTasks[item.id] || subTasks[item.id].length === 0 || subTasks[item.id].every(subTask => subTask.done)) && (
+                          <Button variant="contained" className="DoneButton" onClick={(event) => toggleDone(event, item.id, item.description, !item.done)} size="small">
+                            Done
+                          </Button>
+                        )}
                       </td>
                     </tr>
 
@@ -308,10 +397,43 @@ function App() {
                           />
                           {subTask.description}
                         </td>
+                        <td>
+                          <Button
+                            startIcon={<DeleteIcon />}
+                            variant="contained"
+                            className="DeleteButton"
+                            onClick={() => deleteSubTask(item.id, subTask.id)}
+                            size="small"
+                          >
+                            Delete
+                          </Button>
+                        </td>
                         <td className="date"><Moment format="MMM Do hh:mm:ss">{subTask.creation_ts}</Moment></td>
                       </tr>
                     ))}
 
+                    {expandedTasks[item.id] && (
+                      <tr>
+                        <td colSpan="3">
+                          <Button onClick={() => toggleSubTaskFormVisibility(item.id)}>
+                            {showSubTaskForm[item.id] ? 'Hide Subtask Form' : 'Add Subtask'}
+                          </Button>
+                          {showSubTaskForm[item.id] && (
+                            <div>
+                              <input
+                                type="text"
+                                value={newSubTaskText}
+                                onChange={(e) => setNewSubTaskText(e.target.value)}
+                                placeholder='Description'
+                              />
+                              <Button onClick={() => addSubTask(item.id, newSubTaskText)}>
+                                Add subtask
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
                   </React.Fragment>
                 )
               ))}

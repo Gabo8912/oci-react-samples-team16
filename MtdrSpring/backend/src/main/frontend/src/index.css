@@ -140,3 +140,40 @@ body {
   .subtask-description input {
     margin-right: 10px;
   }
+
+.progress {
+  --progress: 100%; /* Variable CSS para el progreso */
+
+  display: inline-block; /* Muestra la barra en línea con el texto */
+  width: 100px; /* Ancho de la barra de progreso */
+  height: 10px; /* Altura de la barra de progreso */
+  border: 1px solid #fff; /* Borde de la barra */
+  box-shadow: 0 0 4px #aaa; /* Sombra */
+  margin-left: 10px; /* Espacio entre el nombre de la tarea y la barra */
+  padding: 0.1rem; /* Padding reducido */
+  border-radius: 5px; /* Bordes redondeados */
+  overflow: hidden; /* Oculta el contenido que se desborda */
+}
+
+.bar {
+  background: #5556; /* Color de fondo de la barra */
+  height: 100%; /* Altura de la barra */
+}
+
+.progress-bar {
+  width: var(--progress); /* Ancho de la barra de progreso (dinámico) */
+  height: 100%; /* Altura de la barra */
+  background: linear-gradient(to bottom, gold, #c85, gold); /* Gradiente de color */
+  box-shadow: 0 0 10px orange; /* Sombra */
+  transition: width 0.5s; /* Transición suave al cambiar el ancho */
+  animation: shine 3s ease-in infinite; /* Animación de brillo */
+}
+
+@keyframes shine {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 50px;
+  }
+}
