@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +46,15 @@ public class SubToDoItemController {
         subTask.setParentTask(parentTask);
         SubToDoItem savedSubTask = subToDoItemService.addSubTask(subTask);
         return ResponseEntity.ok(savedSubTask);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubTask(@PathVariable int id) {
+        boolean isDeleted = subToDoItemService.deleteSubTask(id);
+        if (isDeleted) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } else {
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
     }
 }

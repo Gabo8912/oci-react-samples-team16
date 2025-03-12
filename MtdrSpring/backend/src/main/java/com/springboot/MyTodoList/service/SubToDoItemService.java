@@ -24,4 +24,13 @@ public class SubToDoItemService {
     public SubToDoItem addSubTask(SubToDoItem subTask) {
         return subToDoItemRepository.save(subTask);
     }
+
+    public boolean deleteSubTask(int id) {
+        try {
+            subToDoItemRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

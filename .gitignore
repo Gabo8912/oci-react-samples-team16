@@ -48,3 +48,6 @@ frontend/package-lock.json
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+
+# application properties
+MtdrSpring/backend/src/main/resources/application.properties
