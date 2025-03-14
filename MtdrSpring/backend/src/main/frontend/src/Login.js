@@ -19,9 +19,10 @@ const Login = ({ onLoginSuccess }) => {
 
     if (response.ok) {
       const data = await response.json();
-      localStorage.setItem("token", data.token); // Guardamos el token en localStorage
-      localStorage.setItem("role", data.role); // Guardamos el rol del usuario
-      onLoginSuccess(); // Redirigir a dashboard o home
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("username", username); // Store username for Dashboard
+      onLoginSuccess();
     } else {
       setError("Credenciales incorrectas");
     }
