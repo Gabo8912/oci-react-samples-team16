@@ -35,6 +35,18 @@ public class AuthController {
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getCurrentUser(@PathVariable String username) {
+        Optional<User> user = userService.findByUsername(username);
+        if (user.isPresent()) {
+            User currentUser = user.get();
+            // Don't send the password in the response
+            currentUser.setPassword(null);
+            return ResponseEntity.ok(currentUser);
+        }
+        return ResponseEntity.status(404).body("User not found");
+    }
 }
 
 // Clase para recibir las credenciales

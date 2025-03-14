@@ -1,0 +1,76 @@
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.dashboard-header h2 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.dashboard-error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.user-info-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.user-info-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.user-info-card h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.user-info-item {
+  display: flex;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.user-info-item:last-child {
+  border-bottom: none;
+}
+
+.user-info-item .label {
+  font-weight: bold;
+  width: 120px;
+  color: #666;
+}
+
+.user-info-item .value {
+  flex: 1;
+  color: #333;
+} 
