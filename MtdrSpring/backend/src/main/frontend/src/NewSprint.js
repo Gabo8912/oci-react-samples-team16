@@ -1,156 +1,189 @@
 import React, { useState, useEffect } from "react";
-import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  Typography,
+  CircularProgress,
+  Chip,
+  Paper
+} from "@mui/material";
+import { styled } from '@mui/material/styles';
 
-function NewSprint(props) {
-  const [sprintName, setSprintName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedTasks, setSelectedTasks] = useState([]);
-  const [availableTasks, setAvailableTasks] = useState([]);
+// Custom styled components to match Oracle Redwood theme
+const OraclePaper = styled(Paper)(({ theme }) => ({
+  background: '#fef9f2',
+  color: '#161513',
+  boxShadow: '0 10px 18px 0 rgba(0, 0, 0, 0.2), 0 4.5rem 8rem 0 rgba(0, 0, 0, 0.1)',
+  borderRadius: '0.5rem',
+  padding: '1rem',
+  margin: '2rem 0 4rem 0',
+  width: '95%',
+  maxWidth: '50rem'
+}));
 
-  // Fetch available tasks when component mounts
+const OracleTable = styled(Table)({
+  '& .MuiTableCell-root': {
+    borderBottom: 'solid 1px #5b5652',
+    padding: '0.5rem',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+  },
+  '& .MuiTableCell-head': {
+    fontWeight: 'bold',
+    backgroundColor: '#f5f5f5'
+  }
+});
+
+const StatusChip = styled(Chip)(({ status }) => ({
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  ...(status === "Completado" && {
+    backgroundColor: '#5f7d4f',
+    color: '#fef9f2'
+  }),
+  ...(status === "Pendiente" && {
+    backgroundColor: '#d63b25',
+    color: '#fef9f2'
+  }),
+  ...(status === "En progreso" && {
+    backgroundColor: '#5b5652',
+    color: '#fef9f2'
+  })
+}));
+
+function CurrentSprints() {
+  const [sprints, setSprints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetch('/api/tasks')
-      .then(response => response.json())
-      .then(data => setAvailableTasks(data.filter(task => !task.sprintId)))
-      .catch(error => console.error('Error fetching tasks:', error));
-  }, []);
-
-  // Common input style
-  const inputStyle = {
-    height: "40px",
-    fontSize: "16px",
-    padding: "0 10px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    outline: "none",
-    margin: "5px 0",
-    width: "100%"
-  };
-
-  // Button style
-  const buttonStyle = {
-    height: "40px",
-    fontSize: "16px",
-    padding: "0 20px",
-    textTransform: "none",
-    marginTop: "10px"
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!sprintName.trim()) {
-      alert("Please enter a sprint name");
-      return;
-    }
-
-    if (!startDate || !endDate) {
-      alert("Please select both start and end dates");
-      return;
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-      alert("End date must be after start date");
-      return;
-    }
-
-    const sprintData = {
-      name: sprintName,
-      startDate: startDate,
-      endDate: endDate,
-      taskIds: selectedTasks
+    const fetchSprints = async () => {
+      try {
+        const response = await fetch('http://localhost:8081/sprints');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setSprints(data);
+      } catch (err) {
+        console.error('Error fetching sprints:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    props.addSprint(sprintData);
+    fetchSprints();
+  }, []);
 
-    // Reset form
-    setSprintName("");
-    setStartDate("");
-    setEndDate("");
-    setSelectedTasks([]);
-  };
+  if (loading) {
+    return (
+      <OraclePaper>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+          <CircularProgress style={{ color: '#5f7d4f' }} />
+        </div>
+      </OraclePaper>
+    );
+  }
 
-  const handleTaskSelect = (e) => {
-    setSelectedTasks(e.target.value);
-  };
+  if (error) {
+    return (
+      <OraclePaper>
+        <Typography variant="h6" style={{ color: '#d63b25', marginBottom: '1rem' }}>
+          Error loading sprints
+        </Typography>
+        <Typography variant="body1" style={{ color: '#161513', marginBottom: '1rem' }}>
+          {error}
+        </Typography>
+        <Typography variant="body2" style={{ color: '#5b5652' }}>
+          Make sure:
+          <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+            <li>Your backend is running at http://localhost:8081</li>
+            <li>CORS is properly configured on your backend</li>
+            <li>The endpoint /sprints is accessible</li>
+          </ul>
+        </Typography>
+      </OraclePaper>
+    );
+  }
+
+  if (sprints.length === 0) {
+    return (
+      <OraclePaper>
+        <Typography variant="h6" style={{ color: '#161513' }}>
+          No sprints found
+        </Typography>
+      </OraclePaper>
+    );
+  }
 
   return (
-    <div id="newsprintform" style={{ maxWidth: "500px", margin: "0 auto" }}>
-      <h2>Create New Sprint</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
-        {/* Sprint Name */}
-        <input
-          type="text"
-          placeholder="Sprint Name"
-          value={sprintName}
-          onChange={(e) => setSprintName(e.target.value)}
-          style={inputStyle}
-          required
-        />
-
-        {/* Date Selection */}
-        <div style={{ display: "flex", gap: "10px", margin: "10px 0" }}>
-          <div style={{ flex: 1 }}>
-            <label htmlFor="startDate">Start Date</label>
-            <input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              style={inputStyle}
-              required
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label htmlFor="endDate">End Date</label>
-            <input
-              id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              style={inputStyle}
-              required
-            />
-          </div>
-        </div>
-
-        {/* Task Selection */}
-        <FormControl fullWidth style={{ margin: "10px 0" }}>
-          <InputLabel id="task-select-label">Select Tasks</InputLabel>
-          <Select
-            labelId="task-select-label"
-            id="task-select"
-            multiple
-            value={selectedTasks}
-            onChange={handleTaskSelect}
-            style={inputStyle}
-            renderValue={(selected) => selected.length + " tasks selected"}
-          >
-            {availableTasks.map((task) => (
-              <MenuItem key={task.id} value={task.id}>
-                {task.description}
-              </MenuItem>
+    <OraclePaper>
+      <Typography 
+        variant="h4" 
+        style={{ 
+          color: '#161513',
+          margin: '0.5rem 0 1rem 0',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+        }}
+      >
+        Current Sprints
+      </Typography>
+      
+      <TableContainer>
+        <OracleTable>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sprint ID</TableCell>
+              <TableCell>Project ID</TableCell>
+              <TableCell>Sprint Name</TableCell>
+              <TableCell>Start Date</TableCell>
+              <TableCell>End Date</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sprints.map((sprint) => (
+              <TableRow 
+                key={sprint.sprintId}
+                hover
+                style={{ 
+                  backgroundColor: sprint.status === "Pendiente" ? '#fef9f2' : 'inherit',
+                  opacity: sprint.status === "Completado" ? 0.8 : 1
+                }}
+              >
+                <TableCell>{sprint.sprintId}</TableCell>
+                <TableCell>{sprint.projectId}</TableCell>
+                <TableCell>{sprint.sprintName}</TableCell>
+                <TableCell>
+                  {new Date(sprint.startDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </TableCell>
+                <TableCell>
+                  {new Date(sprint.finishDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </TableCell>
+                <TableCell>
+                  <StatusChip 
+                    label={sprint.status} 
+                    status={sprint.status}
+                  />
+                </TableCell>
+              </TableRow>
             ))}
-          </Select>
-        </FormControl>
-
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={props.isCreating}
-          style={buttonStyle}
-        >
-          {props.isCreating ? "Creating..." : "Create Sprint"}
-        </Button>
-      </form>
-    </div>
+          </TableBody>
+        </OracleTable>
+      </TableContainer>
+    </OraclePaper>
   );
 }
 
-export default NewSprint;
+export default CurrentSprints;
