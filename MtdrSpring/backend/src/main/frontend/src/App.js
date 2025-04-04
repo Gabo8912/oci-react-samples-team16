@@ -280,6 +280,7 @@ function App() {
 
   // MODIFIED addItem: now receives description, duration and subtasks array.
   function addItem(text, hours, subTasksArray) {
+    
     console.log(
       "addItem(" +
         text +
@@ -293,6 +294,7 @@ function App() {
     const data = {
       description: text,
       duration: hours,
+      userId: 3 // Optional - only if backend expects it
     };
     fetch(API_LIST, {
       method: "POST",
