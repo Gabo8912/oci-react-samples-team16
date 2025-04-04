@@ -11,10 +11,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")  // Added base path
+@RequestMapping("/api")
 public class SprintController {
     @Autowired
     private SprintService sprintService;
+
+    @PostMapping("/sprints")
+    public ResponseEntity<Sprint> addSprint(@RequestBody Sprint sprint) {
+        Sprint createdSprint = sprintService.addSprint(sprint);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("location", "/api/sprints/" + createdSprint.getSprintId());
+        headers.set("Access-Control-Expose-Headers", "location");
+        return new ResponseEntity<>(createdSprint, headers, HttpStatus.CREATED);
+    }
 
     @GetMapping("/sprints")
     public ResponseEntity<List<Sprint>> getAllSprints() {
@@ -31,7 +40,6 @@ public class SprintController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
 
     @PutMapping("/sprints/{id}")
     public ResponseEntity<Sprint> updateSprint(@PathVariable int id, @RequestBody Sprint sprint) {

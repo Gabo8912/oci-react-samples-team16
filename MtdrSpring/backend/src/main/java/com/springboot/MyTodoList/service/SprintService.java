@@ -3,8 +3,6 @@ package com.springboot.MyTodoList.service;
 import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.repository.SprintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +13,15 @@ public class SprintService {
     @Autowired
     private SprintRepository sprintRepository;
 
+    // Add this method
+    public Sprint addSprint(Sprint sprint) {
+        // Set default projectId if not provided
+        if (sprint.getProjectId() == null) {
+            sprint.setProjectId(1); // Default project ID
+        }
+        return sprintRepository.save(sprint);
+    }
+
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
     }
@@ -23,8 +30,6 @@ public class SprintService {
         Optional<Sprint> sprint = sprintRepository.findById(id);
         return sprint.orElse(null);
     }
-
-
 
     public Sprint updateSprint(int id, Sprint sprintDetails) {
         Optional<Sprint> sprintOptional = sprintRepository.findById(id);
