@@ -16,7 +16,7 @@ import API_LIST from "./API";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, TableBody, CircularProgress } from "@mui/material";
 import Moment from "react-moment";
-
+import NewSprint from "./NewSprint";
 function App() {
   // isLoading is true while waiting for the backend to return the list of items.
   const [isLoading, setLoading] = useState(false);
@@ -34,6 +34,29 @@ function App() {
   const [newSubTaskText, setNewSubTaskText] = useState("");
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
 
+  //////////////////////////
+  const [isCreatingSprint, setIsCreatingSprint] = useState(false);
+
+  const addSprint = (sprintData) => {
+    setIsCreatingSprint(true);
+    fetch('/sprints', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sprintData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Handle successful sprint creation
+      setIsCreatingSprint(false);
+    })
+    .catch(error => {
+      console.error('Error creating sprint:', error);
+      setIsCreatingSprint(false);
+    });
+  };
+  ////////////
   function deleteItem(deleteId) {
     fetch(API_LIST + "/" + deleteId, {
       method: "DELETE",
@@ -257,6 +280,7 @@ function App() {
 
   // MODIFIED addItem: now receives description, duration and subtasks array.
   function addItem(text, hours, subTasksArray) {
+    
     console.log(
       "addItem(" +
         text +
@@ -270,6 +294,7 @@ function App() {
     const data = {
       description: text,
       duration: hours,
+      userId: 3 // Optional - only if backend expects it
     };
     fetch(API_LIST, {
       method: "POST",
@@ -540,7 +565,10 @@ function App() {
               )}
             </TableBody>
           </table>
+          <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
+
         </div>
+        
       )}
     </div>
   );

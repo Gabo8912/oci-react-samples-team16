@@ -20,6 +20,14 @@ public class ToDoItem {
     OffsetDateTime creation_ts;
     @Column(name = "done")
     boolean done;
+
+    @Column(name = "USER_ID")
+    private Long userId = 3L;
+
+    
+    @Column(name = "SPRINT_ID")
+    private Long sprintId = 3L;
+
     public ToDoItem(){
 
     }
@@ -28,6 +36,22 @@ public class ToDoItem {
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getSprintId() {
+        return sprintId;
+    }
+    
+    public void setSprintId(Long sprintId) {
+        this.sprintId = sprintId;
     }
 
     public int getID() {
