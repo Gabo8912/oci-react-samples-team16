@@ -14,9 +14,49 @@ import React, { useState, useEffect } from "react";
 import NewItem from "./NewItem";
 import API_LIST from "./API";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, TableBody, CircularProgress } from "@mui/material";
+import { Button, TableBody, CircularProgress, Paper } from "@mui/material";
+import { styled } from '@mui/material/styles';
 import Moment from "react-moment";
 import NewSprint from "./NewSprint";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CompletedTasksHistory from "./CompletedTasksHistory";
+
+// Styled components for completed tasks section
+const CompletedTasksContainer = styled(Paper)(({ theme }) => ({
+  background: '#f8f8f8',
+  padding: '1.5rem',
+  marginTop: '0',
+  width: '350px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  borderRadius: '0.5rem',
+  height: 'fit-content',
+  position: 'fixed',
+  top: '100px',
+  right: '20px',
+  zIndex: 10,
+  borderLeft: '3px solid #5f7d4f',
+}));
+
+const CompletedTasksHeader = styled('h2')({
+  fontSize: '1.2rem',
+  color: '#5f7d4f',
+  marginBottom: '1.5rem',
+  textAlign: 'center',
+  fontWeight: 'bold',
+  paddingBottom: '0.5rem',
+  borderBottom: '1px solid #ddd',
+});
+
+const CompletedTaskRow = styled('tr')({
+  '& td': {
+    padding: '0.3rem 0.5rem',
+    fontSize: '0.9rem',
+  },
+  '&:hover': {
+    backgroundColor: '#f5f5f5',
+  },
+});
+
 function App() {
   // isLoading is true while waiting for the backend to return the list of items.
   const [isLoading, setLoading] = useState(false);
@@ -36,6 +76,7 @@ function App() {
 
   //////////////////////////
   const [isCreatingSprint, setIsCreatingSprint] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const addSprint = (sprintData) => {
     setIsCreatingSprint(true);
@@ -81,10 +122,22 @@ function App() {
 
   function toggleDone(event, id, description, done) {
     event.preventDefault();
+    
+    // Debug log to check subtasks state
+    console.log(`Toggling task ${id} to ${done ? 'done' : 'not done'}`);
+    console.log(`Subtasks for this task:`, subTasks[id]);
+    
+    // Allow marking as done if:
+    // 1. We're marking as not done (undoing)
+    // 2. There are no subtasks for this task
+    // 3. All subtasks are completed
     if (
-      !done ||
-      (subTasks[id] && subTasks[id].every((subTask) => subTask.done))
+      !done || // Undoing a task
+      !subTasks[id] || // No subtasks object for this task
+      subTasks[id].length === 0 || // Empty subtasks array
+      subTasks[id].every((subTask) => subTask.done) // All subtasks are done
     ) {
+      console.log(`Task ${id} can be marked as ${done ? 'done' : 'not done'}`);
       modifyItem(id, description, done).then(
         () => {
           reloadOneIteam(id);
@@ -94,6 +147,7 @@ function App() {
         }
       );
     } else {
+      console.log(`Task ${id} cannot be marked as done because not all subtasks are completed`);
       window.alert(
         "Error: All subtasks must be completed before marking the main task as done."
       );
@@ -265,10 +319,9 @@ function App() {
         (result) => {
           setLoading(false);
           setItems(result);
+          // Load subtasks for all tasks, not just the ones that are not done
           result.forEach((item) => {
-            if (!item.done) {
-              loadSubTasks(item.id);
-            }
+            loadSubTasks(item.id);
           });
         },
         (error) => {
@@ -384,191 +437,216 @@ function App() {
       );
   }
 
+  // Function to handle showing/hiding the history page
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
+  };
+
   return (
     <div className="App">
-      <h1>MY TODO LIST</h1>
-      <NewItem addItem={addItem} isInserting={isInserting} />
-      {error && <p>Error: {error.message}</p>}
-      {isLoading && <CircularProgress />}
-      {!isLoading && (
-        <div id="maincontent">
-          <table id="itemlistNotDone" className="itemlist">
-            <TableBody>
-              {items.map(
-                (item) =>
-                  !item.done && (
-                    <React.Fragment key={item.id}>
-                      <tr>
-                        <td className="description">
-                          {item.description}
-                          <Button
-                            onClick={() => toggleSubtasksVisibility(item.id)}
-                          >
-                            {expandedTasks[item.id] ? "▼" : "►"}
-                          </Button>
-                          <div className="progress">
-                            <div
-                              className="progress-bar"
-                              style={{
-                                width: `${calculateProgress(
-                                  subTasks[item.id]
-                                )}%`,
-                              }}
-                            ></div>
-                          </div>
-                        </td>
-                        <td className="date">
-                          <Moment format="MMM Do hh:mm:ss">
-                            {item.createdAt}
-                          </Moment>
-                        </td>
-                        <td>
-                          {(!subTasks[item.id] ||
-                            subTasks[item.id].length === 0 ||
-                            subTasks[item.id].every(
-                              (subTask) => subTask.done
-                            )) && (
+      {showHistory ? (
+        <CompletedTasksHistory onBack={toggleHistory} />
+      ) : (
+        <>
+          <h1>MY TODO LIST</h1>
+          <NewItem addItem={addItem} isInserting={isInserting} />
+          {error && <p>Error: {error.message}</p>}
+          {isLoading && <CircularProgress />}
+          {!isLoading && (
+            <>
+              <div id="maincontent" style={{ 
+                width: '100%',
+                maxWidth: '800px',
+                margin: '0 auto',
+              }}>
+                <table id="itemlistNotDone" className="itemlist">
+                  <TableBody>
+                    {items.map(
+                      (item) =>
+                        !item.done && (
+                          <React.Fragment key={item.id}>
+                            <tr>
+                              <td className="description">
+                                {item.description}
+                                <Button
+                                  onClick={() => toggleSubtasksVisibility(item.id)}
+                                >
+                                  {expandedTasks[item.id] ? "▼" : "►"}
+                                </Button>
+                                <div className="progress">
+                                  <div
+                                    className="progress-bar"
+                                    style={{
+                                      width: `${calculateProgress(
+                                        subTasks[item.id]
+                                      )}%`,
+                                    }}
+                                  ></div>
+                                </div>
+                              </td>
+                              <td className="date">
+                                <Moment format="MMM Do hh:mm:ss">
+                                  {item.createdAt}
+                                </Moment>
+                              </td>
+                              <td>
+                                <Button
+                                  variant="contained"
+                                  className="DoneButton"
+                                  onClick={(event) =>
+                                    toggleDone(
+                                      event,
+                                      item.id,
+                                      item.description,
+                                      !item.done
+                                    )
+                                  }
+                                  size="small"
+                                >
+                                  Done
+                                </Button>
+                              </td>
+                            </tr>
+                            
+                            {expandedTasks[item.id] &&
+                              subTasks[item.id] &&
+                              subTasks[item.id].map((subTask) => (
+                                <tr key={subTask.id}>
+                                  <td className="subtask-description">
+                                    <input
+                                      type="checkbox"
+                                      checked={subTask.done}
+                                      onChange={(event) =>
+                                        toggleSubTaskDone(event, subTask.id)
+                                      }
+                                    />
+                                    {subTask.description}
+                                  </td>
+                                  <td>
+                                    <Button
+                                      startIcon={<DeleteIcon />}
+                                      variant="contained"
+                                      className="DeleteButton"
+                                      onClick={() =>
+                                        deleteSubTask(item.id, subTask.id)
+                                      }
+                                      size="small"
+                                    >
+                                      Delete
+                                    </Button>
+                                  </td>
+                                  <td className="date">
+                                    <Moment format="MMM Do hh:mm:ss">
+                                      {subTask.creation_ts}
+                                    </Moment>
+                                  </td>
+                                </tr>
+                              ))}
+                            
+                            {expandedTasks[item.id] && (
+                              <tr>
+                                <td colSpan="3">
+                                  <Button
+                                    onClick={() =>
+                                      toggleSubTaskFormVisibility(item.id)
+                                    }
+                                  >
+                                    {showSubTaskForm[item.id]
+                                      ? "Hide Subtask Form"
+                                      : "Add Subtask"}
+                                  </Button>
+                                  {showSubTaskForm[item.id] && (
+                                    <div>
+                                      <input
+                                        type="text"
+                                        value={newSubTaskText}
+                                        onChange={(e) =>
+                                          setNewSubTaskText(e.target.value)
+                                        }
+                                        placeholder="Description"
+                                      />
+                                      <Button
+                                        onClick={() =>
+                                          addSubTask(item.id, newSubTaskText)
+                                        }
+                                      >
+                                        Add subtask
+                                      </Button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        )
+                    )}
+                  </TableBody>
+                </table>
+                <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
+              </div>
+              
+              <CompletedTasksContainer>
+                <CompletedTasksHeader>
+                  Latest Completed Tasks
+                  <Button
+                    variant="contained"
+                    startIcon={<ExpandMoreIcon />}
+                    onClick={toggleHistory}
+                    size="small"
+                    style={{ 
+                      backgroundColor: '#5f7d4f', 
+                      color: 'white',
+                      padding: '0.2rem 0.5rem',
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    View Full History
+                  </Button>
+                </CompletedTasksHeader>
+                <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: '#888' }}>
+                  Showing 5 of {items.filter(item => item.done).length} completed tasks
+                </div>
+                <table className="itemlist" style={{ width: '100%', marginTop: '0' }}>
+                  <TableBody>
+                    {items
+                      .filter(item => item.done)
+                      .slice(0, 5) // Show only the 5 most recent completed tasks
+                      .map((item) => (
+                        <CompletedTaskRow key={item.id}>
+                          <td className="description" style={{ width: '60%' }}>{item.description}</td>
+                          <td className="date" style={{ width: '25%' }}>
+                            <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                          </td>
+                          <td style={{ width: '15%', textAlign: 'right' }}>
                             <Button
                               variant="contained"
                               className="DoneButton"
                               onClick={(event) =>
-                                toggleDone(
-                                  event,
-                                  item.id,
-                                  item.description,
-                                  !item.done
-                                )
+                                toggleDone(event, item.id, item.description, !item.done)
                               }
                               size="small"
+                              style={{ marginRight: '0.5rem' }}
                             >
-                              Done
+                              Undo
                             </Button>
-                          )}
-                        </td>
-                      </tr>
-                      {expandedTasks[item.id] &&
-                        subTasks[item.id] &&
-                        subTasks[item.id].map((subTask) => (
-                          <tr key={subTask.id}>
-                            <td className="subtask-description">
-                              <input
-                                type="checkbox"
-                                checked={subTask.done}
-                                onChange={(event) =>
-                                  toggleSubTaskDone(event, subTask.id)
-                                }
-                              />
-                              {subTask.description}
-                            </td>
-                            <td>
-                              <Button
-                                startIcon={<DeleteIcon />}
-                                variant="contained"
-                                className="DeleteButton"
-                                onClick={() =>
-                                  deleteSubTask(item.id, subTask.id)
-                                }
-                                size="small"
-                              >
-                                Delete
-                              </Button>
-                            </td>
-                            <td className="date">
-                              <Moment format="MMM Do hh:mm:ss">
-                                {subTask.creation_ts}
-                              </Moment>
-                            </td>
-                          </tr>
-                        ))}
-                      {expandedTasks[item.id] && (
-                        <tr>
-                          <td colSpan="3">
                             <Button
-                              onClick={() =>
-                                toggleSubTaskFormVisibility(item.id)
-                              }
+                              startIcon={<DeleteIcon />}
+                              variant="contained"
+                              className="DeleteButton"
+                              onClick={() => deleteItem(item.id)}
+                              size="small"
                             >
-                              {showSubTaskForm[item.id]
-                                ? "Hide Subtask Form"
-                                : "Add Subtask"}
+                              Delete
                             </Button>
-                            {showSubTaskForm[item.id] && (
-                              <div>
-                                <input
-                                  type="text"
-                                  value={newSubTaskText}
-                                  onChange={(e) =>
-                                    setNewSubTaskText(e.target.value)
-                                  }
-                                  placeholder="Description"
-                                />
-                                <Button
-                                  onClick={() =>
-                                    addSubTask(item.id, newSubTaskText)
-                                  }
-                                >
-                                  Add subtask
-                                </Button>
-                              </div>
-                            )}
                           </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  )
-              )}
-            </TableBody>
-          </table>
-          <h2 id="donelist">Done items</h2>
-          <table id="itemlistDone" className="itemlist">
-            <TableBody>
-              {items.map(
-                (item) =>
-                  item.done && (
-                    <tr key={item.id}>
-                      <td className="description">{item.description}</td>
-                      <td className="date">
-                        <Moment format="MMM Do hh:mm:ss">
-                          {item.createdAt}
-                        </Moment>
-                      </td>
-                      <td>
-                        <Button
-                          variant="contained"
-                          className="DoneButton"
-                          onClick={(event) =>
-                            toggleDone(
-                              event,
-                              item.id,
-                              item.description,
-                              !item.done
-                            )
-                          }
-                          size="small"
-                        >
-                          Undo
-                        </Button>
-                      </td>
-                      <td>
-                        <Button
-                          startIcon={<DeleteIcon />}
-                          variant="contained"
-                          className="DeleteButton"
-                          onClick={() => deleteItem(item.id)}
-                          size="small"
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  )
-              )}
-            </TableBody>
-          </table>
-          <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
-
-        </div>
-        
+                        </CompletedTaskRow>
+                      ))}
+                  </TableBody>
+                </table>
+              </CompletedTasksContainer>
+            </>
+          )}
+        </>
       )}
     </div>
   );

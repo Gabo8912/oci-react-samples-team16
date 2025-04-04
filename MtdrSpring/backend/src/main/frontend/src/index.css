@@ -43,8 +43,9 @@ div#newinputform form {
   width: 95%;
 }
 div#maincontent {
-  margin: 0;
-  padding: 0;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 h1 {
   margin: 0.5rem 0 1rem 0;
@@ -194,3 +195,73 @@ button.DoneButton:hover {
 /*
 
 */
+
+/* Completed tasks section styles */
+.CompletedTasksContainer {
+  transition: all 0.3s ease;
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background-color: #f8f8f8;
+  border-left: 3px solid #5f7d4f;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 350px;
+  z-index: 10;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.CompletedTasksContainer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.CompletedTasksHeader {
+  color: #5f7d4f;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.CompletedTasksHeader button {
+  transition: all 0.2s ease;
+}
+
+.CompletedTasksHeader button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.CompletedTaskRow td.description {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.CompletedTaskRow .DoneButton,
+.CompletedTaskRow .DeleteButton {
+  padding: 0.2em 0.4em;
+  font-size: 0.8rem;
+}
+
+.CompletedTaskRow .date {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .CompletedTasksContainer {
+    position: static;
+    margin-top: 2rem;
+    width: 100%;
+    border-left: none;
+    border-top: 3px solid #5f7d4f;
+    max-height: none;
+  }
+}
