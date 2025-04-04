@@ -8,10 +8,10 @@ function NewItem(props) {
   const [duration, setDuration] = useState("");
   const [subTasks, setSubTasks] = useState([]);
   const [newSubTask, setNewSubTask] = useState("");
+  const [sprintId, setSprintId] = useState(2); // Default: Sprint 1
 
   const hours = parseFloat(duration);
 
-  // Estilo común para los inputs
   const commonInputStyle = {
     height: "40px",
     fontSize: "16px",
@@ -21,7 +21,6 @@ function NewItem(props) {
     outline: "none",
   };
 
-  // Estilo para el botón
   const buttonStyle = {
     height: "40px",
     fontSize: "16px",
@@ -29,47 +28,47 @@ function NewItem(props) {
     textTransform: "none",
   };
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!item.trim()) return;
-
-    if (isNaN(hours) || hours < 0) {
-      alert("Por favor, ingresa una duración válida (número positivo).");
+    if (!item.trim()) {
+      alert("La tarea no puede estar vacía.");
       return;
     }
 
-    // Si la duración es mayor a 4 horas, se requiere al menos una subtarea
+    if (isNaN(hours) || hours <= 0) {
+      alert("Por favor, ingresa una duración válida (mayor a 0).");
+      return;
+    }
+
     if (hours > 4 && subTasks.length === 0) {
-      alert(
-        "Para tareas de más de 4 horas es obligatorio agregar al menos una subtarea."
-      );
+      alert("Tareas mayores a 4 horas deben tener al menos una subtarea.");
       return;
     }
 
-    // Llamamos a la función del padre para crear la tarea
-    props.addItem(item, hours, subTasks);
+    props.addItem(item.trim(), hours, subTasks, sprintId);
 
-    // Limpiamos campos
+    // Limpiar formulario
     setItem("");
     setDuration("");
     setSubTasks([]);
     setNewSubTask("");
-  }
+    setSprintId(2);
+  };
 
-  function addSubTaskToList() {
+  const addSubTaskToList = () => {
     if (!newSubTask.trim()) {
       alert("La subtarea no puede estar vacía.");
       return;
     }
-    setSubTasks([...subTasks, newSubTask]);
-    setNewSubTask("");
-  }
 
-  function removeSubTask(index) {
-    // Remueve la subtarea con el índice indicado
+    setSubTasks([...subTasks, newSubTask.trim()]);
+    setNewSubTask("");
+  };
+
+  const removeSubTask = (index) => {
     setSubTasks(subTasks.filter((_, i) => i !== index));
-  }
+  };
 
   return (
     <div id="newinputform">
@@ -77,14 +76,8 @@ function NewItem(props) {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "8px" }}
       >
-        {/* Línea 1: Input de tarea y de duración en línea */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        {/* Línea 1: Inputs principales */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             id="newiteminput"
             placeholder="Nueva tarea"
@@ -92,8 +85,19 @@ function NewItem(props) {
             autoComplete="off"
             value={item}
             onChange={(e) => setItem(e.target.value)}
-            style={{ ...commonInputStyle, flex: 1, marginRight: "10px" }}
+            style={{ ...commonInputStyle, flex: 1 }}
           />
+
+          <select
+            value={sprintId}
+            onChange={(e) => setSprintId(Number(e.target.value))}
+            style={{ ...commonInputStyle, width: "120px" }}
+          >
+            <option value={2}>Sprint 2</option>
+            <option value={2}>Sprint 3</option>
+            <option value={2}>Sprint 4</option>
+          </select>
+
           <input
             type="number"
             placeholder="Duración (hrs)"
@@ -102,14 +106,14 @@ function NewItem(props) {
             onChange={(e) => setDuration(e.target.value)}
             style={{
               ...commonInputStyle,
-              width: "100px",
+              width: "120px",
               WebkitAppearance: "none",
               MozAppearance: "textfield",
             }}
           />
         </div>
 
-        {/* Línea 2: Formulario de subtareas si la duración es mayor a 4 horas */}
+        {/* Línea 2: Subtareas */}
         {!isNaN(hours) && hours > 4 && (
           <div
             style={{
@@ -135,6 +139,7 @@ function NewItem(props) {
                 Agregar
               </Button>
             </div>
+
             {subTasks.length > 0 && (
               <ul style={{ paddingLeft: "20px", margin: 0 }}>
                 {subTasks.map((sub, index) => (
@@ -142,17 +147,14 @@ function NewItem(props) {
                     key={index}
                     style={{
                       display: "flex",
-                      alignItems: "center",
                       justifyContent: "space-between",
+                      alignItems: "center",
                       fontSize: "16px",
                       marginBottom: "4px",
                     }}
                   >
                     <span>{sub}</span>
-                    <IconButton
-                      onClick={() => removeSubTask(index)}
-                      size="small"
-                    >
+                    <IconButton onClick={() => removeSubTask(index)} size="small">
                       <DeleteIcon />
                     </IconButton>
                   </li>
@@ -162,7 +164,7 @@ function NewItem(props) {
           </div>
         )}
 
-        {/* Última línea: Botón para agregar */}
+        {/* Botón para agregar */}
         <Button
           className="AddButton"
           variant="contained"
@@ -171,7 +173,7 @@ function NewItem(props) {
           size="small"
           style={buttonStyle}
         >
-          {props.isInserting ? "Adding…" : "Add"}
+          {props.isInserting ? "Agregando…" : "Agregar"}
         </Button>
       </form>
     </div>
