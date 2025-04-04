@@ -10,8 +10,10 @@ public class Sprint {
     @Column(name = "SPRINT_ID")
     private int sprintId;
     
-    @Column(name = "PROJECT_ID")
-    private int projectId;
+    // Replace the primitive projectId with a proper JPA relationship
+    @ManyToOne
+    @JoinColumn(name = "PROJECT_ID", referencedColumnName = "PROJECT_ID")
+    private Project project;
     
     @Column(name = "SPRINT_NAME")
     private String sprintName;
@@ -24,15 +26,14 @@ public class Sprint {
     
     @Column(name = "STATUS")
     private String status;
-    
 
     // Constructors
     public Sprint() {}
 
-    public Sprint(int sprintId, int projectId, String sprintName, OffsetDateTime startDate, 
+    public Sprint(int sprintId, Project project, String sprintName, OffsetDateTime startDate, 
                  OffsetDateTime finishDate, String status) {
         this.sprintId = sprintId;
-        this.projectId = projectId;
+        this.project = project;
         this.sprintName = sprintName;
         this.startDate = startDate;
         this.finishDate = finishDate;
@@ -48,12 +49,12 @@ public class Sprint {
         this.sprintId = sprintId;
     }
 
-    public int getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
-    public void setProjectId(int projectId) {
-        this.projectId = projectId;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public String getSprintName() {
@@ -88,12 +89,16 @@ public class Sprint {
         this.status = status;
     }
 
+    public Long getProjectId() {
+        return this.project != null ? this.project.getProjectId() : null;
+    }
+
     // toString method
     @Override
     public String toString() {
         return "Sprint{" +
                 "sprintId=" + sprintId +
-                ", projectId=" + projectId +
+                ", project=" + (project != null ? project.getProjectId() : "null") +
                 ", sprintName='" + sprintName + '\'' +
                 ", startDate=" + startDate +
                 ", finishDate=" + finishDate +

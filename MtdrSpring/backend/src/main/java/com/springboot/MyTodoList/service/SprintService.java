@@ -1,6 +1,8 @@
 package com.springboot.MyTodoList.service;
 
+import com.springboot.MyTodoList.model.Project;
 import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.repository.ProjectRepository;
 import com.springboot.MyTodoList.repository.SprintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,8 @@ public class SprintService {
     @Autowired
     private SprintRepository sprintRepository;
 
+    @Autowired
+    private ProjectRepository projectRepository;
     // Get all sprints
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
@@ -43,20 +47,24 @@ public class SprintService {
         }
     }
 
-    // Update sprint
+
     public Sprint updateSprint(int id, Sprint sprintUpdates) {
         Optional<Sprint> sprintData = sprintRepository.findById(id);
         if (sprintData.isPresent()) {
             Sprint sprint = sprintData.get();
             sprint.setSprintName(sprintUpdates.getSprintName());
-            sprint.setProjectId(sprintUpdates.getProjectId());
+            
+            // Hardcode project ID to 1
+            Project project = new Project();
+            project.setProjectId(1L);
+            sprint.setProject(project);
+            
             sprint.setStartDate(sprintUpdates.getStartDate());
             sprint.setFinishDate(sprintUpdates.getFinishDate());
             sprint.setStatus(sprintUpdates.getStatus());
             return sprintRepository.save(sprint);
-        } else {
-            return null;
         }
+        return null;
     }
 
     // Get sprints by project ID
@@ -79,4 +87,5 @@ public class SprintService {
         return sprintRepository.existsById(id);
     }
     
+   
 }
