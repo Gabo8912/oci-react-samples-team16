@@ -11,62 +11,53 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class SprintController {
     @Autowired
     private SprintService sprintService;
-    
 
-    @GetMapping(value = "/sprints")
-    public List<Sprint> getAllSprints() {
-        return sprintService.findAll();
+    @PostMapping("/sprints")
+    public ResponseEntity<Sprint> addSprint(@RequestBody Sprint sprint) {
+        Sprint createdSprint = sprintService.addSprint(sprint);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("location", "/api/sprints/" + createdSprint.getSprintId());
+        headers.set("Access-Control-Expose-Headers", "location");
+        return new ResponseEntity<>(createdSprint, headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/sprints/{id}")
+    @GetMapping("/sprints")
+    public ResponseEntity<List<Sprint>> getAllSprints() {
+        List<Sprint> sprints = sprintService.findAll();
+        return new ResponseEntity<>(sprints, HttpStatus.OK);
+    }
+
+    @GetMapping("/sprints/{id}")
     public ResponseEntity<Sprint> getSprintById(@PathVariable int id) {
-        try {
-            ResponseEntity<Sprint> responseEntity = sprintService.getSprintById(id);
-            return new ResponseEntity<Sprint>(responseEntity.getBody(), HttpStatus.OK);
-        } catch (Exception e) {
+        Sprint sprint = sprintService.getSprintById(id);
+        if (sprint != null) {
+            return new ResponseEntity<>(sprint, HttpStatus.OK);
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @PostMapping(value = "/sprints")
-    public ResponseEntity addSprint(@RequestBody Sprint sprint) throws Exception {
-        Sprint sp = sprintService.addSprint(sprint);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("location", "" + sp.getSprintId());
-        responseHeaders.set("Access-Control-Expose-Headers", "location");
-
-        return ResponseEntity.ok()
-                .headers(responseHeaders).build();
-    }
-
-    @PutMapping(value = "sprints/{id}")
-    public ResponseEntity updateSprint(@RequestBody Sprint sprint, @PathVariable int id) {
-        try {
-            Sprint sprint1 = sprintService.updateSprint(id, sprint);
-            System.out.println(sprint1.toString());
-            return new ResponseEntity<>(sprint1, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    @PutMapping("/sprints/{id}")
+    public ResponseEntity<Sprint> updateSprint(@PathVariable int id, @RequestBody Sprint sprint) {
+        Sprint updatedSprint = sprintService.updateSprint(id, sprint);
+        if (updatedSprint != null) {
+            return new ResponseEntity<>(updatedSprint, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping(value = "sprints/{id}")
-    public ResponseEntity<Boolean> deleteSprint(@PathVariable("id") int id) {
-        Boolean flag = false;
-        try {
-            flag = sprintService.deleteSprint(id);
-            return new ResponseEntity<>(flag, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
+    @DeleteMapping("/sprints/{id}")
+    public ResponseEntity<Void> deleteSprint(@PathVariable int id) {
+        boolean deleted = sprintService.deleteSprint(id);
+        if (deleted) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-/* 
-    @GetMapping("/sprints/{id}/progress")
-    public ResponseEntity<Double> getSprintProgress(@PathVariable int id) {
-        double progress = sprintService.getSprintProgress(id);
-        return ResponseEntity.ok(progress);
-    }*/
 }

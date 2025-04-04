@@ -61,7 +61,7 @@ function CurrentSprints() {
   useEffect(() => {
     const fetchSprints = async () => {
       try {
-        const response = await fetch('http://localhost:8081/sprints');
+        const response = await fetch('http://localhost:8081/api/sprints');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

@@ -8,12 +8,10 @@ import java.time.OffsetDateTime;
 public class Sprint {
     @Id
     @Column(name = "SPRINT_ID")
-    private int sprintId;
+    private Integer sprintId;
     
-    // Replace the primitive projectId with a proper JPA relationship
-    @ManyToOne
-    @JoinColumn(name = "PROJECT_ID", referencedColumnName = "PROJECT_ID")
-    private Project project;
+    @Column(name = "PROJECT_ID")
+    private Integer projectId; // Changed to Integer for consistency
     
     @Column(name = "SPRINT_NAME")
     private String sprintName;
@@ -30,10 +28,11 @@ public class Sprint {
     // Constructors
     public Sprint() {}
 
-    public Sprint(int sprintId, Project project, String sprintName, OffsetDateTime startDate, 
-                 OffsetDateTime finishDate, String status) {
+    public Sprint(Integer sprintId, Integer projectId, String sprintName, 
+                OffsetDateTime startDate, OffsetDateTime finishDate, 
+                String status) {
         this.sprintId = sprintId;
-        this.project = project;
+        this.projectId = projectId;
         this.sprintName = sprintName;
         this.startDate = startDate;
         this.finishDate = finishDate;
@@ -41,20 +40,20 @@ public class Sprint {
     }
 
     // Getters and Setters
-    public int getSprintId() {
+    public Integer getSprintId() {
         return sprintId;
     }
 
-    public void setSprintId(int sprintId) {
+    public void setSprintId(Integer sprintId) {
         this.sprintId = sprintId;
     }
 
-    public Project getProject() {
-        return project;
+    public Integer getProjectId() {
+        return projectId;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
     }
 
     public String getSprintName() {
@@ -89,16 +88,11 @@ public class Sprint {
         this.status = status;
     }
 
-    public Long getProjectId() {
-        return this.project != null ? this.project.getProjectId() : null;
-    }
-
-    // toString method
     @Override
     public String toString() {
         return "Sprint{" +
                 "sprintId=" + sprintId +
-                ", project=" + (project != null ? project.getProjectId() : "null") +
+                ", projectId=" + projectId +
                 ", sprintName='" + sprintName + '\'' +
                 ", startDate=" + startDate +
                 ", finishDate=" + finishDate +
