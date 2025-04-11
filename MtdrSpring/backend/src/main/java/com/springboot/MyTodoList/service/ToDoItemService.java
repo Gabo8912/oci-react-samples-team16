@@ -7,70 +7,99 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.springboot.MyTodoList.repository.SubToDoItemRepository;
-
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ToDoItemService {
 
-    @Autowired
-    private ToDoItemRepository toDoItemRepository;
+    private final ToDoItemRepository toDoItemRepository;
+    private final SubToDoItemRepository subToDoItemRepository;
 
     @Autowired
-    private SubToDoItemRepository subToDoItemRepository;
-
-    public List<ToDoItem> findAll(){
-        List<ToDoItem> todoItems = toDoItemRepository.findAll();
-        return todoItems;
+    public ToDoItemService(ToDoItemRepository toDoItemRepository, 
+                         SubToDoItemRepository subToDoItemRepository) {
+        this.toDoItemRepository = toDoItemRepository;
+        this.subToDoItemRepository = subToDoItemRepository;
     }
 
-    public ResponseEntity<ToDoItem> getItemById(int id){
-        Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
-        if (todoData.isPresent()){
-            return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public List<ToDoItem> findAll() {
+        return toDoItemRepository.findAll();
+    }
+
+    public ResponseEntity<ToDoItem> getItemById(int id) {
+        if (id <= 0) {
+            return ResponseEntity.badRequest().build();
         }
+        
+        Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
+        return todoData.map(item -> new ResponseEntity<>(item, HttpStatus.OK))
+                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     
-    public ToDoItem addToDoItem(ToDoItem toDoItem){
+    public ToDoItem addToDoItem(ToDoItem toDoItem) {
+        if (toDoItem == null) {
+            throw new IllegalArgumentException("ToDoItem cannot be null");
+        }
+        
+        if (toDoItem.getDescription() == null || toDoItem.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Description cannot be empty");
+        }
+        
         return toDoItemRepository.save(toDoItem);
     }
 
-    public boolean deleteToDoItem(int id){
-        try{
-            toDoItemRepository.deleteById(id);
-            return true;
-        }catch(Exception e){
+    public boolean deleteToDoItem(int id) {
+        if (id <= 0) {
             return false;
         }
-    }
-    public ToDoItem updateToDoItem(int id, ToDoItem td){
-        Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
-        if(toDoItemData.isPresent()){
-            ToDoItem toDoItem = toDoItemData.get();
-            toDoItem.setID(id);
-            toDoItem.setCreation_ts(td.getCreation_ts());
-            toDoItem.setDescription(td.getDescription());
-            toDoItem.setDone(td.isDone());
-            return toDoItemRepository.save(toDoItem);
-        }else{
-            return null;
+        
+        if (!toDoItemRepository.existsById(id)) {
+            return false;
         }
+        
+        // Delete all subtasks first
+        subToDoItemRepository.deleteByTodoItemId(id);
+        toDoItemRepository.deleteById(id);
+        return true;
     }
 
-    public double getTaskProgress(int todoitemId){
-        List<SubToDoItem> subTasks = subToDoItemRepository.findByParentTask_ID(todoitemId);
+    public ToDoItem updateToDoItem(int id, ToDoItem td) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be positive");
+        }
+        
+        if (td == null) {
+            throw new IllegalArgumentException("ToDoItem cannot be null");
+        }
+        
+        return toDoItemRepository.findById(id)
+                .map(existingItem -> {
+                    existingItem.setDescription(td.getDescription());
+                    existingItem.setDone(td.isDone());
+                    // Preserve creation timestamp and IDs
+                    return toDoItemRepository.save(existingItem);
+                })
+                .orElse(null);
+    }
+
+    public double getTaskProgress(int todoitemId) {
+        if (todoitemId <= 0) {
+            throw new IllegalArgumentException("ID must be positive");
+        }
+        
+        List<SubToDoItem> subTasks = subToDoItemRepository.findByTodoItemId(todoitemId);
         if (subTasks.isEmpty()) {
             return 0.0;
         }
-        long completed = subTasks.stream().filter(SubToDoItem::isDone).count();
+        
+        long completed = subTasks.stream()
+                              .filter(SubToDoItem::isDone)
+                              .count();
         return ((double) completed / subTasks.size()) * 100;
     }
-
-    
-
 }

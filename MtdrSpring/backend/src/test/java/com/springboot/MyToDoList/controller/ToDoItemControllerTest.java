@@ -26,12 +26,21 @@ public class ToDoItemControllerTest {
     @InjectMocks
     private ToDoItemController toDoItemController;
 
+    private ToDoItem createTestItem(int id, String description, OffsetDateTime timestamp, boolean done) {
+        ToDoItem item = new ToDoItem();
+        item.setId(id);
+        item.setDescription(description);
+        item.setCreationTs(timestamp);
+        item.setDone(done);
+        return item;
+    }
+
     @Test
     public void getAllToDoItems_ShouldReturnAllItems() {
         // Arrange
         OffsetDateTime now = OffsetDateTime.now();
-        ToDoItem item1 = new ToDoItem(1, "Task 1", now, false);
-        ToDoItem item2 = new ToDoItem(2, "Task 2", now, true);
+        ToDoItem item1 = createTestItem(1, "Task 1", now, false);
+        ToDoItem item2 = createTestItem(2, "Task 2", now, true);
         List<ToDoItem> expectedItems = Arrays.asList(item1, item2);
         
         when(toDoItemService.findAll()).thenReturn(expectedItems);
@@ -50,7 +59,7 @@ public class ToDoItemControllerTest {
         // Arrange
         int itemId = 1;
         OffsetDateTime now = OffsetDateTime.now();
-        ToDoItem expectedItem = new ToDoItem(itemId, "Task 1", now, false);
+        ToDoItem expectedItem = createTestItem(itemId, "Task 1", now, false);
         when(toDoItemService.getItemById(itemId))
             .thenReturn(ResponseEntity.ok(expectedItem));
 
@@ -82,8 +91,8 @@ public class ToDoItemControllerTest {
     public void addToDoItem_ShouldCreateNewItemAndReturnLocationHeader() throws Exception {
         // Arrange
         OffsetDateTime now = OffsetDateTime.now();
-        ToDoItem newItem = new ToDoItem(0, "New Task", now, false);
-        ToDoItem savedItem = new ToDoItem(1, "New Task", now, false);
+        ToDoItem newItem = createTestItem(0, "New Task", now, false);
+        ToDoItem savedItem = createTestItem(1, "New Task", now, false);
         
         when(toDoItemService.addToDoItem(newItem)).thenReturn(savedItem);
 
@@ -102,7 +111,7 @@ public class ToDoItemControllerTest {
         // Arrange
         int itemId = 1;
         OffsetDateTime now = OffsetDateTime.now();
-        ToDoItem updatedItem = new ToDoItem(itemId, "Updated Task", now, true);
+        ToDoItem updatedItem = createTestItem(itemId, "Updated Task", now, true);
         when(toDoItemService.updateToDoItem(itemId, updatedItem)).thenReturn(updatedItem);
 
         // Act
@@ -119,7 +128,7 @@ public class ToDoItemControllerTest {
         // Arrange
         int nonExistentId = 999;
         OffsetDateTime now = OffsetDateTime.now();
-        ToDoItem item = new ToDoItem(nonExistentId, "Non-existent Task", now, false);
+        ToDoItem item = createTestItem(nonExistentId, "Non-existent Task", now, false);
         when(toDoItemService.updateToDoItem(nonExistentId, item))
             .thenThrow(new RuntimeException("Item not found"));
 
@@ -165,7 +174,7 @@ public class ToDoItemControllerTest {
     public void getTaskProgress_ShouldReturnProgress() {
         // Arrange
         int itemId = 1;
-        double expectedProgress = 0.75;
+        double expectedProgress = 75.0;
         when(toDoItemService.getTaskProgress(itemId)).thenReturn(expectedProgress);
 
         // Act
