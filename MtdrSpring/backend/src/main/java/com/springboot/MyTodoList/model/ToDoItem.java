@@ -1,65 +1,50 @@
 package com.springboot.MyTodoList.model;
 
-
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 
-/*
-    representation of the TODOITEM table that exists already
-    in the autonomous database
- */
 @Entity
 @Table(name = "TODOITEM")
 public class ToDoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int ID;
+    private int id;
+    
     @Column(name = "DESCRIPTION")
-    String description;
+    private String description;
+    
     @Column(name = "CREATION_TS")
-    OffsetDateTime creation_ts;
-    @Column(name = "done")
-    boolean done;
-
+    private OffsetDateTime creationTs;
+    
+    @Column(name = "DONE")
+    private boolean done;
+    
     @Column(name = "USER_ID")
-    private Long userId = 3L;
-
+    private Long userId;
     
     @Column(name = "SPRINT_ID")
-    private Long sprintId = 3L;
+    private Long sprintId;
 
-    public ToDoItem(){
-
+    // Default constructor required by JPA
+    public ToDoItem() {
     }
-    public ToDoItem(int ID, String description, OffsetDateTime creation_ts, boolean done) {
-        this.ID = ID;
+
+    // Constructor without hardcoded values
+    public ToDoItem(String description, OffsetDateTime creationTs, boolean done, Long userId, Long sprintId) {
         this.description = description;
-        this.creation_ts = creation_ts;
+        this.creationTs = creationTs;
         this.done = done;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(Long userId) {
         this.userId = userId;
-    }
-
-    public Long getSprintId() {
-        return sprintId;
-    }
-    
-    public void setSprintId(Long sprintId) {
         this.sprintId = sprintId;
     }
 
-    public int getID() {
-        return ID;
+    // Getters and setters
+    public int getId() {
+        return id;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getDescription() {
@@ -70,12 +55,12 @@ public class ToDoItem {
         this.description = description;
     }
 
-    public OffsetDateTime getCreation_ts() {
-        return creation_ts;
+    public OffsetDateTime getCreationTs() {
+        return creationTs;
     }
 
-    public void setCreation_ts(OffsetDateTime creation_ts) {
-        this.creation_ts = creation_ts;
+    public void setCreationTs(OffsetDateTime creationTs) {
+        this.creationTs = creationTs;
     }
 
     public boolean isDone() {
@@ -86,13 +71,31 @@ public class ToDoItem {
         this.done = done;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getSprintId() {
+        return sprintId;
+    }
+
+    public void setSprintId(Long sprintId) {
+        this.sprintId = sprintId;
+    }
+
     @Override
     public String toString() {
         return "ToDoItem{" +
-                "ID=" + ID +
+                "id=" + id +
                 ", description='" + description + '\'' +
-                ", creation_ts=" + creation_ts +
+                ", creationTs=" + creationTs +
                 ", done=" + done +
+                ", userId=" + userId +
+                ", sprintId=" + sprintId +
                 '}';
     }
 }
