@@ -1,3 +1,4 @@
+/*
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
@@ -72,4 +73,4 @@ public class Team {
                 ", createdDate=" + createdDate +
                 '}';
     }
-}
+}*/

@@ -14,7 +14,7 @@ import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./context/AuthContext";
 
 // Configuration constants
 const COMPLETED_TASKS_TO_SHOW = 5;

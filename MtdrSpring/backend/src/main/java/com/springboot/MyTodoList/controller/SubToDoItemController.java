@@ -19,7 +19,7 @@ import com.springboot.MyTodoList.service.SubToDoItemService;
 import com.springboot.MyTodoList.service.ToDoItemService;
 
 @RestController
-@RequestMapping("/subtask")
+@RequestMapping("/todolist/subtask")
 public class SubToDoItemController {
     @Autowired
     private SubToDoItemService subToDoItemService;

@@ -35,21 +35,18 @@ public class ToDoItemService {
         if (id <= 0) {
             return ResponseEntity.badRequest().build();
         }
-        
-        Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
-        return todoData.map(item -> new ResponseEntity<>(item, HttpStatus.OK))
-                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return toDoItemRepository.findById(id)
+                .map(item -> ResponseEntity.ok(item))
+                .orElse(ResponseEntity.notFound().build());
     }
     
     public ToDoItem addToDoItem(ToDoItem toDoItem) {
         if (toDoItem == null) {
             throw new IllegalArgumentException("ToDoItem cannot be null");
         }
-        
         if (toDoItem.getDescription() == null || toDoItem.getDescription().trim().isEmpty()) {
             throw new IllegalArgumentException("Description cannot be empty");
         }
-        
         return toDoItemRepository.save(toDoItem);
     }
 
@@ -57,12 +54,10 @@ public class ToDoItemService {
         if (id <= 0) {
             return false;
         }
-        
         if (!toDoItemRepository.existsById(id)) {
             return false;
         }
-        
-        // Delete all subtasks first
+        // Use the correct repository method
         subToDoItemRepository.deleteByTodoItemId(id);
         toDoItemRepository.deleteById(id);
         return true;
@@ -72,16 +67,13 @@ public class ToDoItemService {
         if (id <= 0) {
             throw new IllegalArgumentException("ID must be positive");
         }
-        
         if (td == null) {
             throw new IllegalArgumentException("ToDoItem cannot be null");
         }
-        
         return toDoItemRepository.findById(id)
                 .map(existingItem -> {
                     existingItem.setDescription(td.getDescription());
                     existingItem.setDone(td.isDone());
-                    // Preserve creation timestamp and IDs
                     return toDoItemRepository.save(existingItem);
                 })
                 .orElse(null);
@@ -91,12 +83,10 @@ public class ToDoItemService {
         if (todoitemId <= 0) {
             throw new IllegalArgumentException("ID must be positive");
         }
-        
-        List<SubToDoItem> subTasks = subToDoItemRepository.findByTodoItemId(todoitemId);
+        List<SubToDoItem> subTasks = subToDoItemRepository.findByTodoItem_Id(todoitemId);
         if (subTasks.isEmpty()) {
             return 0.0;
         }
-        
         long completed = subTasks.stream()
                               .filter(SubToDoItem::isDone)
                               .count();

@@ -20,7 +20,7 @@ public class SubToDoItem {
 
     @ManyToOne
     @JoinColumn(name = "TODOITEM_ID", nullable = false)
-    private ToDoItem parentTask;
+    private ToDoItem todoItem;
 
     @Column(name = "DESCRIPTION", length = 4000)
     String description;
@@ -38,7 +38,7 @@ public class SubToDoItem {
         this.description = description;
         this.done = done;
         this.ID = ID;
-        this.parentTask = parentTask;
+        this.todoItem = parentTask;
         this.creation_ts = creation_ts;
     }
 
@@ -50,12 +50,12 @@ public class SubToDoItem {
         this.done = done;
     }
 
-    public void setToDoItem(ToDoItem parenTask) {
-        this.parentTask = parenTask;
+    public void setToDoItem(ToDoItem todoItem) {
+        this.todoItem = todoItem;
     }
 
-    public void setParentTask(ToDoItem parentTask) {
-        this.parentTask = parentTask;
+    public void setParentTask(ToDoItem todoItem) {
+        this.todoItem = todoItem;
     }
 
     public String getDescription() {
@@ -71,7 +71,7 @@ public class SubToDoItem {
     }
 
     public ToDoItem getParentTask() {
-        return parentTask;
+        return todoItem;
     }
 
     public OffsetDateTime getCreation_ts() {

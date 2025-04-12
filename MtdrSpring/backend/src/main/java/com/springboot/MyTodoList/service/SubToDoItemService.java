@@ -12,7 +12,7 @@ public class SubToDoItemService {
     private SubToDoItemRepository subToDoItemRepository;
 
     public List<SubToDoItem> getSubTasks(int todoitemId) {
-        return subToDoItemRepository.findByParentTask_ID(todoitemId);
+        return subToDoItemRepository.findByTodoItem_Id(todoitemId);
     }
 
     public SubToDoItem toggleSubTaskStatus(int id) {
