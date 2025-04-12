@@ -4,12 +4,6 @@
 ## Copyright (c) 2022 Oracle, Inc.
 ## Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
 */
-/*
- * This is the application main React component. We're using "function"
- * components in this application. No "class" components should be used for
- * consistency.
- * @author  jean.de.lavarene@oracle.com
- */
 import React, { useState, useEffect } from "react";
 import NewItem from "./NewItem";
 import API_LIST from "./API";
@@ -20,19 +14,26 @@ import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
+import { useAuth } from "./AuthContext";
 
-// Styled components for completed tasks section
+// Configuration constants
+const COMPLETED_TASKS_TO_SHOW = 5;
+const LONG_TASK_DURATION = 4; // hours
+const COMPLETED_TASKS_PANEL_WIDTH = '350px';
+const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
+
+// Styled components
 const CompletedTasksContainer = styled(Paper)(({ theme }) => ({
   background: '#f8f8f8',
   padding: '1.5rem',
   marginTop: '0',
-  width: '350px',
+  width: COMPLETED_TASKS_PANEL_WIDTH,
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   borderRadius: '0.5rem',
   height: 'fit-content',
   position: 'fixed',
-  top: '100px',
-  right: '20px',
+  top: COMPLETED_TASKS_PANEL_POSITION.top,
+  right: COMPLETED_TASKS_PANEL_POSITION.right,
   zIndex: 10,
   borderLeft: '3px solid #5f7d4f',
 }));
@@ -58,29 +59,21 @@ const CompletedTaskRow = styled('tr')({
 });
 
 function App() {
-  // isLoading is true while waiting for the backend to return the list of items.
+  const { currentUser } = useAuth();
   const [isLoading, setLoading] = useState(false);
-  // isInserting is true while waiting for the backend to insert a new item.
   const [isInserting, setInserting] = useState(false);
-  // List of todo items (both done and not done).
   const [items, setItems] = useState([]);
-  // In case of an error during the API call.
   const [error, setError] = useState();
-  // Object to hold subtasks per task id.
   const [subTasks, setSubTasks] = useState({});
-  // To control the visibility of subtasks for each task.
   const [expandedTasks, setExpandedTasks] = useState({});
-  // For the subtask form in tasks already created.
   const [newSubTaskText, setNewSubTaskText] = useState("");
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
-
-  //////////////////////////
   const [isCreatingSprint, setIsCreatingSprint] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   const addSprint = (sprintData) => {
     setIsCreatingSprint(true);
-    fetch('/sprints', {
+    fetch(`${API_LIST}/sprints`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +82,6 @@ function App() {
     })
     .then(response => response.json())
     .then(data => {
-      // Handle successful sprint creation
       setIsCreatingSprint(false);
     })
     .catch(error => {
@@ -97,17 +89,16 @@ function App() {
       setIsCreatingSprint(false);
     });
   };
-  ////////////
+
   function deleteItem(deleteId) {
-    fetch(API_LIST + "/" + deleteId, {
+    fetch(`${API_LIST}/${deleteId}`, {
       method: "DELETE",
     })
       .then((response) => {
         if (response.ok) {
           return response;
-        } else {
-          throw new Error("Something went wrong ...");
         }
+        throw new Error("Something went wrong ...");
       })
       .then(
         () => {
@@ -123,21 +114,12 @@ function App() {
   function toggleDone(event, id, description, done) {
     event.preventDefault();
     
-    // Debug log to check subtasks state
-    console.log(`Toggling task ${id} to ${done ? 'done' : 'not done'}`);
-    console.log(`Subtasks for this task:`, subTasks[id]);
-    
-    // Allow marking as done if:
-    // 1. We're marking as not done (undoing)
-    // 2. There are no subtasks for this task
-    // 3. All subtasks are completed
     if (
-      !done || // Undoing a task
-      !subTasks[id] || // No subtasks object for this task
-      subTasks[id].length === 0 || // Empty subtasks array
-      subTasks[id].every((subTask) => subTask.done) // All subtasks are done
+      !done ||
+      !subTasks[id] ||
+      subTasks[id].length === 0 ||
+      subTasks[id].every((subTask) => subTask.done)
     ) {
-      console.log(`Task ${id} can be marked as ${done ? 'done' : 'not done'}`);
       modifyItem(id, description, done).then(
         () => {
           reloadOneIteam(id);
@@ -147,7 +129,6 @@ function App() {
         }
       );
     } else {
-      console.log(`Task ${id} cannot be marked as done because not all subtasks are completed`);
       window.alert(
         "Error: All subtasks must be completed before marking the main task as done."
       );
@@ -155,13 +136,12 @@ function App() {
   }
 
   function reloadOneIteam(id) {
-    fetch(API_LIST + "/" + id)
+    fetch(`${API_LIST}/${id}`)
       .then((response) => {
         if (response.ok) {
           return response.json();
-        } else {
-          throw new Error("Something went wrong ...");
         }
+        throw new Error("Something went wrong ...");
       })
       .then(
         (result) => {
@@ -179,8 +159,8 @@ function App() {
   }
 
   function modifyItem(id, description, done) {
-    var data = { description: description, done: done };
-    return fetch(API_LIST + "/" + id, {
+    const data = { description: description, done: done };
+    return fetch(`${API_LIST}/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -189,21 +169,18 @@ function App() {
     }).then((response) => {
       if (response.ok) {
         return response;
-      } else {
-        throw new Error("Something went wrong ...");
       }
+      throw new Error("Something went wrong ...");
     });
   }
 
-  // Function to load subtasks for a specific task.
   function loadSubTasks(taskId) {
-    fetch(`/subtask/${taskId}`)
+    fetch(`${API_LIST}/subtask/${taskId}`)
       .then((response) => {
         if (response.ok) {
           return response.json();
-        } else {
-          throw new Error("Something went wrong (loadSubTasks)...");
         }
+        throw new Error("Something went wrong (loadSubTasks)...");
       })
       .then(
         (result) => {
@@ -218,7 +195,6 @@ function App() {
       );
   }
 
-  // Toggle the visibility of subtasks.
   function toggleSubtasksVisibility(taskId) {
     setExpandedTasks((prevExpandedTasks) => ({
       ...prevExpandedTasks,
@@ -226,7 +202,6 @@ function App() {
     }));
   }
 
-  // Toggle the visibility of the subtask form for a task.
   function toggleSubTaskFormVisibility(taskId) {
     setShowSubTaskForm((prevShowSubTaskForm) => ({
       ...prevShowSubTaskForm,
@@ -234,13 +209,12 @@ function App() {
     }));
   }
 
-  // Function to add subtasks for a given task (used in the detailed task view).
   function addSubTask(taskId, text) {
     if (!text.trim()) {
       window.alert("Error: Subtasks cannot be empty");
       return;
     }
-    fetch(`/subtask/${taskId}/add`, {
+    fetch(`${API_LIST}/subtask/${taskId}/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -250,9 +224,8 @@ function App() {
       .then((response) => {
         if (response.ok) {
           return response.json();
-        } else {
-          throw new Error("Something went wrong ...");
         }
+        throw new Error("Something went wrong ...");
       })
       .then(
         (result) => {
@@ -272,17 +245,15 @@ function App() {
       );
   }
 
-  // Function to delete a subtask.
   function deleteSubTask(taskId, subTaskId) {
-    fetch(`/subtask/${subTaskId}`, {
+    fetch(`${API_LIST}/subtask/${subTaskId}`, {
       method: "DELETE",
     })
       .then((response) => {
         if (response.ok) {
           return response;
-        } else {
-          throw new Error("Something went wrong ...");
         }
+        throw new Error("Something went wrong ...");
       })
       .then(
         () => {
@@ -305,21 +276,54 @@ function App() {
     return (completed / subTasks.length) * 100;
   }
 
+  function toggleSubTaskDone(event, subTaskId) {
+    const checked = event.target.checked;
+    fetch(`${API_LIST}/subtask/${subTaskId}/toggle`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ done: checked }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Something went wrong ...");
+      })
+      .then(
+        (result) => {
+          const taskId = result.parentTask.id;
+          setSubTasks((prevSubTasks) => ({
+            ...prevSubTasks,
+            [taskId]: prevSubTasks[taskId].map((subTask) =>
+              subTask.id === subTaskId ? result : subTask
+            ),
+          }));
+        },
+        (error) => {
+          setError(error);
+        }
+      );
+  }
+
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
+  };
+
   useEffect(() => {
     setLoading(true);
     fetch(API_LIST)
       .then((response) => {
         if (response.ok) {
           return response.json();
-        } else {
-          throw new Error("Something went wrong ... (USE EFFECT 1)");
         }
+        throw new Error("Something went wrong ... (USE EFFECT 1)");
       })
       .then(
         (result) => {
           setLoading(false);
           setItems(result);
-          // Load subtasks for all tasks, not just the ones that are not done
           result.forEach((item) => {
             loadSubTasks(item.id);
           });
@@ -331,25 +335,15 @@ function App() {
       );
   }, []);
 
-  // MODIFIED addItem: now receives description, duration and subtasks array.
   function addItem(text, hours, subTasksArray, sprintId) {
-    
-    console.log(
-      "addItem(" +
-        text +
-        ", " +
-        hours +
-        ", " +
-        JSON.stringify(subTasksArray) +
-        ")"
-    );
     setInserting(true);
     const data = {
       description: text,
       duration: hours,
       sprintId: sprintId,
-      userId: 3 // Optional - only if backend expects it
+      userId: currentUser?.id
     };
+    
     fetch(API_LIST, {
       method: "POST",
       headers: {
@@ -360,9 +354,8 @@ function App() {
       .then((response) => {
         if (response.ok) {
           return response;
-        } else {
-          throw new Error("Something went wrong ...");
         }
+        throw new Error("Something went wrong ...");
       })
       .then((result) => {
         const id = result.headers.get("location");
@@ -373,10 +366,10 @@ function App() {
           done: false,
         };
         setItems([newItem, ...items]);
-        // If duration > 4 and subtasks were provided, add each subtask.
-        if (hours > 4 && subTasksArray && subTasksArray.length > 0) {
+        
+        if (hours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
           subTasksArray.forEach((subTaskText) => {
-            fetch(`/subtask/${id}/add`, {
+            fetch(`${API_LIST}/subtask/${id}/add`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -405,43 +398,6 @@ function App() {
         setError(error);
       });
   }
-
-  function toggleSubTaskDone(event, subTaskId) {
-    const checked = event.target.checked;
-    fetch(`/subtask/${subTaskId}/toggle`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ done: checked }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("Something went wrong ...");
-        }
-      })
-      .then(
-        (result) => {
-          const taskId = result.parentTask.id;
-          setSubTasks((prevSubTasks) => ({
-            ...prevSubTasks,
-            [taskId]: prevSubTasks[taskId].map((subTask) =>
-              subTask.id === subTaskId ? result : subTask
-            ),
-          }));
-        },
-        (error) => {
-          setError(error);
-        }
-      );
-  }
-
-  // Function to handle showing/hiding the history page
-  const toggleHistory = () => {
-    setShowHistory(!showHistory);
-  };
 
   return (
     <div className="App">
@@ -605,13 +561,13 @@ function App() {
                   </Button>
                 </CompletedTasksHeader>
                 <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: '#888' }}>
-                  Showing 5 of {items.filter(item => item.done).length} completed tasks
+                  Showing {Math.min(COMPLETED_TASKS_TO_SHOW, items.filter(item => item.done).length)} of {items.filter(item => item.done).length} completed tasks
                 </div>
                 <table className="itemlist" style={{ width: '100%', marginTop: '0' }}>
                   <TableBody>
                     {items
                       .filter(item => item.done)
-                      .slice(0, 5) // Show only the 5 most recent completed tasks
+                      .slice(0, COMPLETED_TASKS_TO_SHOW)
                       .map((item) => (
                         <CompletedTaskRow key={item.id}>
                           <td className="description" style={{ width: '60%' }}>{item.description}</td>

@@ -10,15 +10,23 @@ import java.util.Optional;
 
 @Service
 public class SprintService {
-    @Autowired
-    private SprintRepository sprintRepository;
+    private final SprintRepository sprintRepository;
 
-    // Add this method
+    @Autowired
+    public SprintService(SprintRepository sprintRepository) {
+        this.sprintRepository = sprintRepository;
+    }
+
     public Sprint addSprint(Sprint sprint) {
-        // Set default projectId if not provided
-        if (sprint.getProjectId() == null) {
-            sprint.setProjectId(1); // Default project ID
+        if (sprint == null) {
+            throw new IllegalArgumentException("Sprint cannot be null");
         }
+
+        // Validate required fields
+        if (sprint.getProjectId() == null) {
+            throw new IllegalArgumentException("Project ID must be provided for a sprint");
+        }
+
         return sprintRepository.save(sprint);
     }
 
@@ -27,28 +35,53 @@ public class SprintService {
     }
 
     public Sprint getSprintById(int id) {
-        Optional<Sprint> sprint = sprintRepository.findById(id);
-        return sprint.orElse(null);
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be a positive number");
+        }
+        return sprintRepository.findById(id).orElse(null);
     }
 
     public Sprint updateSprint(int id, Sprint sprintDetails) {
-        Optional<Sprint> sprintOptional = sprintRepository.findById(id);
-        if (sprintOptional.isPresent()) {
-            Sprint sprint = sprintOptional.get();
-            sprint.setSprintName(sprintDetails.getSprintName());
-            sprint.setStartDate(sprintDetails.getStartDate());
-            sprint.setFinishDate(sprintDetails.getFinishDate());
-            sprint.setStatus(sprintDetails.getStatus());
-            return sprintRepository.save(sprint);
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be a positive number");
         }
-        return null;
+        if (sprintDetails == null) {
+            throw new IllegalArgumentException("Sprint details cannot be null");
+        }
+
+        return sprintRepository.findById(id)
+                .map(existingSprint -> {
+                    existingSprint.setSprintName(sprintDetails.getSprintName());
+                    existingSprint.setStartDate(sprintDetails.getStartDate());
+                    existingSprint.setFinishDate(sprintDetails.getFinishDate());
+                    existingSprint.setStatus(sprintDetails.getStatus());
+                    // Ensure project ID remains unchanged
+                    if (sprintDetails.getProjectId() != null && 
+                        !sprintDetails.getProjectId().equals(existingSprint.getProjectId())) {
+                        throw new IllegalArgumentException("Cannot change project ID of an existing sprint");
+                    }
+                    return sprintRepository.save(existingSprint);
+                })
+                .orElse(null);
     }
 
     public boolean deleteSprint(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be a positive number");
+        }
         if (sprintRepository.existsById(id)) {
             sprintRepository.deleteById(id);
             return true;
         }
         return false;
     }
+    /* 
+    // Additional helper method to find sprints by project
+    public List<Sprint> findSprintsByProjectId(Long projectId) {
+        if (projectId == null || projectId <= 0) {
+            throw new IllegalArgumentException("Project ID must be a positive number");
+        }
+        return sprintRepository.findByProjectId(projectId);
+    }
+*/
 }

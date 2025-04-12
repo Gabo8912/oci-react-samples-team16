@@ -1,17 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+
+// Configuration constants
+const LONG_TASK_THRESHOLD = 4; // hours
+const DEFAULT_SPRINT_ID = 2;
 
 function NewItem(props) {
   const [item, setItem] = useState("");
   const [duration, setDuration] = useState("");
   const [subTasks, setSubTasks] = useState([]);
   const [newSubTask, setNewSubTask] = useState("");
-  const [sprintId, setSprintId] = useState(2); // Default: Sprint 1
+  const [sprintId, setSprintId] = useState(DEFAULT_SPRINT_ID);
+  const [availableSprints, setAvailableSprints] = useState([]);
 
   const hours = parseFloat(duration);
 
+  // Style configurations
   const commonInputStyle = {
     height: "40px",
     fontSize: "16px",
@@ -28,6 +34,19 @@ function NewItem(props) {
     textTransform: "none",
   };
 
+  // Fetch available sprints when component mounts
+  useEffect(() => {
+    fetch('/api/sprints')
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          setAvailableSprints(data);
+          setSprintId(data[0].id); // Set to first sprint by default
+        }
+      })
+      .catch(error => console.error('Error fetching sprints:', error));
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -41,19 +60,19 @@ function NewItem(props) {
       return;
     }
 
-    if (hours > 4 && subTasks.length === 0) {
-      alert("Tareas mayores a 4 horas deben tener al menos una subtarea.");
+    if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
+      alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
       return;
     }
 
     props.addItem(item.trim(), hours, subTasks, sprintId);
 
-    // Limpiar formulario
+    // Reset form
     setItem("");
     setDuration("");
     setSubTasks([]);
     setNewSubTask("");
-    setSprintId(2);
+    setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
   };
 
   const addSubTaskToList = () => {
@@ -76,7 +95,7 @@ function NewItem(props) {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "8px" }}
       >
-        {/* Línea 1: Inputs principales */}
+        {/* Main inputs row */}
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             id="newiteminput"
@@ -93,9 +112,15 @@ function NewItem(props) {
             onChange={(e) => setSprintId(Number(e.target.value))}
             style={{ ...commonInputStyle, width: "120px" }}
           >
-            <option value={2}>Sprint 2</option>
-            <option value={2}>Sprint 3</option>
-            <option value={2}>Sprint 4</option>
+            {availableSprints.length > 0 ? (
+              availableSprints.map((sprint) => (
+                <option key={sprint.id} value={sprint.id}>
+                  {sprint.name || `Sprint ${sprint.id}`}
+                </option>
+              ))
+            ) : (
+              <option value={DEFAULT_SPRINT_ID}>Sprint {DEFAULT_SPRINT_ID}</option>
+            )}
           </select>
 
           <input
@@ -103,6 +128,7 @@ function NewItem(props) {
             placeholder="Duración (hrs)"
             value={duration}
             min="0"
+            step="0.5"
             onChange={(e) => setDuration(e.target.value)}
             style={{
               ...commonInputStyle,
@@ -113,8 +139,8 @@ function NewItem(props) {
           />
         </div>
 
-        {/* Línea 2: Subtareas */}
-        {!isNaN(hours) && hours > 4 && (
+        {/* Subtasks section */}
+        {!isNaN(hours) && hours > LONG_TASK_THRESHOLD && (
           <div
             style={{
               border: "1px solid #ccc",
@@ -164,7 +190,7 @@ function NewItem(props) {
           </div>
         )}
 
-        {/* Botón para agregar */}
+        {/* Submit button */}
         <Button
           className="AddButton"
           variant="contained"
