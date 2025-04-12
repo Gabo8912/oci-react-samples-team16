@@ -1,5 +1,5 @@
 package com.springboot.MyToDoList.controller;
-//Dummy comment
+//Dumb comment
 import com.springboot.MyTodoList.controller.SprintController;
 import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.service.SprintService;
