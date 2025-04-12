@@ -335,8 +335,9 @@ function App() {
       );
   }, []);
 
-  function addItem(text, hours, subTasksArray, sprintId) {
+  function addItem(text, hours, subTasksArray, sprintId) { //Dumb commit
     setInserting(true);
+    console.log("---");
     const data = {
       description: text,
       duration: hours,
