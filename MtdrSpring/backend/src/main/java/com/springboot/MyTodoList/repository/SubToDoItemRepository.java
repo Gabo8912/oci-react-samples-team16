@@ -11,13 +11,12 @@ import java.util.List;
 @Repository
 public interface SubToDoItemRepository extends JpaRepository<SubToDoItem, Integer> {
     
-    // Use todoItem.id since that's the actual property name in the entity
     List<SubToDoItem> findByTodoItem_Id(int todoItemId);
     
     @Modifying
     @Query("DELETE FROM SubToDoItem s WHERE s.todoItem.id = :todoItemId")
     void deleteByTodoItemId(@Param("todoItemId") int todoItemId);
     
-    // Remove the findByParentTaskId method since we don't have a parentTask property
-    // Or rename it to findByTodoItem_Id if you want to keep both names
+    // Add this if you want to find subtasks by completion status
+    List<SubToDoItem> findByDone(boolean done);
 }
