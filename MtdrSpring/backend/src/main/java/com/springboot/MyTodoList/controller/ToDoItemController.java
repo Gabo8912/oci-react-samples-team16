@@ -34,16 +34,19 @@ public class ToDoItemController {
         return ResponseEntity.ok()
                 .headers(responseHeaders).build();
     }
-
+////////////////////////////////
     @PutMapping(value = "todolist/{id}")
-    public ResponseEntity updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable int id) {
+    public ResponseEntity<ToDoItem> updateToDoItem(
+        @RequestBody ToDoItem toDoItem, 
+        @PathVariable int id) {
+        
         ToDoItem updatedItem = toDoItemService.updateToDoItem(id, toDoItem);
         if (updatedItem == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedItem);
     }
-
+////////////////////////////////
     @DeleteMapping(value = "todolist/{id}")
     public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") int id) {
         boolean deleted = toDoItemService.deleteToDoItem(id);

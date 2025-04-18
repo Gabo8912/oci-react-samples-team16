@@ -22,7 +22,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 
-// Custom styled components to match Oracle Redwood theme
+// Custom styled components
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',
   color: '#161513',
@@ -163,22 +163,33 @@ function CurrentSprints() {
     return (completed / subtasks[taskId].length) * 100;
   };
 
-  const toggleTaskDone = async (taskId, currentStatus) => {
+  const toggleTaskDone = async (taskId, description, currentStatus) => {
     try {
+      // Check if all subtasks are completed before marking task as done
+      if (!currentStatus && subtasks[taskId] && subtasks[taskId].length > 0 && 
+          !subtasks[taskId].every(subTask => subTask.done)) {
+        alert("Error: All subtasks must be completed before marking the main task as done.");
+        return;
+      }
+
       const response = await fetch(`http://localhost:8081/todolist/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ done: !currentStatus })
+        body: JSON.stringify({ 
+          description: description, 
+          done: !currentStatus 
+        })
       });
-      
+
       if (response.ok) {
-        // Update local state
+        const updatedTask = await response.json();
+        // Update tasks state
         const updatedTasks = { ...tasks };
         for (const sprintId in updatedTasks) {
           updatedTasks[sprintId] = updatedTasks[sprintId].map(task => 
-            task.id === taskId ? { ...task, done: !currentStatus } : task
+            task.id === taskId ? updatedTask : task
           );
         }
         setTasks(updatedTasks);
@@ -188,33 +199,59 @@ function CurrentSprints() {
     }
   };
 
-  const toggleSubTaskDone = async (subTaskId, currentStatus) => {
+  const toggleSubTaskDone = async (subTaskId, currentStatus, taskId) => {
+    console.log('--- Toggling Subtask ---');
+    console.log('Subtask ID being sent:', subTaskId);
+    console.log('Parent Task ID:', taskId);
+    console.log('Current Status:', currentStatus);
+    console.log('Request URL:', `http://localhost:8081/todolist/subtask/${subTaskId}/toggle`);
+  
     try {
       const response = await fetch(`http://localhost:8081/todolist/subtask/${subTaskId}/toggle`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({ done: !currentStatus })
       });
+      
+      console.log('Response Status:', response.status);
       
       if (response.ok) {
         const updatedSubtask = await response.json();
+        console.log('Updated Subtask:', updatedSubtask);
+        
         // Update local state
-        const updatedSubtasks = { ...subtasks };
-        for (const taskId in updatedSubtasks) {
-          updatedSubtasks[taskId] = updatedSubtasks[taskId].map(subTask => 
-            subTask.ID === subTaskId ? updatedSubtask : subTask
-          );
-        }
-        setSubtasks(updatedSubtasks);
+        setSubtasks(prevSubtasks => {
+          const updated = {
+            ...prevSubtasks,
+            [taskId]: prevSubtasks[taskId].map(subTask => 
+              subTask.ID === subTaskId ? updatedSubtask : subTask
+            )
+          };
+          console.log('Updated Subtasks State:', updated);
+          return updated;
+        });
+      } else {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
       }
     } catch (err) {
       console.error('Error toggling subtask status:', err);
+      console.error('Error details:', {
+        message: err.message,
+        stack: err.stack,
+        subtaskId: subTaskId,
+        taskId: taskId
+      });
     }
   };
 
   const addSubTask = async (taskId) => {
-    if (!newSubTaskText.trim()) return;
+    if (!newSubTaskText.trim()) {
+      alert("Error: Subtasks cannot be empty");
+      return;
+    }
     
     try {
       const response = await fetch(`http://localhost:8081/todolist/subtask/${taskId}/add`, {
@@ -222,7 +259,10 @@ function CurrentSprints() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ description: newSubTaskText, done: false })
+        body: JSON.stringify({ 
+          description: newSubTaskText, 
+          done: false 
+        })
       });
       
       if (response.ok) {
@@ -235,7 +275,10 @@ function CurrentSprints() {
         updatedSubtasks[taskId].push(newSubTask);
         setSubtasks(updatedSubtasks);
         setNewSubTaskText("");
-        toggleSubTaskForm(taskId);
+        setShowSubTaskForm(prev => ({
+          ...prev,
+          [taskId]: false
+        }));
       }
     } catch (err) {
       console.error('Error adding subtask:', err);
@@ -285,7 +328,7 @@ function CurrentSprints() {
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
         }}
       >
-        Current Sprints 2
+        Current Sprints
       </Typography>
       
       <TableContainer>
@@ -392,7 +435,7 @@ function CurrentSprints() {
                                     <TableCell>
                                       <Checkbox
                                         checked={task.done}
-                                        onChange={() => toggleTaskDone(task.id, task.done)}
+                                        onChange={() => toggleTaskDone(task.id, task.description, task.done)}
                                         color="primary"
                                       />
                                     </TableCell>
@@ -444,7 +487,7 @@ function CurrentSprints() {
                                                     <TableCell>
                                                       <Checkbox
                                                         checked={subTask.done}
-                                                        onChange={() => toggleSubTaskDone(subTask.ID, subTask.done)}
+                                                        onChange={() => toggleSubTaskDone(subTask.ID, subTask.done, task.id)}
                                                         color="primary"
                                                       />
                                                     </TableCell>
