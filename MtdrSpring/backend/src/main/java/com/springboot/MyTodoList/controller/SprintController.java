@@ -41,6 +41,27 @@ public class SprintController {
         }
     }
 
+
+    @PostMapping("/sprints/{id}/complete")
+    public ResponseEntity<Sprint> completeSprint(@PathVariable int id) {
+        Sprint sprint = sprintService.completeSprint(id);
+        if (sprint != null) {
+            return new ResponseEntity<>(sprint, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/sprints/{id}/uncomplete")
+    public ResponseEntity<Sprint> uncompleteSprint(@PathVariable int id) {
+        Sprint sprint = sprintService.uncompleteSprint(id);
+        if (sprint != null) {
+            return new ResponseEntity<>(sprint, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PutMapping("/sprints/{id}")
     public ResponseEntity<Sprint> updateSprint(@PathVariable int id, @RequestBody Sprint sprint) {
         Sprint updatedSprint = sprintService.updateSprint(id, sprint);

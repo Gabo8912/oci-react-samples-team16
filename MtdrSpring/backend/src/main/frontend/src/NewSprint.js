@@ -21,8 +21,9 @@ import { styled } from '@mui/material/styles';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-// Custom styled components
+// Custom styled components (keep existing styles)
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',
   color: '#161513',
@@ -48,18 +49,18 @@ const OracleTable = styled(Table)({
 
 const StatusChip = styled(Chip)(({ status }) => ({
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-  ...(status === "Completado" && {
+  ...(status === "COMPLETED" && {
     backgroundColor: '#5f7d4f',
     color: '#fef9f2'
   }),
-  ...(status === "Pendiente" && {
-    backgroundColor: '#d63b25',
+  ...(status === "IN_PROGRESS" && {
+    backgroundColor: '#5b5652', 
     color: '#fef9f2'
   }),
-  ...(status === "En progreso" && {
-    backgroundColor: '#5b5652',
+  ...(status === "PENDING" && {
+    backgroundColor: '#d63b25', 
     color: '#fef9f2'
-  })
+  }),
 }));
 
 const ProgressBar = styled('div')({
@@ -148,6 +149,86 @@ function CurrentSprints() {
       ...prev,
       [taskId]: !prev[taskId]
     }));
+    
+    // Load subtasks if not already loaded
+    if (!subtasks[taskId]) {
+      fetch(`http://localhost:8081/todolist/subtask/${taskId}`)
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Failed to fetch subtasks');
+        })
+        .then(data => {
+          setSubtasks(prev => ({
+            ...prev,
+            [taskId]: data
+          }));
+        })
+        .catch(err => console.error('Error loading subtasks:', err));
+    }
+  };
+
+  const completeSprint = async (sprintId) => {
+    try {
+      // Get all tasks for this sprint
+      const sprintTasks = tasks[sprintId] || [];
+      
+      // Verify all tasks are completed
+      const allTasksDone = sprintTasks.every(task => task.done);
+      if (!allTasksDone) {
+        alert("Cannot complete sprint - not all tasks are done!");
+        return;
+      }
+  
+      // Update sprint status to COMPLETED
+      const response = await fetch(`http://localhost:8081/api/sprints/${sprintId}/complete`, {
+        method: 'POST'
+      });
+  
+      if (response.ok) {
+        // Update local state
+        setSprints(prev => 
+          prev.map(sprint => 
+            sprint.sprintId === sprintId 
+              ? { ...sprint, status: "COMPLETED" } 
+              : sprint
+          )
+        );
+      } else {
+        throw new Error('Failed to complete sprint');
+      }
+    } catch (err) {
+      console.error('Error completing sprint:', err);
+      alert('Error completing sprint: ' + err.message);
+    }
+  };
+
+  const uncompleteSprint = async (sprintId) => {
+    try {
+      const response = await fetch(`http://localhost:8081/api/sprints/${sprintId}/uncomplete`, {
+        method: 'POST'
+      });
+  
+      if (response.ok) {
+        setSprints(prev => 
+          prev.map(sprint => 
+            sprint.sprintId === sprintId 
+              ? { ...sprint, status: "IN_PROGRESS" } 
+              : sprint
+          )
+        );
+      } else {
+        throw new Error('Failed to uncomplete sprint');
+      }
+    } catch (err) {
+      console.error('Error uncompleting sprint:', err);
+      alert('Error uncompleting sprint: ' + err.message);
+    }
+  };
+  
+  // Add this helper function to check if all tasks are done
+  const isSprintComplete = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    return sprintTasks.length > 0 && sprintTasks.every(task => task.done);
   };
 
   const toggleSubTaskForm = (taskId) => {
@@ -199,51 +280,51 @@ function CurrentSprints() {
     }
   };
 
-  const toggleSubTaskDone = async (subTaskId, currentStatus, taskId) => {
-    console.log('--- Toggling Subtask ---');
-    console.log('Subtask ID being sent:', subTaskId);
-    console.log('Parent Task ID:', taskId);
-    console.log('Current Status:', currentStatus);
-    console.log('Request URL:', `http://localhost:8081/todolist/subtask/${subTaskId}/toggle`);
-  
+  const toggleSubTaskDone = async (event, subTaskId, taskId) => {
+    const checked = event.target.checked;
+    
     try {
       const response = await fetch(`http://localhost:8081/todolist/subtask/${subTaskId}/toggle`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ done: !currentStatus })
+        body: JSON.stringify({ done: checked })
       });
-      
-      console.log('Response Status:', response.status);
       
       if (response.ok) {
         const updatedSubtask = await response.json();
-        console.log('Updated Subtask:', updatedSubtask);
         
         // Update local state
         setSubtasks(prevSubtasks => {
           const updated = {
             ...prevSubtasks,
             [taskId]: prevSubtasks[taskId].map(subTask => 
-              subTask.ID === subTaskId ? updatedSubtask : subTask
+              subTask.id === subTaskId ? updatedSubtask : subTask
             )
           };
-          console.log('Updated Subtasks State:', updated);
           return updated;
         });
-      } else {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
+        
+        // Recalculate progress for the parent task
+        const parentTaskResponse = await fetch(`http://localhost:8081/todolist/${taskId}`);
+        if (parentTaskResponse.ok) {
+          const parentTask = await parentTaskResponse.json();
+          
+          // Update parent task in state
+          setTasks(prevTasks => {
+            const updated = {...prevTasks};
+            for (const sprintId in updated) {
+              updated[sprintId] = updated[sprintId].map(task => 
+                task.id === taskId ? parentTask : task
+              );
+            }
+            return updated;
+          });
+        }
       }
     } catch (err) {
       console.error('Error toggling subtask status:', err);
-      console.error('Error details:', {
-        message: err.message,
-        stack: err.stack,
-        subtaskId: subTaskId,
-        taskId: taskId
-      });
     }
   };
 
@@ -268,12 +349,11 @@ function CurrentSprints() {
       if (response.ok) {
         const newSubTask = await response.json();
         // Update local state
-        const updatedSubtasks = { ...subtasks };
-        if (!updatedSubtasks[taskId]) {
-          updatedSubtasks[taskId] = [];
-        }
-        updatedSubtasks[taskId].push(newSubTask);
-        setSubtasks(updatedSubtasks);
+        setSubtasks(prev => ({
+          ...prev,
+          [taskId]: [...(prev[taskId] || []), newSubTask]
+        }));
+        
         setNewSubTaskText("");
         setShowSubTaskForm(prev => ({
           ...prev,
@@ -282,6 +362,23 @@ function CurrentSprints() {
       }
     } catch (err) {
       console.error('Error adding subtask:', err);
+    }
+  };
+
+  const deleteSubTask = async (taskId, subTaskId) => {
+    try {
+      const response = await fetch(`http://localhost:8081/todolist/subtask/${subTaskId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setSubtasks(prev => ({
+          ...prev,
+          [taskId]: prev[taskId].filter(subTask => subTask.id !== subTaskId)
+        }));
+      }
+    } catch (err) {
+      console.error('Error deleting subtask:', err);
     }
   };
 
@@ -328,7 +425,7 @@ function CurrentSprints() {
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
         }}
       >
-        Current Sprints
+        Current Sprints :D
       </Typography>
       
       <TableContainer>
@@ -381,6 +478,27 @@ function CurrentSprints() {
                   </TableCell>
                   <TableCell>
                     {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}
+                  </TableCell>
+                  <TableCell>
+                    {sprint.status === "IN_PROGRESS" && isSprintComplete(sprint.sprintId) && (
+                      <Button 
+                        variant="contained" 
+                        color="success"
+                        onClick={() => completeSprint(sprint.sprintId)}
+                        style={{ marginRight: '8px' }}
+                      >
+                        Complete Sprint
+                      </Button>
+                    )}
+                    {sprint.status === "COMPLETED" && (
+                      <Button 
+                        variant="contained" 
+                        color="secondary"
+                        onClick={() => uncompleteSprint(sprint.sprintId)}
+                      >
+                        Uncomplete
+                      </Button>
+                    )}
                   </TableCell>
                   <TableCell>
                     {/* Add sprint actions here if needed */}
@@ -476,18 +594,19 @@ function CurrentSprints() {
                                             <Table size="small">
                                               <TableHead>
                                                 <TableRow>
-                                                  <TableCell width="5%">Status</TableCell>
-                                                  <TableCell width="70%">Description</TableCell>
-                                                  <TableCell width="25%">Created</TableCell>
+                                                  <TableCell width="10%">Status</TableCell>
+                                                  <TableCell width="60%">Description</TableCell>
+                                                  <TableCell width="20%">Created</TableCell>
+                                                  <TableCell width="10%">Actions</TableCell>
                                                 </TableRow>
                                               </TableHead>
                                               <TableBody>
                                                 {subtasks[task.id].map((subTask) => (
-                                                  <TableRow key={subTask.ID}>
+                                                  <TableRow key={subTask.id}>
                                                     <TableCell>
                                                       <Checkbox
                                                         checked={subTask.done}
-                                                        onChange={() => toggleSubTaskDone(subTask.ID, subTask.done, task.id)}
+                                                        onChange={(e) => toggleSubTaskDone(e, subTask.id, task.id)}
                                                         color="primary"
                                                       />
                                                     </TableCell>
@@ -498,6 +617,14 @@ function CurrentSprints() {
                                                         month: 'short',
                                                         day: 'numeric'
                                                       })}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                      <IconButton
+                                                        size="small"
+                                                        onClick={() => deleteSubTask(task.id, subTask.id)}
+                                                      >
+                                                        <DeleteIcon fontSize="small" />
+                                                      </IconButton>
                                                     </TableCell>
                                                   </TableRow>
                                                 ))}
