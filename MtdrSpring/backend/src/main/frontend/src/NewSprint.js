@@ -22,8 +22,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PeopleIcon from '@mui/icons-material/People';
 
-// Custom styled components (keep existing styles)
+// Custom styled components
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',
   color: '#161513',
@@ -76,6 +77,82 @@ const ProgressBar = styled('div')({
   }
 });
 
+const AssignmentsModal = ({ assignments, onClose }) => {
+  if (!assignments || assignments.length === 0) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: '#fef9f2',
+        padding: '2rem',
+        borderRadius: '0.5rem',
+        boxShadow: '0 10px 18px 0 rgba(0, 0, 0, 0.2)',
+        zIndex: 1000,
+        width: '80%',
+        maxWidth: '600px'
+      }}>
+        <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+          No users assigned to this task
+        </Typography>
+        <Button variant="contained" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: '#fef9f2',
+      padding: '2rem',
+      borderRadius: '0.5rem',
+      boxShadow: '0 10px 18px 0 rgba(0, 0, 0, 0.2)',
+      zIndex: 1000,
+      width: '80%',
+      maxWidth: '600px'
+    }}>
+      <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+        Users Assigned to Task
+      </Typography>
+      
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>User ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {assignments.map(assignment => (
+              <TableRow key={assignment.id}>
+                <TableCell>{assignment.user?.id}</TableCell>
+                <TableCell>{assignment.user?.username || 'N/A'}</TableCell>
+                <TableCell>{assignment.user?.email || 'N/A'}</TableCell>
+                <TableCell>{assignment.user?.role || 'N/A'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      
+      <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+        <Button variant="contained" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 function CurrentSprints() {
   const [sprints, setSprints] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -86,6 +163,8 @@ function CurrentSprints() {
   const [error, setError] = useState(null);
   const [newSubTaskText, setNewSubTaskText] = useState("");
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
+  const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
+  const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -142,6 +221,19 @@ function CurrentSprints() {
       ...prev,
       [sprintId]: !prev[sprintId]
     }));
+  };
+
+  const viewTaskAssignments = async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:8081/api/task-assignments/task/${taskId}`);
+      if (!response.ok) throw new Error('Failed to fetch task assignments');
+      const assignments = await response.json();
+      setSelectedTaskAssignments(assignments);
+      setShowAssignmentsModal(true);
+    } catch (err) {
+      console.error('Error fetching task assignments:', err);
+      alert('Error loading task assignments: ' + err.message);
+    }
   };
 
   const toggleTaskExpansion = (taskId) => {
@@ -225,7 +317,6 @@ function CurrentSprints() {
     }
   };
   
-  // Add this helper function to check if all tasks are done
   const isSprintComplete = (sprintId) => {
     const sprintTasks = tasks[sprintId] || [];
     return sprintTasks.length > 0 && sprintTasks.every(task => task.done);
@@ -500,9 +591,6 @@ function CurrentSprints() {
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell>
-                    {/* Add sprint actions here if needed */}
-                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
@@ -563,8 +651,17 @@ function CurrentSprints() {
                                         size="small"
                                         startIcon={<AddIcon />}
                                         onClick={() => toggleSubTaskForm(task.id)}
+                                        style={{ marginRight: '8px' }}
                                       >
                                         Add Subtask
+                                      </Button>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<PeopleIcon />}
+                                        onClick={() => viewTaskAssignments(task.id)}
+                                      >
+                                        View Assignees
                                       </Button>
                                     </TableCell>
                                   </TableRow>
@@ -657,6 +754,23 @@ function CurrentSprints() {
           </TableBody>
         </OracleTable>
       </TableContainer>
+      {showAssignmentsModal && (
+        <>
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 999
+          }} onClick={() => setShowAssignmentsModal(false)} />
+          <AssignmentsModal 
+            assignments={selectedTaskAssignments} 
+            onClose={() => setShowAssignmentsModal(false)} 
+          />
+        </>
+      )}
     </OraclePaper>
   );
 }
