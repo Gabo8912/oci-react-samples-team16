@@ -2,6 +2,7 @@ package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "TODOITEM")

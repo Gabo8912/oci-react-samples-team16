@@ -25,6 +25,10 @@ public class Sprint {
     @Column(name = "STATUS")
     private String status;
 
+    public static final String STATUS_COMPLETED = "COMPLETED";
+    public static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
+    public static final String STATUS_PENDING = "PENDING";
+
     // Constructors
     public Sprint() {}
 

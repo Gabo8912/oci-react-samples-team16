@@ -39,15 +39,26 @@ function NewItem(props) {
 
   // Fetch available sprints when component mounts
   useEffect(() => {
-    fetch('/api/sprints')
-      .then(response => response.json())
+    fetch('http://localhost:8081/api/sprints')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch sprints');
+        }
+        return response.json();
+      })
       .then(data => {
         if (data && data.length > 0) {
           setAvailableSprints(data);
-          setSprintId(data[0].id); // Set to first sprint by default
+          // Set to first sprint ID by default
+          setSprintId(data[0].sprintId || DEFAULT_SPRINT_ID);
         }
       })
-      .catch(error => console.error('Error fetching sprints:', error));
+      .catch(error => {
+        console.error('Error fetching sprints:', error);
+        // Fallback to default sprint if API fails
+        setAvailableSprints([{ sprintId: DEFAULT_SPRINT_ID, sprintName: `Sprint ${DEFAULT_SPRINT_ID}` }]);
+        setSprintId(DEFAULT_SPRINT_ID);
+      });
   }, []);
 
   // Fetch usuarios
@@ -134,15 +145,11 @@ function NewItem(props) {
             onChange={(e) => setSprintId(Number(e.target.value))}
             style={{ ...commonInputStyle, width: "120px" }}
           >
-            {availableSprints.length > 0 ? (
-              availableSprints.map((sprint) => (
-                <option key={sprint.id} value={sprint.id}>
-                  {sprint.name || `Sprint ${sprint.id}`}
-                </option>
-              ))
-            ) : (
-              <option value={DEFAULT_SPRINT_ID}>Sprint {DEFAULT_SPRINT_ID}</option>
-            )}
+            {availableSprints.map((sprint) => (
+              <option key={sprint.sprintId} value={sprint.sprintId}>
+                {sprint.sprintName || `Sprint ${sprint.sprintId}`}
+              </option>
+            ))}
           </select>
 
           <select

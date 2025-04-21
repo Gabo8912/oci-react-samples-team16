@@ -65,27 +65,21 @@ public class ToDoItemService {
         toDoItemRepository.deleteById(id);
         return true;
     }
-
+///////////////////////////////////
     public ToDoItem updateToDoItem(int id, ToDoItem td) {
-        if (id <= 0) {
-            throw new IllegalArgumentException("ID must be positive");
-        }
-        if (td == null) {
-            throw new IllegalArgumentException("ToDoItem cannot be null");
-        }
         return toDoItemRepository.findById(id)
-                .map(existingItem -> {
-                    existingItem.setDescription(td.getDescription());
-                    existingItem.setDone(td.isDone());
+            .map(existingItem -> {
+                existingItem.setDescription(td.getDescription());
+                existingItem.setDone(td.isDone());
                     if (td.getRealHours() != null) {
                         existingItem.setRealHours(td.getRealHours());
                     }
-                    return toDoItemRepository.save(existingItem);
-                })
-                .orElse(null);
+                return toDoItemRepository.save(existingItem);
+            })
+            .orElse(null);
     }
     
-
+///////////////////////////////////
     public double getTaskProgress(int todoitemId) {
         if (todoitemId <= 0) {
             throw new IllegalArgumentException("ID must be positive");
