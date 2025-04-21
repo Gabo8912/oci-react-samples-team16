@@ -35,7 +35,7 @@ public class ToDoItemController {
                 .headers(responseHeaders).build();
     }
 ////////////////////////////////
-    @PutMapping(value = "todolist/{id}")
+    @PutMapping(value = "/todolist/{id}")
     public ResponseEntity<ToDoItem> updateToDoItem(
         @RequestBody ToDoItem toDoItem, 
         @PathVariable int id) {
@@ -47,7 +47,19 @@ public class ToDoItemController {
         return ResponseEntity.ok(updatedItem);
     }
 ////////////////////////////////
-    @DeleteMapping(value = "todolist/{id}")
+    @PutMapping("/todolist/{id}/complete")
+    public ResponseEntity<ToDoItem> completeTask(
+            @PathVariable int id,
+            @RequestParam int realHours) {
+
+        ToDoItem updated = toDoItemService.markTaskAsDone(id, realHours);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping(value = "/todolist/{id}")
     public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") int id) {
         boolean deleted = toDoItemService.deleteToDoItem(id);
         if (!deleted) {

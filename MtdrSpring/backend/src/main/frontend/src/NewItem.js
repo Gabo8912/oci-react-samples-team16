@@ -3,6 +3,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+
 // Configuration constants
 const LONG_TASK_THRESHOLD = 4; // hours
 const DEFAULT_SPRINT_ID = 2;
@@ -14,6 +15,8 @@ function NewItem(props) {
   const [newSubTask, setNewSubTask] = useState("");
   const [sprintId, setSprintId] = useState(DEFAULT_SPRINT_ID);
   const [availableSprints, setAvailableSprints] = useState([]);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
 
   const hours = parseFloat(duration);
 
@@ -58,8 +61,26 @@ function NewItem(props) {
       });
   }, []);
 
+  // Fetch usuarios
+  useEffect(() => {
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(data => {
+        setAvailableUsers(data);
+        if (data.length > 0) {
+          setSelectedUserId(data[0].id);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!selectedUserId) {
+      alert("Debes asignar la tarea a un usuario.");
+      return;
+    }
 
     if (!item.trim()) {
       alert("La tarea no puede estar vacía.");
@@ -76,14 +97,15 @@ function NewItem(props) {
       return;
     }
 
-    props.addItem(item.trim(), hours, subTasks, sprintId);
+    props.addItem(item.trim(), hours, subTasks, sprintId, selectedUserId);
 
     // Reset form
     setItem("");
     setDuration("");
     setSubTasks([]);
     setNewSubTask("");
-    setSprintId(availableSprints[0]?.sprintId || DEFAULT_SPRINT_ID);
+    setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
+    setSelectedUserId(availableUsers[0]?.id || "");
   };
 
   const addSubTaskToList = () => {
@@ -126,6 +148,19 @@ function NewItem(props) {
             {availableSprints.map((sprint) => (
               <option key={sprint.sprintId} value={sprint.sprintId}>
                 {sprint.sprintName || `Sprint ${sprint.sprintId}`}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedUserId}
+            onChange={e => setSelectedUserId(Number(e.target.value))}
+            style={{ ...commonInputStyle, width: "140px" }}
+          >
+            <option value="">— Asignar usuario —</option>
+            {availableUsers.map(u => (
+              <option key={u.id} value={u.id}>
+                {u.username || u.email}
               </option>
             ))}
           </select>
