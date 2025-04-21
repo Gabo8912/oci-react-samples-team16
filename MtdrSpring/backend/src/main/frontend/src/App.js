@@ -277,6 +277,10 @@ function App() {
   }
 
   function toggleSubTaskDone(event, subTaskId) {
+    console.log('--- Toggling Subtask ---');
+    console.log('Subtask ID being sent:', subTaskId);
+    console.log('event:', event);
+    console.log('Request URL:', `http://localhost:8081/todolist/subtask/${subTaskId}/toggle`);
     const checked = event.target.checked;
     fetch(`${API_LIST}/subtask/${subTaskId}/toggle`, {
       method: "PUT",

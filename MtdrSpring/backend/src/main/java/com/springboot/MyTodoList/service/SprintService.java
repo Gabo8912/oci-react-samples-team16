@@ -75,6 +75,22 @@ public class SprintService {
         }
         return false;
     }
+    public Sprint completeSprint(int id) {
+        return sprintRepository.findById(id)
+            .map(sprint -> {
+                sprint.setStatus("COMPLETED");
+                return sprintRepository.save(sprint);
+            })
+            .orElse(null);
+    }
+    public Sprint uncompleteSprint(int id) {
+        return sprintRepository.findById(id)
+            .map(sprint -> {
+                sprint.setStatus("IN_PROGRESS");
+                return sprintRepository.save(sprint);
+            })
+            .orElse(null);
+    }
     /* 
     // Additional helper method to find sprints by project
     public List<Sprint> findSprintsByProjectId(Long projectId) {

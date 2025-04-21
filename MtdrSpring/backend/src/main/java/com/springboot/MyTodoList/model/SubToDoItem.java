@@ -1,19 +1,11 @@
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "SUBTODOITEM", schema = "TODOUSER")
-
 public class SubToDoItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ID;
@@ -23,7 +15,7 @@ public class SubToDoItem {
     private ToDoItem todoItem;
 
     @Column(name = "DESCRIPTION", length = 4000)
-    String description;
+    private String description;
 
     @Column(name = "CREATION_TS", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime creation_ts;
@@ -31,57 +23,48 @@ public class SubToDoItem {
     @Column(name = "DONE")
     private Boolean done;
 
-    public SubToDoItem() {
-    }
+    // Constructors
+    public SubToDoItem() {}
 
-    public void SubTodoItem(int ID, ToDoItem parentTask, String description, Boolean done, OffsetDateTime creation_ts) {
-        this.description = description;
-        this.done = done;
-        this.ID = ID;
+    public SubToDoItem(ToDoItem parentTask, String description, Boolean done) {
         this.todoItem = parentTask;
-        this.creation_ts = creation_ts;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setDone(boolean done) {
         this.done = done;
     }
 
-    public void setToDoItem(ToDoItem todoItem) {
-        this.todoItem = todoItem;
-    }
+    // Getters and Setters
+    public int getID() { return ID; }
+    public void setID(int ID) { this.ID = ID; }
+    
+    public ToDoItem getTodoItem() { return todoItem; }
+    public void setTodoItem(ToDoItem todoItem) { this.todoItem = todoItem; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public OffsetDateTime getCreation_ts() { return creation_ts; }
+    public void setCreation_ts(OffsetDateTime creation_ts) { this.creation_ts = creation_ts; }
+    
+    public Boolean isDone() { return done; }
+    public void setDone(Boolean done) { this.done = done; }
 
+    // Helper method for parent task reference
     public void setParentTask(ToDoItem todoItem) {
         this.todoItem = todoItem;
     }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
+    
     public ToDoItem getParentTask() {
         return todoItem;
     }
 
-    public OffsetDateTime getCreation_ts() {
-        return creation_ts;
+    @Override
+    public String toString() {
+        return "SubToDoItem{" +
+                "ID=" + ID +
+                ", description='" + description + '\'' +
+                ", creation_ts=" + creation_ts +
+                ", done=" + done +
+                ", parentTaskID=" + (todoItem != null ? todoItem.getId() : "null") +
+                '}';
     }
-
-    public void setCreation_ts(OffsetDateTime creation_ts) {
-        this.creation_ts = creation_ts;
-    }
-
-    
-
 }

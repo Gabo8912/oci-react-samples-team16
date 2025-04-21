@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.service;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.springboot.MyTodoList.model.SubToDoItem;
@@ -15,8 +16,17 @@ public class SubToDoItemService {
         return subToDoItemRepository.findByTodoItem_Id(todoitemId);
     }
 
+    public List<SubToDoItem> getAllSubTasks() {
+        return subToDoItemRepository.findAll();
+    }
+
+    public SubToDoItem getSubTaskById(int id) {
+        return subToDoItemRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Subtask not found"));
+    }
+
     public SubToDoItem toggleSubTaskStatus(int id) {
-        SubToDoItem subTask = subToDoItemRepository.findById(id).orElseThrow();
+        SubToDoItem subTask = getSubTaskById(id);
         subTask.setDone(!subTask.isDone());
         return subToDoItemRepository.save(subTask);
     }
