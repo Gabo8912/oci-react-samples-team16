@@ -141,3 +141,137 @@ public class TeamControllerTest {
     }
 }
 */
+package com.springboot.MyToDoList.controller;
+
+import com.springboot.MyTodoList.controller.TaskAssignmentController;
+import com.springboot.MyTodoList.model.TaskAssignment;
+import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.model.User;
+import com.springboot.MyTodoList.service.TaskAssignmentService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class TaskAssignmentControllerTest {
+
+    @Mock
+    private TaskAssignmentService taskAssignmentService;
+
+    @InjectMocks
+    private TaskAssignmentController taskAssignmentController;
+
+    private TaskAssignment createTestAssignment(Long id, ToDoItem task, User user) {
+        TaskAssignment assignment = new TaskAssignment();
+        assignment.setId(id);
+        assignment.setTask(task);
+        assignment.setUser(user);
+        return assignment;
+    }
+
+    @Test
+    public void getAssignmentsForUser_ShouldReturnAssignments() {
+        // Arrange
+        Long userId = 1L;
+        ToDoItem task1 = new ToDoItem();
+        task1.setId(1);
+        User user1 = new User();
+        //user1.setId(userId);
+        
+        List<TaskAssignment> expectedAssignments = Arrays.asList(
+            createTestAssignment(1L, task1, user1)
+        );
+        
+        when(taskAssignmentService.getAssignmentsForUser(userId)).thenReturn(expectedAssignments);
+
+        // Act
+        ResponseEntity<List<TaskAssignment>> response = taskAssignmentController.getAssignmentsForUser(userId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedAssignments, response.getBody());
+        verify(taskAssignmentService, times(1)).getAssignmentsForUser(userId);
+    }
+
+    @Test
+    public void getAssignmentsForTask_ShouldReturnAssignments() {
+        // Arrange
+        Long taskId = 1L;
+        ToDoItem task = new ToDoItem();
+        User user1 = new User();
+        //user1.setId(1L);
+        
+        List<TaskAssignment> expectedAssignments = Arrays.asList(
+            createTestAssignment(1L, task, user1)
+        );
+        
+        when(taskAssignmentService.getAssignmentsForTask(taskId)).thenReturn(expectedAssignments);
+
+        // Act
+        ResponseEntity<List<TaskAssignment>> response = taskAssignmentController.getAssignmentsForTask(taskId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedAssignments, response.getBody());
+        verify(taskAssignmentService, times(1)).getAssignmentsForTask(taskId);
+    }
+
+    @Test
+    public void createAssignment_ShouldCreateNewAssignment() {
+        // Arrange
+        Long taskId = 1L;
+        Long userId = 1L;
+        TaskAssignment newAssignment = new TaskAssignment();
+        newAssignment.setId(1L);
+        
+        when(taskAssignmentService.createAssignment(taskId, userId)).thenReturn(newAssignment);
+
+        // Act
+        ResponseEntity<TaskAssignment> response = taskAssignmentController.createAssignment(taskId, userId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(newAssignment, response.getBody());
+        verify(taskAssignmentService, times(1)).createAssignment(taskId, userId);
+    }
+
+    @Test
+    public void getAssignmentsForUser_ShouldReturnEmptyListWhenNoAssignments() {
+        // Arrange
+        Long userId = 999L;
+        when(taskAssignmentService.getAssignmentsForUser(userId)).thenReturn(List.of());
+
+        // Act
+        ResponseEntity<List<TaskAssignment>> response = taskAssignmentController.getAssignmentsForUser(userId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+        verify(taskAssignmentService, times(1)).getAssignmentsForUser(userId);
+    }
+
+    @Test
+    public void getAssignmentsForTask_ShouldReturnEmptyListWhenNoAssignments() {
+        // Arrange
+        Long taskId = 999L;
+        when(taskAssignmentService.getAssignmentsForTask(taskId)).thenReturn(List.of());
+
+        // Act
+        ResponseEntity<List<TaskAssignment>> response = taskAssignmentController.getAssignmentsForTask(taskId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+        verify(taskAssignmentService, times(1)).getAssignmentsForTask(taskId);
+    }
+}
