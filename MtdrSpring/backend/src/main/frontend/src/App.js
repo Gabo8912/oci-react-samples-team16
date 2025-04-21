@@ -346,16 +346,16 @@ function App() {
       );
   }, []);
 
-  function addItem(text, hours, subTasksArray, sprintId, userId) { 
+  function addItem(text, hours, subTasksArray, sprintId, userId) {
     setInserting(true);
     console.log("---");
     const data = {
       description: text,
       duration: hours,
       sprintId: sprintId,
-      userId: userId
+      userId: userId,
     };
-
+  
     fetch(API_LIST, {
       method: "POST",
       headers: {
@@ -379,7 +379,25 @@ function App() {
           userId: userId,
         };
         setItems([newItem, ...items]);
-
+  
+        // ✅ Post to TaskAssignmentController
+        fetch(`/api/task-assignments?taskId=${id}&userId=${userId}`, {
+          method: "POST",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to create task assignment.");
+            }
+            return response.json();
+          })
+          .then((assignment) => {
+            console.log("Task assignment created:", assignment);
+          })
+          .catch((error) => {
+            console.error("Error creating task assignment:", error);
+          });
+  
+        // ✅ Handle subtasks if needed
         if (hours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
           subTasksArray.forEach((subTaskText) => {
             fetch(`${API_LIST}/subtask/${id}/add`, {
@@ -404,6 +422,7 @@ function App() {
               .catch((error) => setError(error));
           });
         }
+  
         setInserting(false);
       })
       .catch((error) => {
@@ -411,6 +430,7 @@ function App() {
         setError(error);
       });
   }
+  
 
   return (
     <div className="App">
