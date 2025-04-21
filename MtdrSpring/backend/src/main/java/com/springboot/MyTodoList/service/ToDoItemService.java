@@ -21,8 +21,8 @@ public class ToDoItemService {
     private final SubToDoItemRepository subToDoItemRepository;
 
     @Autowired
-    public ToDoItemService(ToDoItemRepository toDoItemRepository, 
-                         SubToDoItemRepository subToDoItemRepository) {
+    public ToDoItemService(ToDoItemRepository toDoItemRepository,
+            SubToDoItemRepository subToDoItemRepository) {
         this.toDoItemRepository = toDoItemRepository;
         this.subToDoItemRepository = subToDoItemRepository;
     }
@@ -39,13 +39,16 @@ public class ToDoItemService {
                 .map(item -> ResponseEntity.ok(item))
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     public ToDoItem addToDoItem(ToDoItem toDoItem) {
         if (toDoItem == null) {
             throw new IllegalArgumentException("ToDoItem cannot be null");
         }
         if (toDoItem.getDescription() == null || toDoItem.getDescription().trim().isEmpty()) {
             throw new IllegalArgumentException("Description cannot be empty");
+        }
+        if (toDoItem.getUserId() == null) {
+            throw new IllegalArgumentException("userId is required when creating a task.");
         }
         return toDoItemRepository.save(toDoItem);
     }
@@ -74,10 +77,14 @@ public class ToDoItemService {
                 .map(existingItem -> {
                     existingItem.setDescription(td.getDescription());
                     existingItem.setDone(td.isDone());
+                    if (td.getRealHours() != null) {
+                        existingItem.setRealHours(td.getRealHours());
+                    }
                     return toDoItemRepository.save(existingItem);
                 })
                 .orElse(null);
     }
+    
 
     public double getTaskProgress(int todoitemId) {
         if (todoitemId <= 0) {
@@ -88,8 +95,21 @@ public class ToDoItemService {
             return 0.0;
         }
         long completed = subTasks.stream()
-                              .filter(SubToDoItem::isDone)
-                              .count();
+                .filter(SubToDoItem::isDone)
+                .count();
         return ((double) completed / subTasks.size()) * 100;
     }
+
+    public ToDoItem markTaskAsDone(int id, int realHours) {
+        Optional<ToDoItem> optional = toDoItemRepository.findById(id);
+        if (!optional.isPresent()) {
+            return null;
+        }
+
+        ToDoItem task = optional.get();
+        task.setDone(true);
+        task.setRealHours(realHours);
+        return toDoItemRepository.save(task);
+    }
+
 }
