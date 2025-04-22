@@ -29,20 +29,25 @@ public class ToDoItem {
     @Column(name = "REAL_HOURS")
     private Integer realHours;
 
+    @Column(name = "ESTIMATED_HOURS")
+    private Double estimatedHours;
+
     // Default constructor required by JPA
     public ToDoItem() {
     }
 
     // Constructor
-    public ToDoItem(String description, OffsetDateTime creationTs, boolean done, Long userId, Long sprintId) {
+    public ToDoItem(String description, OffsetDateTime creationTs, boolean done, 
+                   Long userId, Long sprintId, Double estimatedHours) {
         this.description = description;
         this.creationTs = creationTs;
         this.done = done;
         this.userId = userId;
         this.sprintId = sprintId;
+        this.estimatedHours = estimatedHours;
     }
 
-    // Getters and setters - using getId() instead of getID()
+    // Getters and setters
     public int getId() {
         return id;
     }
@@ -99,6 +104,14 @@ public class ToDoItem {
         this.realHours = realHours;
     }
 
+    public Double getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(Double estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+
     @Override
     public String toString() {
         return "ToDoItem{" +
@@ -108,6 +121,8 @@ public class ToDoItem {
                 ", done=" + done +
                 ", userId=" + userId +
                 ", sprintId=" + sprintId +
+                ", realHours=" + realHours +
+                ", estimatedHours=" + estimatedHours +
                 '}';
     }
 }

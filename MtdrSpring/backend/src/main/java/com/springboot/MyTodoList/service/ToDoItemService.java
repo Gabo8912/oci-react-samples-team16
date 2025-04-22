@@ -4,7 +4,6 @@ import com.springboot.MyTodoList.model.SubToDoItem;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.repository.ToDoItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +49,10 @@ public class ToDoItemService {
         if (toDoItem.getUserId() == null) {
             throw new IllegalArgumentException("userId is required when creating a task.");
         }
+        // Set default estimated hours if null
+        if (toDoItem.getEstimatedHours() == null) {
+            toDoItem.setEstimatedHours(0.0);
+        }
         return toDoItemRepository.save(toDoItem);
     }
 
@@ -60,26 +63,27 @@ public class ToDoItemService {
         if (!toDoItemRepository.existsById(id)) {
             return false;
         }
-        // Use the correct repository method
         subToDoItemRepository.deleteByTodoItemId(id);
         toDoItemRepository.deleteById(id);
         return true;
     }
-///////////////////////////////////
+
     public ToDoItem updateToDoItem(int id, ToDoItem td) {
         return toDoItemRepository.findById(id)
             .map(existingItem -> {
                 existingItem.setDescription(td.getDescription());
                 existingItem.setDone(td.isDone());
-                    if (td.getRealHours() != null) {
-                        existingItem.setRealHours(td.getRealHours());
-                    }
+                if (td.getRealHours() != null) {
+                    existingItem.setRealHours(td.getRealHours());
+                }
+                if (td.getEstimatedHours() != null) {
+                    existingItem.setEstimatedHours(td.getEstimatedHours());
+                }
                 return toDoItemRepository.save(existingItem);
             })
             .orElse(null);
     }
     
-///////////////////////////////////
     public double getTaskProgress(int todoitemId) {
         if (todoitemId <= 0) {
             throw new IllegalArgumentException("ID must be positive");
@@ -105,5 +109,4 @@ public class ToDoItemService {
         task.setRealHours(realHours);
         return toDoItemRepository.save(task);
     }
-
 }

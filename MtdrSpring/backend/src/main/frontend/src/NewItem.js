@@ -74,39 +74,41 @@ function NewItem(props) {
       .catch(console.error);
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+// Update the handleSubmit function to include estimated hours
+const handleSubmit = (e) => {
+  e.preventDefault();
 
-    if (!selectedUserId) {
-      alert("Debes asignar la tarea a un usuario.");
-      return;
-    }
+  if (!selectedUserId) {
+    alert("Debes asignar la tarea a un usuario.");
+    return;
+  }
 
-    if (!item.trim()) {
-      alert("La tarea no puede estar vacía.");
-      return;
-    }
+  if (!item.trim()) {
+    alert("La tarea no puede estar vacía.");
+    return;
+  }
 
-    if (isNaN(hours) || hours <= 0) {
-      alert("Por favor, ingresa una duración válida (mayor a 0).");
-      return;
-    }
+  if (isNaN(hours) || hours <= 0) {
+    alert("Por favor, ingresa una duración válida (mayor a 0).");
+    return;
+  }
 
-    if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
-      alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
-      return;
-    }
+  if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
+    alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
+    return;
+  }
 
-    props.addItem(item.trim(), hours, subTasks, sprintId, selectedUserId);
+  // Send both duration (as realHours) and estimatedHours
+  props.addItem(item.trim(), hours, hours, subTasks, sprintId, selectedUserId);
 
-    // Reset form
-    setItem("");
-    setDuration("");
-    setSubTasks([]);
-    setNewSubTask("");
-    setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
-    setSelectedUserId(availableUsers[0]?.id || "");
-  };
+  // Reset form
+  setItem("");
+  setDuration("");
+  setSubTasks([]);
+  setNewSubTask("");
+  setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
+  setSelectedUserId(availableUsers[0]?.id || "");
+};
 
   const addSubTaskToList = () => {
     if (!newSubTask.trim()) {

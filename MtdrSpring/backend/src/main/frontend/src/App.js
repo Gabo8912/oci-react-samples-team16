@@ -346,12 +346,12 @@ function App() {
       );
   }, []);
 
-  function addItem(text, hours, subTasksArray, sprintId, userId) {
+  function addItem(text, estimatedHours, realHours, subTasksArray, sprintId, userId) {
     setInserting(true);
-    console.log("---");
     const data = {
       description: text,
-      duration: hours,
+      estimatedHours: estimatedHours,
+      realHours: realHours,
       sprintId: sprintId,
       userId: userId,
     };
@@ -374,7 +374,8 @@ function App() {
         const newItem = {
           id: id,
           description: text,
-          duration: hours,
+          estimatedHours: estimatedHours,
+          realHours: realHours,
           done: false,
           userId: userId,
         };
@@ -398,7 +399,7 @@ function App() {
           });
   
         // ✅ Handle subtasks if needed
-        if (hours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
+        if (estimatedHours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
           subTasksArray.forEach((subTaskText) => {
             fetch(`${API_LIST}/subtask/${id}/add`, {
               method: "POST",
