@@ -165,7 +165,23 @@ function CurrentSprints() {
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
   const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
+  const [users, setUsers] = useState([]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:8081/api/users');
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const usersData = await response.json();
+        setUsers(usersData);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+  
+    fetchUsers();
+  }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -619,38 +635,41 @@ function CurrentSprints() {
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                       <Collapse in={expandedSprints[sprint.sprintId]} timeout="auto" unmountOnExit>
                         <Box margin={1}>
-                          {/* Developer Hours Breakdown Section */}
-                          <Box mb={2}>
-                            <Typography variant="h6" gutterBottom>
-                              Developer Hours Breakdown
-                            </Typography>
-                            <Table size="small">
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>Developer</TableCell>
-                                  <TableCell>Hours Worked</TableCell>
-                                  <TableCell>% of Total</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {Object.entries(developerHours).map(([userId, hours]) => {
-                                  const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
-                                  return (
-                                    <TableRow key={userId}>
-                                      <TableCell>{`User ${userId}`}</TableCell>
-                                      <TableCell>{hours.toFixed(1)}</TableCell>
-                                      <TableCell>
-                                        <ProgressBar>
-                                          <div style={{ width: `${percentage}%` }} />
-                                        </ProgressBar>
-                                        {percentage.toFixed(1)}%
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })}
-                              </TableBody>
-                            </Table>
-                          </Box>
+                        {/* Developer Hours Breakdown Section */}
+                        <Box mb={2}>
+                          <Typography variant="h6" gutterBottom>
+                            Developer Hours Breakdown
+                          </Typography>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Developer</TableCell>
+                                <TableCell>Hours Worked</TableCell>
+                                <TableCell>% of Total</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {Object.entries(developerHours).map(([userId, hours]) => {
+                                const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
+                                const user = users.find(u => u.id === parseInt(userId));
+                                const displayName = user ? user.username : `User ${userId}`;
+                                
+                                return (
+                                  <TableRow key={userId}>
+                                    <TableCell>{displayName}</TableCell>
+                                    <TableCell>{hours.toFixed(1)}</TableCell>
+                                    <TableCell>
+                                      <ProgressBar>
+                                        <div style={{ width: `${percentage}%` }} />
+                                      </ProgressBar>
+                                      {percentage.toFixed(1)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </Box>
   
                           {/* Tasks Section */}
                           <Typography variant="h6" gutterBottom component="div">
