@@ -662,10 +662,10 @@ function CurrentSprints() {
                                 <TableRow>
                                   <TableCell width="5%">Task</TableCell>
                                   <TableCell width="30%">Description</TableCell>
-                                  <TableCell width="15%">Hours (Est/Real)</TableCell>
-                                  <TableCell width="15%">Progress</TableCell>
+                                  <TableCell width="25%">Hours (Est/Real)</TableCell>
+                                  <TableCell width="25%">Progress</TableCell>
                                   <TableCell width="10%">Status</TableCell>
-                                  <TableCell width="15%">Actions</TableCell>
+                                  <TableCell width="5%">Actions</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -686,10 +686,16 @@ function CurrentSprints() {
                                         {task.estimatedHours?.toFixed(1) || '0'} / {task.realHours?.toFixed(1) || '0'}
                                       </TableCell>
                                       <TableCell>
-                                        <ProgressBar>
-                                          <div style={{ width: `${calculateProgress(task.id)}%` }} />
-                                        </ProgressBar>
-                                        {Math.round(calculateProgress(task.id))}%
+                                        <Box display="flex" alignItems="center" width="100%">
+                                          <Box width="80%" mr={1}>
+                                            <ProgressBar>
+                                              <div style={{ width: `${calculateProgress(task.id)}%` }} />
+                                            </ProgressBar>
+                                          </Box>
+                                          <Box width="20%">
+                                            {Math.round(calculateProgress(task.id))}%
+                                          </Box>
+                                        </Box>
                                       </TableCell>
                                       <TableCell>
                                         <Checkbox
@@ -699,23 +705,22 @@ function CurrentSprints() {
                                         />
                                       </TableCell>
                                       <TableCell>
-                                        <Button
-                                          variant="outlined"
-                                          size="small"
-                                          startIcon={<AddIcon />}
-                                          onClick={() => toggleSubTaskForm(task.id)}
-                                          style={{ marginRight: '8px' }}
-                                        >
-                                          Add Subtask
-                                        </Button>
-                                        <Button
-                                          variant="outlined"
-                                          size="small"
-                                          startIcon={<PeopleIcon />}
-                                          onClick={() => viewTaskAssignments(task.id)}
-                                        >
-                                          View Assignees
-                                        </Button>
+                                        <Box display="flex" flexDirection="column" gap={1}>
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => toggleSubTaskForm(task.id)}
+                                            title="Add Subtask"
+                                          >
+                                            <AddIcon fontSize="small" />
+                                          </IconButton>
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => viewTaskAssignments(task.id)}
+                                            title="View Assignees"
+                                          >
+                                            <PeopleIcon fontSize="small" />
+                                          </IconButton>
+                                        </Box>
                                       </TableCell>
                                     </TableRow>
                                     <TableRow>
@@ -827,6 +832,7 @@ function CurrentSprints() {
       )}
     </OraclePaper>
   );
+  
 }
 
 export default CurrentSprints;
