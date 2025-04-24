@@ -1,5 +1,26 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
+
+const StatusChip = ({ status }) => (
+  <Chip
+    label={status}
+    style={{
+      backgroundColor: status === "COMPLETED" ? "#5f7d4f" : "#5b5652",
+      color: "#fef9f2",
+      fontWeight: "bold"
+    }}
+    size="small"
+  />
+);
+
+const OracleTable = (props) => (
+  <TableContainer component={Paper} style={{ background: "#fef9f2" }}>
+    <Table size="small">{props.children}</Table>
+  </TableContainer>
+);
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -7,6 +28,9 @@ const Dashboard = () => {
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedUsers, setExpandedUsers] = useState({});
+  const [userTasks, setUserTasks] = useState({});
+  const [loadingUserTasks, setLoadingUserTasks] = useState({}); // Track loading state per user
 
   // Fetch logged-in user profile
   useEffect(() => {
@@ -77,6 +101,7 @@ const Dashboard = () => {
           }, 0);
 
           return {
+            id: user.id, // <-- Add this line!
             username: user.username,
             totalTasks,
             totalHours,
@@ -95,6 +120,44 @@ const Dashboard = () => {
 
     fetchUsersAndStats();
   }, []);
+
+  const handleToggleUserTasks = async (userId) => {
+    setExpandedUsers((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+
+    // Only fetch if not already loaded and not already loading
+    if (!userTasks[userId] && !loadingUserTasks[userId]) {
+      setLoadingUserTasks((prev) => ({
+        ...prev,
+        [userId]: true,
+      }));
+      try {
+        const response = await fetch(`http://localhost:8081/api/task-assignments/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch user tasks");
+        const assignments = await response.json();
+        setUserTasks((prev) => ({
+          ...prev,
+          [userId]: assignments,
+        }));
+      } catch (err) {
+        setUserTasks((prev) => ({
+          ...prev,
+          [userId]: [],
+        }));
+      } finally {
+        setLoadingUserTasks((prev) => ({
+          ...prev,
+          [userId]: false,
+        }));
+      }
+    }
+  };
 
   if (loadingUser) return <div className="dashboard-loading">Loading user…</div>;
   if (error) return <div className="dashboard-error">{error}</div>;
@@ -132,26 +195,100 @@ const Dashboard = () => {
         ) : userStats.length === 0 ? (
           <p>No hay datos para mostrar.</p>
         ) : (
-          <table className="kpi-table">
-            <thead>
-              <tr>
-                <th>Usuario2</th>
-                <th>Tareas Completadas</th>
-                <th>Horas Trabajadas</th>
-                <th>Costo ($)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {userStats.map((stat, index) => (
-                <tr key={index}>
-                  <td>{stat.username}</td>
-                  <td>{stat.totalTasks}</td>
-                  <td>{stat.totalHours.toFixed(2)} h</td>
-                  <td>${stat.cost.toFixed(2)}</td>
-                </tr>
+          <OracleTable>
+            <TableHead>
+              <TableRow>
+                <TableCell>Usuario</TableCell>
+                <TableCell>Tareas Completadas</TableCell>
+                <TableCell>Horas Trabajadas</TableCell>
+                <TableCell>Costo ($)</TableCell>
+                <TableCell>Ver Tareas</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {userStats.map((stat) => (
+                <React.Fragment key={stat.id}>
+                  <TableRow>
+                    <TableCell>{stat.username}</TableCell>
+                    <TableCell>{stat.totalTasks}</TableCell>
+                    <TableCell>{stat.totalHours.toFixed(2)} h</TableCell>
+                    <TableCell>${stat.cost.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => handleToggleUserTasks(stat.id)}
+                      >
+                        {expandedUsers[stat.id] ? (
+                          <KeyboardArrowUpIcon />
+                        ) : (
+                          <KeyboardArrowDownIcon />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                      <Collapse in={expandedUsers[stat.id]} timeout="auto" unmountOnExit>
+                        <Box margin={1}>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell width="10%">Task</TableCell>
+                                <TableCell width="60%">Description</TableCell>
+                                <TableCell width="20%">Hours (Est/Real)</TableCell>
+                                <TableCell width="10%">Status</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {loadingUserTasks[stat.id] ? (
+                                <TableRow>
+                                  <TableCell colSpan={4} style={{ color: "#5b5652" }}>
+                                    Loading tasks...
+                                  </TableCell>
+                                </TableRow>
+                              ) : (userTasks[stat.id] && userTasks[stat.id].length === 0) ? (
+                                <TableRow>
+                                  <TableCell colSpan={4} style={{ color: "#5b5652" }}>
+                                    No tasks for this user
+                                  </TableCell>
+                                </TableRow>
+                              ) : (
+                                userTasks[stat.id]?.map((assignment) => (
+                                  <TableRow key={assignment.id}>
+                                    <TableCell>{assignment.task?.id}</TableCell>
+                                    <TableCell>{assignment.task?.description}</TableCell>
+                                    <TableCell>
+                                      {(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        style={{
+                                          backgroundColor:
+                                            assignment.task?.done ? "#5f7d4f" : "#5b5652",
+                                          color: "#fff",
+                                          fontWeight: "bold",
+                                        }}
+                                        disabled
+                                      >
+                                        {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))
+                              )}
+                            </TableBody>
+                          </Table>
+                        </Box>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </OracleTable>
         )}
       </div>
     </div>
