@@ -37,3 +37,9 @@ jobs:
 
       - name: Run SprintControllerTest
         run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.SprintControllerTest test
+
+      - name: Run TaskAssignmentControllerTest
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TaskAssignmentControllerTest test
+
+      - name: Run TeamControllerTest
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TeamControllerTest test
