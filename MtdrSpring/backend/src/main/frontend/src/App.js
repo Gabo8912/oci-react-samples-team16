@@ -64,7 +64,7 @@ const CompletedTaskRow = styled('tr')({
 });
 
 function App() {
-  const { currentUser } = useAuth();
+  //const { currentUser } = useAuth();
   const [isLoading, setLoading] = useState(false);
   const [isInserting, setInserting] = useState(false);
   const [items, setItems] = useState([]);
