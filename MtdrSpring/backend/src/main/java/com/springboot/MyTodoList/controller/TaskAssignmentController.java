@@ -35,7 +35,8 @@ public class TaskAssignmentController {
         TaskAssignment assignment = taskAssignmentService.createAssignment(taskId, userId);
         return ResponseEntity.ok(assignment);
     }
-
+    //Yogurt
+    //Gurt: yo
     @GetMapping("/teams")
     public ResponseEntity<List<TeamDTO>> getTeams() {
         // Hardcoded teams for now
