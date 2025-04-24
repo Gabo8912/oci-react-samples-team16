@@ -3,9 +3,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-
-// Configuration constants
-const LONG_TASK_THRESHOLD = 4; // hours
+const LONG_TASK_THRESHOLD = 4;
 const DEFAULT_SPRINT_ID = 2;
 
 function NewItem(props) {
@@ -20,7 +18,6 @@ function NewItem(props) {
 
   const hours = parseFloat(duration);
 
-  // Style configurations
   const commonInputStyle = {
     height: "40px",
     fontSize: "16px",
@@ -37,85 +34,72 @@ function NewItem(props) {
     textTransform: "none",
   };
 
-  // Fetch available sprints when component mounts
   useEffect(() => {
-    fetch('http://localhost:8081/api/sprints')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch sprints');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data && data.length > 0) {
+    fetch("http://localhost:8081/api/sprints")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.length > 0) {
           setAvailableSprints(data);
-          // Set to first sprint ID by default
-          setSprintId(data[0].sprintId || DEFAULT_SPRINT_ID);
+          setSprintId(data[0].sprintId);
         }
       })
-      .catch(error => {
-        console.error('Error fetching sprints:', error);
-        // Fallback to default sprint if API fails
-        setAvailableSprints([{ sprintId: DEFAULT_SPRINT_ID, sprintName: `Sprint ${DEFAULT_SPRINT_ID}` }]);
+      .catch(() => {
+        const fallback = { sprintId: DEFAULT_SPRINT_ID, sprintName: `Sprint ${DEFAULT_SPRINT_ID}` };
+        setAvailableSprints([fallback]);
         setSprintId(DEFAULT_SPRINT_ID);
       });
   }, []);
 
-  // Fetch usuarios
   useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then(data => {
-        setAvailableUsers(data);
-        if (data.length > 0) {
+    fetch("http://localhost:8081/auth/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAvailableUsers(data);
           setSelectedUserId(data[0].id);
         }
       })
       .catch(console.error);
   }, []);
 
-// Update the handleSubmit function to include estimated hours
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  if (!selectedUserId) {
-    alert("Debes asignar la tarea a un usuario.");
-    return;
-  }
+    if (!selectedUserId) {
+      alert("Debes asignar la tarea a un usuario.");
+      return;
+    }
 
-  if (!item.trim()) {
-    alert("La tarea no puede estar vacía.");
-    return;
-  }
+    if (!item.trim()) {
+      alert("La tarea no puede estar vacía.");
+      return;
+    }
 
-  if (isNaN(hours) || hours <= 0) {
-    alert("Por favor, ingresa una duración válida (mayor a 0).");
-    return;
-  }
+    if (isNaN(hours) || hours <= 0) {
+      alert("Por favor, ingresa una duración válida.");
+      return;
+    }
 
-  if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
-    alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
-    return;
-  }
+    if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
+      alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
+      return;
+    }
 
-  // Send both duration (as realHours) and estimatedHours
-  props.addItem(item.trim(), hours, hours, subTasks, sprintId, selectedUserId);
+    props.addItem(item.trim(), hours, hours, subTasks, sprintId, selectedUserId);
 
-  // Reset form
-  setItem("");
-  setDuration("");
-  setSubTasks([]);
-  setNewSubTask("");
-  setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
-  setSelectedUserId(availableUsers[0]?.id || "");
-};
+    setItem("");
+    setDuration("");
+    setSubTasks([]);
+    setNewSubTask("");
+    setSprintId(availableSprints[0]?.sprintId || DEFAULT_SPRINT_ID);
+    setSelectedUserId(availableUsers[0]?.id || "");
+  };
 
   const addSubTaskToList = () => {
     if (!newSubTask.trim()) {
       alert("La subtarea no puede estar vacía.");
       return;
     }
-
     setSubTasks([...subTasks, newSubTask.trim()]);
     setNewSubTask("");
   };
@@ -126,11 +110,7 @@ const handleSubmit = (e) => {
 
   return (
     <div id="newinputform">
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        {/* Main inputs row */}
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             id="newiteminput"
@@ -147,20 +127,20 @@ const handleSubmit = (e) => {
             onChange={(e) => setSprintId(Number(e.target.value))}
             style={{ ...commonInputStyle, width: "120px" }}
           >
-            {availableSprints.map((sprint) => (
-              <option key={sprint.sprintId} value={sprint.sprintId}>
-                {sprint.sprintName || `Sprint ${sprint.sprintId}`}
+            {availableSprints.map((s) => (
+              <option key={s.sprintId} value={s.sprintId}>
+                {s.sprintName || `Sprint ${s.sprintId}`}
               </option>
             ))}
           </select>
 
           <select
             value={selectedUserId}
-            onChange={e => setSelectedUserId(Number(e.target.value))}
+            onChange={(e) => setSelectedUserId(Number(e.target.value))}
             style={{ ...commonInputStyle, width: "140px" }}
           >
             <option value="">— Asignar usuario —</option>
-            {availableUsers.map(u => (
+            {availableUsers.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.username || u.email}
               </option>
@@ -183,15 +163,9 @@ const handleSubmit = (e) => {
           />
         </div>
 
-        {/* Subtasks section */}
+        {/* Subtasks (only if long task) */}
         {!isNaN(hours) && hours > LONG_TASK_THRESHOLD && (
-          <div
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              borderRadius: "4px",
-            }}
-          >
+          <div style={{ border: "1px solid #ccc", padding: "10px", borderRadius: "4px" }}>
             <h4 style={{ margin: "0 0 8px 0" }}>Agregar Subtareas</h4>
             <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
               <input
@@ -201,15 +175,10 @@ const handleSubmit = (e) => {
                 onChange={(e) => setNewSubTask(e.target.value)}
                 style={{ ...commonInputStyle, flex: 1 }}
               />
-              <Button
-                variant="outlined"
-                onClick={addSubTaskToList}
-                style={buttonStyle}
-              >
+              <Button variant="outlined" onClick={addSubTaskToList} style={buttonStyle}>
                 Agregar
               </Button>
             </div>
-
             {subTasks.length > 0 && (
               <ul style={{ paddingLeft: "20px", margin: 0 }}>
                 {subTasks.map((sub, index) => (
@@ -234,7 +203,6 @@ const handleSubmit = (e) => {
           </div>
         )}
 
-        {/* Submit button */}
         <Button
           className="AddButton"
           variant="contained"
