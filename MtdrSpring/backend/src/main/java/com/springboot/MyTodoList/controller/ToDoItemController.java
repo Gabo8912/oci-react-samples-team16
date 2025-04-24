@@ -1,10 +1,10 @@
 package com.springboot.MyTodoList.controller;
 
+import com.springboot.MyTodoList.dto.UserKpiDTO;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.service.ToDoItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 public class ToDoItemController {
+
     @Autowired
     private ToDoItemService toDoItemService;
 
@@ -26,32 +27,27 @@ public class ToDoItemController {
     }
 
     @PostMapping(value = "/todolist")
-    public ResponseEntity addToDoItem(@RequestBody ToDoItem todoItem) {
+    public ResponseEntity<?> addToDoItem(@RequestBody ToDoItem todoItem) {
         ToDoItem td = toDoItemService.addToDoItem(todoItem);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("location", "" + td.getId());
         responseHeaders.set("Access-Control-Expose-Headers", "location");
-        return ResponseEntity.ok()
-                .headers(responseHeaders).build();
+        return ResponseEntity.ok().headers(responseHeaders).build();
     }
-////////////////////////////////
+
     @PutMapping(value = "/todolist/{id}")
-    public ResponseEntity<ToDoItem> updateToDoItem(
-        @RequestBody ToDoItem toDoItem, 
-        @PathVariable int id) {
-        
+    public ResponseEntity<ToDoItem> updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable int id) {
         ToDoItem updatedItem = toDoItemService.updateToDoItem(id, toDoItem);
         if (updatedItem == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedItem);
     }
-////////////////////////////////
+
     @PutMapping("/todolist/{id}/complete")
     public ResponseEntity<ToDoItem> completeTask(
             @PathVariable int id,
             @RequestParam int realHours) {
-
         ToDoItem updated = toDoItemService.markTaskAsDone(id, realHours);
         if (updated == null) {
             return ResponseEntity.notFound().build();
@@ -72,5 +68,12 @@ public class ToDoItemController {
     public ResponseEntity<Double> getTaskProgress(@PathVariable int id) {
         double progress = toDoItemService.getTaskProgress(id);
         return ResponseEntity.ok(progress);
+    }
+
+    // ✅ Endpoint KPI por usuario (original)
+    @GetMapping("/kpi/users")
+    public ResponseEntity<List<UserKpiDTO>> getUserKpiResumen() {
+        List<UserKpiDTO> kpis = toDoItemService.getUserKpisGroupedBySprint();
+        return ResponseEntity.ok(kpis);
     }
 }
