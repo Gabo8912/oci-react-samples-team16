@@ -29,7 +29,7 @@ public class ToDoItemControllerTest {
     private ToDoItemController toDoItemController;
 
     private ToDoItem createTestItem(int id, String description) {
-        return new ToDoItem("Task", OffsetDateTime.now(), true, 2L, 1L);
+        return new ToDoItem("Task", OffsetDateTime.now(), true, 2L, 1L, 1.1);
 
     }
 

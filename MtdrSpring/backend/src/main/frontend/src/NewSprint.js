@@ -165,7 +165,23 @@ function CurrentSprints() {
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
   const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
+  const [users, setUsers] = useState([]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:8081/api/users');
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const usersData = await response.json();
+        setUsers(usersData);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+  
+    fetchUsers();
+  }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -215,6 +231,33 @@ function CurrentSprints() {
 
     fetchData();
   }, []);
+  // Add these helper functions at the top of the component
+  const calculateSprintHours = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    return sprintTasks.reduce(
+      (totals, task) => ({
+        estimated: totals.estimated + (task.estimatedHours || 0),
+        real: totals.real + (task.realHours || 0)
+      }),
+      { estimated: 0, real: 0 }
+    );
+  };
+
+  const calculateDeveloperHours = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    const developerHours = {};
+
+    sprintTasks.forEach(task => {
+      if (task.userId && task.realHours) {
+        if (!developerHours[task.userId]) {
+          developerHours[task.userId] = 0;
+        }
+        developerHours[task.userId] += task.realHours;
+      }
+    });
+
+    return developerHours;
+  };
 
   const toggleSprintExpansion = (sprintId) => {
     setExpandedSprints(prev => ({
@@ -525,232 +568,267 @@ function CurrentSprints() {
             <TableRow>
               <TableCell width="10%">Sprint</TableCell>
               <TableCell width="20%">Name</TableCell>
-              <TableCell width="15%">Start Date</TableCell>
-              <TableCell width="15%">End Date</TableCell>
+              <TableCell width="10%">Est. Hours</TableCell>
+              <TableCell width="10%">Real Hours</TableCell>
               <TableCell width="10%">Status</TableCell>
               <TableCell width="10%">Tasks</TableCell>
               <TableCell width="10%">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sprints.map((sprint) => (
-              <React.Fragment key={sprint.sprintId}>
-                <TableRow hover>
-                  <TableCell>
-                    <IconButton
-                      aria-label="expand row"
-                      size="small"
-                      onClick={() => toggleSprintExpansion(sprint.sprintId)}
-                    >
-                      {expandedSprints[sprint.sprintId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                    </IconButton>
-                    {sprint.sprintId}
-                  </TableCell>
-                  <TableCell>{sprint.sprintName}</TableCell>
-                  <TableCell>
-                    {new Date(sprint.startDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(sprint.finishDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <StatusChip 
-                      label={sprint.status} 
-                      status={sprint.status}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}
-                  </TableCell>
-                  <TableCell>
-                    {sprint.status === "IN_PROGRESS" && isSprintComplete(sprint.sprintId) && (
-                      <Button 
-                        variant="contained" 
-                        color="success"
-                        onClick={() => completeSprint(sprint.sprintId)}
-                        style={{ marginRight: '8px' }}
+            {sprints.map((sprint) => {
+              const sprintHours = calculateSprintHours(sprint.sprintId);
+              const developerHours = calculateDeveloperHours(sprint.sprintId);
+              
+              return (
+                <React.Fragment key={sprint.sprintId}>
+                  <TableRow hover>
+                    <TableCell>
+                      <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => toggleSprintExpansion(sprint.sprintId)}
                       >
-                        Complete Sprint
-                      </Button>
-                    )}
-                    {sprint.status === "COMPLETED" && (
-                      <Button 
-                        variant="contained" 
-                        color="secondary"
-                        onClick={() => uncompleteSprint(sprint.sprintId)}
-                      >
-                        Uncomplete
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
-                    <Collapse in={expandedSprints[sprint.sprintId]} timeout="auto" unmountOnExit>
-                      <Box margin={1}>
-                        <Typography variant="h6" gutterBottom component="div">
-                          Tasks
-                        </Typography>
-                        {tasks[sprint.sprintId] && tasks[sprint.sprintId].length > 0 ? (
+                        {expandedSprints[sprint.sprintId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                      </IconButton>
+                      {sprint.sprintId}
+                    </TableCell>
+                    <TableCell>{sprint.sprintName}</TableCell>
+                    <TableCell>
+                      {sprintHours.estimated.toFixed(1)}
+                    </TableCell>
+                    <TableCell>
+                      {sprintHours.real.toFixed(1)}
+                    </TableCell>
+                    <TableCell>
+                      <StatusChip 
+                        label={sprint.status} 
+                        status={sprint.status}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}
+                    </TableCell>
+                    <TableCell>
+                      {sprint.status === "IN_PROGRESS" && isSprintComplete(sprint.sprintId) && (
+                        <Button 
+                          variant="contained" 
+                          color="success"
+                          onClick={() => completeSprint(sprint.sprintId)}
+                          style={{ marginRight: '8px' }}
+                        >
+                          Complete Sprint
+                        </Button>
+                      )}
+                      {sprint.status === "COMPLETED" && (
+                        <Button 
+                          variant="contained" 
+                          color="secondary"
+                          onClick={() => uncompleteSprint(sprint.sprintId)}
+                        >
+                          Uncomplete
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                      <Collapse in={expandedSprints[sprint.sprintId]} timeout="auto" unmountOnExit>
+                        <Box margin={1}>
+                        {/* Developer Hours Breakdown Section */}
+                        <Box mb={2}>
+                          <Typography variant="h6" gutterBottom>
+                            Developer Hours Breakdown
+                          </Typography>
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell width="5%">Task</TableCell>
-                                <TableCell width="40%">Description</TableCell>
-                                <TableCell width="15%">Progress</TableCell>
-                                <TableCell width="15%">Created</TableCell>
-                                <TableCell width="10%">Status</TableCell>
-                                <TableCell width="15%">Actions</TableCell>
+                                <TableCell>Developer</TableCell>
+                                <TableCell>Hours Worked</TableCell>
+                                <TableCell>% of Total</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {tasks[sprint.sprintId].map((task) => (
-                                <React.Fragment key={task.id}>
-                                  <TableRow>
-                                    <TableCell>
-                                      <IconButton
-                                        aria-label="expand row"
-                                        size="small"
-                                        onClick={() => toggleTaskExpansion(task.id)}
-                                      >
-                                        {expandedTasks[task.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                                      </IconButton>
-                                    </TableCell>
-                                    <TableCell>{task.description}</TableCell>
+                              {Object.entries(developerHours).map(([userId, hours]) => {
+                                const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
+                                const user = users.find(u => u.id === parseInt(userId));
+                                const displayName = user ? user.username : `User ${userId}`;
+                                
+                                return (
+                                  <TableRow key={userId}>
+                                    <TableCell>{displayName}</TableCell>
+                                    <TableCell>{hours.toFixed(1)}</TableCell>
                                     <TableCell>
                                       <ProgressBar>
-                                        <div style={{ width: `${calculateProgress(task.id)}%` }} />
+                                        <div style={{ width: `${percentage}%` }} />
                                       </ProgressBar>
-                                      {Math.round(calculateProgress(task.id))}%
-                                    </TableCell>
-                                    <TableCell>
-                                      {new Date(task.creationTs).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric'
-                                      })}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Checkbox
-                                        checked={task.done}
-                                        onChange={() => toggleTaskDone(task.id, task.description, task.done)}
-                                        color="primary"
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        startIcon={<AddIcon />}
-                                        onClick={() => toggleSubTaskForm(task.id)}
-                                        style={{ marginRight: '8px' }}
-                                      >
-                                        Add Subtask
-                                      </Button>
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        startIcon={<PeopleIcon />}
-                                        onClick={() => viewTaskAssignments(task.id)}
-                                      >
-                                        View Assignees
-                                      </Button>
+                                      {percentage.toFixed(1)}%
                                     </TableCell>
                                   </TableRow>
-                                  <TableRow>
-                                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                                      <Collapse in={expandedTasks[task.id]} timeout="auto" unmountOnExit>
-                                        <Box margin={1}>
-                                          {showSubTaskForm[task.id] && (
-                                            <div style={{ display: 'flex', marginBottom: '1rem' }}>
-                                              <TextField
-                                                size="small"
-                                                value={newSubTaskText}
-                                                onChange={(e) => setNewSubTaskText(e.target.value)}
-                                                placeholder="Subtask description"
-                                                style={{ flexGrow: 1, marginRight: '0.5rem' }}
-                                              />
-                                              <Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={() => addSubTask(task.id)}
-                                              >
-                                                Add
-                                              </Button>
-                                            </div>
-                                          )}
-                                          {subtasks[task.id] && subtasks[task.id].length > 0 ? (
-                                            <Table size="small">
-                                              <TableHead>
-                                                <TableRow>
-                                                  <TableCell width="10%">Status</TableCell>
-                                                  <TableCell width="60%">Description</TableCell>
-                                                  <TableCell width="20%">Created</TableCell>
-                                                  <TableCell width="10%">Actions</TableCell>
-                                                </TableRow>
-                                              </TableHead>
-                                              <TableBody>
-                                                {subtasks[task.id].map((subTask) => (
-                                                  <TableRow key={subTask.id}>
-                                                    <TableCell>
-                                                      <Checkbox
-                                                        checked={subTask.done}
-                                                        onChange={(e) => toggleSubTaskDone(e, subTask.id, task.id)}
-                                                        color="primary"
-                                                      />
-                                                    </TableCell>
-                                                    <TableCell>{subTask.description}</TableCell>
-                                                    <TableCell>
-                                                      {new Date(subTask.creation_ts).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                      })}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                      <IconButton
-                                                        size="small"
-                                                        onClick={() => deleteSubTask(task.id, subTask.id)}
-                                                      >
-                                                        <DeleteIcon fontSize="small" />
-                                                      </IconButton>
-                                                    </TableCell>
-                                                  </TableRow>
-                                                ))}
-                                              </TableBody>
-                                            </Table>
-                                          ) : (
-                                            <Typography variant="body2" style={{ color: '#5b5652', padding: '1rem' }}>
-                                              No subtasks for this task
-                                            </Typography>
-                                          )}
-                                        </Box>
-                                      </Collapse>
-                                    </TableCell>
-                                  </TableRow>
-                                </React.Fragment>
-                              ))}
+                                );
+                              })}
                             </TableBody>
                           </Table>
-                        ) : (
-                          <Typography variant="body2" style={{ color: '#5b5652', padding: '1rem' }}>
-                            No tasks in this sprint
+                        </Box>
+  
+                          {/* Tasks Section */}
+                          <Typography variant="h6" gutterBottom component="div">
+                            Tasks
                           </Typography>
-                        )}
-                      </Box>
-                    </Collapse>
-                  </TableCell>
-                </TableRow>
-              </React.Fragment>
-            ))}
+                          {tasks[sprint.sprintId] && tasks[sprint.sprintId].length > 0 ? (
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell width="5%">Task</TableCell>
+                                  <TableCell width="30%">Description</TableCell>
+                                  <TableCell width="25%">Hours (Est/Real)</TableCell>
+                                  <TableCell width="25%">Progress</TableCell>
+                                  <TableCell width="10%">Status</TableCell>
+                                  <TableCell width="5%">Actions</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {tasks[sprint.sprintId].map((task) => (
+                                  <React.Fragment key={task.id}>
+                                    <TableRow>
+                                      <TableCell>
+                                        <IconButton
+                                          aria-label="expand row"
+                                          size="small"
+                                          onClick={() => toggleTaskExpansion(task.id)}
+                                        >
+                                          {expandedTasks[task.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                        </IconButton>
+                                      </TableCell>
+                                      <TableCell>{task.description}</TableCell>
+                                      <TableCell>
+                                        {task.estimatedHours?.toFixed(1) || '0'} / {task.realHours?.toFixed(1) || '0'}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Box display="flex" alignItems="center" width="100%">
+                                          <Box width="80%" mr={1}>
+                                            <ProgressBar>
+                                              <div style={{ width: `${calculateProgress(task.id)}%` }} />
+                                            </ProgressBar>
+                                          </Box>
+                                          <Box width="20%">
+                                            {Math.round(calculateProgress(task.id))}%
+                                          </Box>
+                                        </Box>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Checkbox
+                                          checked={task.done}
+                                          onChange={() => toggleTaskDone(task.id, task.description, task.done)}
+                                          color="primary"
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Box display="flex" flexDirection="column" gap={1}>
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => toggleSubTaskForm(task.id)}
+                                            title="Add Subtask"
+                                          >
+                                            <AddIcon fontSize="small" />
+                                          </IconButton>
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => viewTaskAssignments(task.id)}
+                                            title="View Assignees"
+                                          >
+                                            <PeopleIcon fontSize="small" />
+                                          </IconButton>
+                                        </Box>
+                                      </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                                        <Collapse in={expandedTasks[task.id]} timeout="auto" unmountOnExit>
+                                          <Box margin={1}>
+                                            {showSubTaskForm[task.id] && (
+                                              <div style={{ display: 'flex', marginBottom: '1rem' }}>
+                                                <TextField
+                                                  size="small"
+                                                  value={newSubTaskText}
+                                                  onChange={(e) => setNewSubTaskText(e.target.value)}
+                                                  placeholder="Subtask description"
+                                                  style={{ flexGrow: 1, marginRight: '0.5rem' }}
+                                                />
+                                                <Button
+                                                  variant="contained"
+                                                  color="primary"
+                                                  onClick={() => addSubTask(task.id)}
+                                                >
+                                                  Add
+                                                </Button>
+                                              </div>
+                                            )}
+                                            {subtasks[task.id] && subtasks[task.id].length > 0 ? (
+                                              <Table size="small">
+                                                <TableHead>
+                                                  <TableRow>
+                                                    <TableCell width="10%">Status</TableCell>
+                                                    <TableCell width="60%">Description</TableCell>
+                                                    <TableCell width="20%">Created</TableCell>
+                                                    <TableCell width="10%">Actions</TableCell>
+                                                  </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                  {subtasks[task.id].map((subTask) => (
+                                                    <TableRow key={subTask.id}>
+                                                      <TableCell>
+                                                        <Checkbox
+                                                          checked={subTask.done}
+                                                          onChange={(e) => toggleSubTaskDone(e, subTask.id, task.id)}
+                                                          color="primary"
+                                                        />
+                                                      </TableCell>
+                                                      <TableCell>{subTask.description}</TableCell>
+                                                      <TableCell>
+                                                        {new Date(subTask.creation_ts).toLocaleDateString('en-US', {
+                                                          year: 'numeric',
+                                                          month: 'short',
+                                                          day: 'numeric'
+                                                        })}
+                                                      </TableCell>
+                                                      <TableCell>
+                                                        <IconButton
+                                                          size="small"
+                                                          onClick={() => deleteSubTask(task.id, subTask.id)}
+                                                        >
+                                                          <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                      </TableCell>
+                                                    </TableRow>
+                                                  ))}
+                                                </TableBody>
+                                              </Table>
+                                            ) : (
+                                              <Typography variant="body2" style={{ color: '#5b5652', padding: '1rem' }}>
+                                                No subtasks for this task
+                                              </Typography>
+                                            )}
+                                          </Box>
+                                        </Collapse>
+                                      </TableCell>
+                                    </TableRow>
+                                  </React.Fragment>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          ) : (
+                            <Typography variant="body2" style={{ color: '#5b5652', padding: '1rem' }}>
+                              No tasks in this sprint
+                            </Typography>
+                          )}
+                        </Box>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
+              );
+            })}
           </TableBody>
         </OracleTable>
       </TableContainer>
@@ -773,6 +851,7 @@ function CurrentSprints() {
       )}
     </OraclePaper>
   );
+  
 }
 
 export default CurrentSprints;
