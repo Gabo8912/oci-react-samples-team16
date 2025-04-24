@@ -14,15 +14,15 @@ import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
-import { useAuth } from "./context/AuthContext"; //Dumb comment
+import { useAuth } from "./context/AuthContext";
+import HoursDialog from "./HoursDialog";
 
-// Configuration constants
+
 const COMPLETED_TASKS_TO_SHOW = 5;
-const LONG_TASK_DURATION = 4; // hours
+const LONG_TASK_DURATION = 4;
 const COMPLETED_TASKS_PANEL_WIDTH = '350px';
 const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
 
-// Styled components
 const CompletedTasksContainer = styled(Paper)(({ theme }) => ({
   background: '#f8f8f8',
   padding: '1.5rem',
@@ -70,6 +70,9 @@ function App() {
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
   const [isCreatingSprint, setIsCreatingSprint] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showHoursDialog, setShowHoursDialog] = useState(false);
+  const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
+
 
   const addSprint = (sprintData) => {
     setIsCreatingSprint(true);
@@ -80,14 +83,14 @@ function App() {
       },
       body: JSON.stringify(sprintData)
     })
-    .then(response => response.json())
-    .then(data => {
-      setIsCreatingSprint(false);
-    })
-    .catch(error => {
-      console.error('Error creating sprint:', error);
-      setIsCreatingSprint(false);
-    });
+      .then(response => response.json())
+      .then(data => {
+        setIsCreatingSprint(false);
+      })
+      .catch(error => {
+        console.error('Error creating sprint:', error);
+        setIsCreatingSprint(false);
+      });
   };
 
   function deleteItem(deleteId) {
@@ -98,7 +101,7 @@ function App() {
         if (response.ok) {
           return response;
         }
-        throw new Error("Something went wrong ...");
+        throw new Error("Something went wrong (add sprint) ...");
       })
       .then(
         () => {
@@ -111,67 +114,71 @@ function App() {
       );
   }
 
-  function toggleDone(event, id, description, done) {
+  function toggleDone(event, item) {
     event.preventDefault();
-    
+
+    const newDone = !item.done;
+
     if (
-      !done ||
-      !subTasks[id] ||
-      subTasks[id].length === 0 ||
-      subTasks[id].every((subTask) => subTask.done)
+      newDone &&
+      subTasks[item.id] &&
+      subTasks[item.id].length > 0 &&
+      !subTasks[item.id].every(st => st.done)
     ) {
-      modifyItem(id, description, done).then(
-        () => {
-          reloadOneIteam(id);
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+      alert("Error: all subtasks must be completed before marking this task as done.");
+      return;
+    }
+
+    if (newDone) {
+      setCurrentTaskToClose(item);
+      setShowHoursDialog(true);
     } else {
-      window.alert(
-        "Error: All subtasks must be completed before marking the main task as done."
-      );
+      modifyItem(item.id, item.description, false)
+        .then(() => reloadOneIteam(item.id))
+        .catch(err => {
+          console.error(err);
+          setError(err);
+        });
     }
   }
 
+
+
+
   function reloadOneIteam(id) {
     fetch(`${API_LIST}/${id}`)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong ...");
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to reload item");
+        return res.json();
       })
-      .then(
-        (result) => {
-          const items2 = items.map((x) =>
-            x.id === id
-              ? { ...x, description: result.description, done: result.done }
-              : x
-          );
-          setItems(items2);
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+      .then(itemFromServer => {
+        setItems(items.map(item =>
+          item.id === id
+            ? {
+              ...item,
+              description: itemFromServer.description,
+              done: itemFromServer.done,
+              realHours: itemFromServer.realHours
+            }
+            : item
+        ));
+      })
+      .catch(setError);
   }
 
-  function modifyItem(id, description, done) {
-    const data = { description: description, done: done };
+  function modifyItem(id, description, done, realHours = null) {
+    const data = { description, done };
+    if (realHours != null) data.realHours = realHours;
+
     return fetch(`${API_LIST}/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    }).then((response) => {
-      if (response.ok) {
-        return response;
-      }
-      throw new Error("Something went wrong ...");
-    });
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to update task");
+        return res.json();
+      });
   }
 
   function loadSubTasks(taskId) {
@@ -225,7 +232,7 @@ function App() {
         if (response.ok) {
           return response.json();
         }
-        throw new Error("Something went wrong ...");
+        throw new Error("Something went wrong (addSubTask)...");
       })
       .then(
         (result) => {
@@ -253,7 +260,7 @@ function App() {
         if (response.ok) {
           return response;
         }
-        throw new Error("Something went wrong ...");
+        throw new Error("Something went wrong (deleteSubTask) ...");
       })
       .then(
         () => {
@@ -293,7 +300,7 @@ function App() {
         if (response.ok) {
           return response.json();
         }
-        throw new Error("Something went wrong ...");
+        throw new Error("Something went wrong (toggleSubTaskDone)...");
       })
       .then(
         (result) => {
@@ -322,7 +329,7 @@ function App() {
         if (response.ok) {
           return response.json();
         }
-        throw new Error("Something went wrong ... (USE EFFECT 1)");
+        throw new Error("Something went wrong ... (toggleHistory)");
       })
       .then(
         (result) => {
@@ -339,16 +346,16 @@ function App() {
       );
   }, []);
 
-  function addItem(text, hours, subTasksArray, sprintId) { //Dumb commit
+  function addItem(text, hours, subTasksArray, sprintId, userId) {
     setInserting(true);
     console.log("---");
     const data = {
       description: text,
       duration: hours,
       sprintId: sprintId,
-      userId: currentUser?.id
+      userId: userId,
     };
-    
+  
     fetch(API_LIST, {
       method: "POST",
       headers: {
@@ -360,7 +367,7 @@ function App() {
         if (response.ok) {
           return response;
         }
-        throw new Error("Something went wrong ...");
+        throw new Error("Something went wrong (addItem)...");
       })
       .then((result) => {
         const id = result.headers.get("location");
@@ -369,9 +376,28 @@ function App() {
           description: text,
           duration: hours,
           done: false,
+          userId: userId,
         };
         setItems([newItem, ...items]);
-        
+  
+        // ✅ Post to TaskAssignmentController
+        fetch(`/api/task-assignments?taskId=${id}&userId=${userId}`, {
+          method: "POST",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to create task assignment.");
+            }
+            return response.json();
+          })
+          .then((assignment) => {
+            console.log("Task assignment created:", assignment);
+          })
+          .catch((error) => {
+            console.error("Error creating task assignment:", error);
+          });
+  
+        // ✅ Handle subtasks if needed
         if (hours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
           subTasksArray.forEach((subTaskText) => {
             fetch(`${API_LIST}/subtask/${id}/add`, {
@@ -396,6 +422,7 @@ function App() {
               .catch((error) => setError(error));
           });
         }
+  
         setInserting(false);
       })
       .catch((error) => {
@@ -403,6 +430,7 @@ function App() {
         setError(error);
       });
   }
+  
 
   return (
     <div className="App">
@@ -416,7 +444,7 @@ function App() {
           {isLoading && <CircularProgress />}
           {!isLoading && (
             <>
-              <div id="maincontent" style={{ 
+              <div id="maincontent" style={{
                 width: '100%',
                 maxWidth: '800px',
                 margin: '0 auto',
@@ -455,21 +483,14 @@ function App() {
                                 <Button
                                   variant="contained"
                                   className="DoneButton"
-                                  onClick={(event) =>
-                                    toggleDone(
-                                      event,
-                                      item.id,
-                                      item.description,
-                                      !item.done
-                                    )
-                                  }
+                                  onClick={(event) => toggleDone(event, item)}
                                   size="small"
                                 >
                                   Done
                                 </Button>
                               </td>
                             </tr>
-                            
+
                             {expandedTasks[item.id] &&
                               subTasks[item.id] &&
                               subTasks[item.id].map((subTask) => (
@@ -504,7 +525,7 @@ function App() {
                                   </td>
                                 </tr>
                               ))}
-                            
+
                             {expandedTasks[item.id] && (
                               <tr>
                                 <td colSpan="3">
@@ -546,7 +567,6 @@ function App() {
                 </table>
                 <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
               </div>
-              
               <CompletedTasksContainer>
                 <CompletedTasksHeader>
                   Latest Completed Tasks
@@ -555,8 +575,8 @@ function App() {
                     startIcon={<ExpandMoreIcon />}
                     onClick={toggleHistory}
                     size="small"
-                    style={{ 
-                      backgroundColor: '#5f7d4f', 
+                    style={{
+                      backgroundColor: '#5f7d4f',
                       color: 'white',
                       padding: '0.2rem 0.5rem',
                       fontSize: '0.8rem'
@@ -584,8 +604,9 @@ function App() {
                               variant="contained"
                               className="DoneButton"
                               onClick={(event) =>
-                                toggleDone(event, item.id, item.description, !item.done)
-                              }
+                                toggleDone(event, item)
+                                }
+                              
                               size="small"
                               style={{ marginRight: '0.5rem' }}
                             >
@@ -606,6 +627,25 @@ function App() {
                   </TableBody>
                 </table>
               </CompletedTasksContainer>
+
+              <HoursDialog
+                open={showHoursDialog}
+                onClose={() => setShowHoursDialog(false)}
+                onConfirm={(realHours) => {
+                  modifyItem(currentTaskToClose.id, currentTaskToClose.description, true, realHours)
+                    .then(() => {
+                      setShowHoursDialog(false);
+                      reloadOneIteam(currentTaskToClose.id);
+                    })
+                    .catch(err => {
+                      setError(err);
+                      setShowHoursDialog(false);
+                    });
+                }}
+              />
+
+
+
             </>
           )}
         </>
