@@ -11,13 +11,13 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "TEAM_ID")
     private Integer teamId;
-    
+
     @Column(name = "NAME")
     private String name;
-    
+
     @Column(name = "DESCRIPTION")
     private String description;
-    
+
     @Column(name = "CREATED_DATE")
     private OffsetDateTime createdDate;
 
@@ -31,7 +31,6 @@ public class Team {
         this.createdDate = createdDate;
     }
 
-    // Getters and Setters
     public Integer getTeamId() {
         return teamId;
     }
@@ -73,4 +72,5 @@ public class Team {
                 ", createdDate=" + createdDate +
                 '}';
     }
-}*/
+}
+*/
