@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import loginImage from "./Wallpaper.jpg"; // ✅ Asegúrate de tener esta imagen en tu carpeta src
 
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
+
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -9,7 +12,7 @@ const Login = ({ onLoginSuccess }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:8081/auth/login", {
+    const response = await fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

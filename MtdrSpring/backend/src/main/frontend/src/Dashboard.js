@@ -4,6 +4,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
 
+
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
 const StatusChip = ({ status }) => (
   <Chip
     label={status}
@@ -45,7 +48,7 @@ const Dashboard = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:8081/auth/user/${username}`, {
+        const response = await fetch(`${baseUrl}/auth/user/${username}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -72,7 +75,7 @@ const Dashboard = () => {
     const fetchUsersAndStats = async () => {
       try {
         setLoadingStats(true);
-        const usersResponse = await fetch("http://localhost:8081/api/users", {
+        const usersResponse = await fetch(`${baseUrl}/api/users`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -83,7 +86,7 @@ const Dashboard = () => {
         // Fetch all tasks for all users in parallel
         const allTasks = {};
         const statsPromises = users.map(async (user) => {
-          const tasksResponse = await fetch(`http://localhost:8081/api/task-assignments/user/${user.id}`, {
+          const tasksResponse = await fetch(`${baseUrl}/api/task-assignments/user/${user.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -123,7 +126,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch("http://localhost:8081/api/task-assignments/teams", {
+        const response = await fetch(`${baseUrl}/api/task-assignments/teams`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
