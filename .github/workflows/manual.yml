@@ -13,10 +13,6 @@ jobs:
   greet-and-test:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: oci-react-samples-team16/MtdrSpring/backend
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,13 +27,19 @@ jobs:
         run: echo "Hello ${{ inputs.name }}"
 
       - name: Build with Maven
-        run: mvn -B clean compile
+        run: cd MtdrSpring/backend && mvn -B clean compile
 
       - name: Run ToDoItemControllerTest
-        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.ToDoItemControllerTest test
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.ToDoItemControllerTest test
 
       - name: Run UserControllerTest
-        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.UserControllerTest test
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.UserControllerTest test
 
       - name: Run SprintControllerTest
-        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.SprintControllerTest test
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.SprintControllerTest test
+
+      - name: Run TaskAssignmentControllerTest
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TaskAssignmentControllerTest test
+
+      - name: Run TeamControllerTest
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TeamControllerTest test

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
+import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
-
+/* 
 const StatusChip = ({ status }) => (
   <Chip
     label={status}
@@ -18,7 +18,7 @@ const StatusChip = ({ status }) => (
     size="small"
   />
 );
-
+*/
 const OracleTable = (props) => (
   <TableContainer component={Paper} style={{ background: "#fef9f2" }}>
     <Table size="small">{props.children}</Table>
@@ -33,7 +33,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [expandedUsers, setExpandedUsers] = useState({});
   const [userTasks, setUserTasks] = useState({});
-  const [loadingUserTasks, setLoadingUserTasks] = useState({}); // Track loading state per user
+  const [loadingUserTasks] = useState({}); // Track loading state per user
   const [teams, setTeams] = useState([]); // Add state for teams
   const [expandedTeams, setExpandedTeams] = useState({}); // Add state for team expansion
 
@@ -187,7 +187,7 @@ const Dashboard = () => {
       )}
 
       <div className="kpi-container">
-        <h3>📊 Tareas Completadas, Horas y Costo por Usuario2</h3>
+        <h3>📊 Tareas Completadas, Horas y Costo por Usuario</h3>
         {loadingStats ? (
           <p>Cargando datos…</p>
         ) : userStats.length === 0 ? (
