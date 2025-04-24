@@ -2,11 +2,11 @@ package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "TODOITEM")
 public class ToDoItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -29,8 +29,11 @@ public class ToDoItem {
     @Column(name = "REAL_HOURS")
     private Integer realHours;
 
-    public ToDoItem() {}
+    // Default constructor required by JPA
+    public ToDoItem() {
+    }
 
+    // Constructor
     public ToDoItem(String description, OffsetDateTime creationTs, boolean done, Long userId, Long sprintId) {
         this.description = description;
         this.creationTs = creationTs;
@@ -39,6 +42,7 @@ public class ToDoItem {
         this.sprintId = sprintId;
     }
 
+    // Getters and setters - using getId() instead of getID()
     public int getId() {
         return id;
     }

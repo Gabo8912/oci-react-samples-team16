@@ -22,7 +22,7 @@ public class AuthController {
         Optional<User> user = userService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
         if (user.isPresent()) {
-            // Simulación de un token (en producción usar JWT)
+            // Simulación de un token (En producción usa JWT)
             String token = UUID.randomUUID().toString();
             return ResponseEntity.ok(new AuthResponse(token, user.get().getRole()));
         }
@@ -30,19 +30,19 @@ public class AuthController {
         return ResponseEntity.status(401).body("Credenciales incorrectas");
     }
 
-    // ✅ Obtener todos los usuarios (para asignar tareas)
+    // ✅ Nuevo endpoint para obtener todos los usuarios
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // ✅ Obtener datos del usuario actual
     @GetMapping("/user/{username}")
     public ResponseEntity<?> getCurrentUser(@PathVariable String username) {
         Optional<User> user = userService.findByUsername(username);
         if (user.isPresent()) {
             User currentUser = user.get();
-            currentUser.setPassword(null); // Oculta la contraseña
+            // Don't send the password in the response
+            currentUser.setPassword(null);
             return ResponseEntity.ok(currentUser);
         }
         return ResponseEntity.status(404).body("User not found");
