@@ -166,8 +166,6 @@ function CurrentSprints() {
   const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
   const [users, setUsers] = useState([]);
-  const [sprintHours, setSprintHours] = useState({});
-  const [developerHours, setDeveloperHours] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -233,58 +231,33 @@ function CurrentSprints() {
 
     fetchData();
   }, []);
+  // Add these helper functions at the top of the component
+  const calculateSprintHours = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    return sprintTasks.reduce(
+      (totals, task) => ({
+        estimated: totals.estimated + (task.estimatedHours || 0),
+        real: totals.real + (task.realHours || 0)
+      }),
+      { estimated: 0, real: 0 }
+    );
+  };
 
-  useEffect(() => {
-    const calculateHours = async () => {
-      if (sprints.length === 0 || Object.keys(tasks).length === 0) return;
-  
-      const hoursData = {};
-      const devHoursData = {};
-  
-      for (const sprint of sprints) {
-        const sprintTasks = tasks[sprint.sprintId] || [];
-        let totalEstimated = 0;
-        let totalReal = 0;
-        const currentDevHours = {};
-  
-        // First pass: sum estimated hours from tasks
-        totalEstimated = sprintTasks.reduce((sum, task) => sum + (task.estimatedHours || 0), 0);
-  
-        // Second pass: fetch assignments and sum real hours
-        for (const task of sprintTasks) {
-          try {
-            const response = await fetch(`http://localhost:8081/api/task-assignments/task/${task.id}`);
-            if (response.ok) {
-              const assignments = await response.json();
-              assignments.forEach(assignment => {
-                // Sum to total real hours
-                const hours = assignment.realHours || 0;
-                totalReal += hours;
-  
-                // Track developer hours
-                if (assignment.userId) {
-                  if (!currentDevHours[assignment.userId]) {
-                    currentDevHours[assignment.userId] = 0;
-                  }
-                  currentDevHours[assignment.userId] += hours;
-                }
-              });
-            }
-          } catch (err) {
-            console.error(`Error fetching assignments for task ${task.id}:`, err);
-          }
+  const calculateDeveloperHours = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    const developerHours = {};
+
+    sprintTasks.forEach(task => {
+      if (task.userId && task.realHours) {
+        if (!developerHours[task.userId]) {
+          developerHours[task.userId] = 0;
         }
-  
-        hoursData[sprint.sprintId] = { estimated: totalEstimated, real: totalReal };
-        devHoursData[sprint.sprintId] = currentDevHours;
+        developerHours[task.userId] += task.realHours;
       }
-  
-      setSprintHours(hoursData);
-      setDeveloperHours(devHoursData);
-    };
-  
-    calculateHours();
-  }, [sprints, tasks]);
+    });
+
+    return developerHours;
+  };
 
   const toggleSprintExpansion = (sprintId) => {
     setExpandedSprints(prev => ({
@@ -604,8 +577,8 @@ function CurrentSprints() {
           </TableHead>
           <TableBody>
             {sprints.map((sprint) => {
-              const currentSprintHours = sprintHours[sprint.sprintId] || { estimated: 0, real: 0 };
-              const currentDeveloperHours = developerHours[sprint.sprintId] || {};
+              const sprintHours = calculateSprintHours(sprint.sprintId);
+              const developerHours = calculateDeveloperHours(sprint.sprintId);
               
               return (
                 <React.Fragment key={sprint.sprintId}>
@@ -622,10 +595,10 @@ function CurrentSprints() {
                     </TableCell>
                     <TableCell>{sprint.sprintName}</TableCell>
                     <TableCell>
-                      {currentSprintHours.estimated.toFixed(1)}
+                      {sprintHours.estimated.toFixed(1)}
                     </TableCell>
                     <TableCell>
-                      {currentSprintHours.real.toFixed(1)}
+                      {sprintHours.real.toFixed(1)}
                     </TableCell>
                     <TableCell>
                       <StatusChip 
@@ -662,85 +635,41 @@ function CurrentSprints() {
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                       <Collapse in={expandedSprints[sprint.sprintId]} timeout="auto" unmountOnExit>
                         <Box margin={1}>
-{/* Developer Hours Breakdown Section */}
-<Box mb={2}>
-  <Typography variant="h6" gutterBottom>
-    Developer Hours Breakdown
-  </Typography>
-  <Table size="small">
-    <TableHead>
-      <TableRow>
-        <TableCell>Developer</TableCell>
-        <TableCell>Hours Worked</TableCell>
-        <TableCell>% of Total</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {(() => {
-        // Debug logging
-        console.group('[Developer Hours Debug]');
-        console.log('Current Sprint:', sprint.sprintId);
-        console.log('Sprint Hours:', currentSprintHours);
-        console.log('Developer Hours:', currentDeveloperHours);
-        console.log('Users:', users);
-        
-        // Log task assignments for first 3 tasks
-        const sampleTasks = tasks[sprint.sprintId]?.slice(0, 3) || [];
-        sampleTasks.forEach(async task => {
-          try {
-            const response = await fetch(`http://localhost:8081/api/task-assignments/task/${task.id}`);
-            const assignments = await response.json();
-            console.log(`Assignments for Task ${task.id}:`, assignments);
-          } catch (error) {
-            console.error(`Failed to fetch assignments for Task ${task.id}:`, error);
-          }
-        });
-        
-        console.groupEnd();
-
-        if (Object.keys(currentDeveloperHours).length === 0) {
-          return (
-            <TableRow>
-              <TableCell colSpan={3} align="center">
-                No hours logged (check console for debug info)
-              </TableCell>
-            </TableRow>
-          );
-        }
-
-        return Object.entries(currentDeveloperHours)
-          .filter(([_, hours]) => hours > 0)
-          .sort((a, b) => b[1] - a[1])
-          .map(([userId, hours]) => {
-            const percentage = currentSprintHours.real > 0 
-              ? (hours / currentSprintHours.real * 100) 
-              : 0;
-            const user = users.find(u => u.id === parseInt(userId));
-            const displayName = user ? user.username : `User ${userId}`;
-            
-            return (
-              <TableRow key={userId}>
-                <TableCell>{displayName}</TableCell>
-                <TableCell>{hours.toFixed(1)}</TableCell>
-                <TableCell>
-                  <Box display="flex" alignItems="center">
-                    <Box width="70%" mr={1}>
-                      <ProgressBar>
-                        <div style={{ width: `${percentage}%` }} />
-                      </ProgressBar>
-                    </Box>
-                    <Box width="30%">
-                      {percentage.toFixed(1)}%
-                    </Box>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            );
-          });
-      })()}
-    </TableBody>
-  </Table>
-</Box>
+                        {/* Developer Hours Breakdown Section */}
+                        <Box mb={2}>
+                          <Typography variant="h6" gutterBottom>
+                            Developer Hours Breakdown
+                          </Typography>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Developer</TableCell>
+                                <TableCell>Hours Worked</TableCell>
+                                <TableCell>% of Total</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {Object.entries(developerHours).map(([userId, hours]) => {
+                                const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
+                                const user = users.find(u => u.id === parseInt(userId));
+                                const displayName = user ? user.username : `User ${userId}`;
+                                
+                                return (
+                                  <TableRow key={userId}>
+                                    <TableCell>{displayName}</TableCell>
+                                    <TableCell>{hours.toFixed(1)}</TableCell>
+                                    <TableCell>
+                                      <ProgressBar>
+                                        <div style={{ width: `${percentage}%` }} />
+                                      </ProgressBar>
+                                      {percentage.toFixed(1)}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </Box>
   
                           {/* Tasks Section */}
                           <Typography variant="h6" gutterBottom component="div">
@@ -922,6 +851,7 @@ function CurrentSprints() {
       )}
     </OraclePaper>
   );
+  
 }
 
 export default CurrentSprints;
