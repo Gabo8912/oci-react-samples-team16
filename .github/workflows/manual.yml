@@ -1,0 +1,39 @@
+name: Manual workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        default: 'World'
+        required: true
+        type: string
+
+jobs:
+  greet-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Send greeting
+        run: echo "Hello ${{ inputs.name }}"
+
+      - name: Build with Maven
+        run: mvn -B clean compile
+
+      - name: Run ToDoItemControllerTest
+        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.ToDoItemControllerTest test
+
+      - name: Run UserControllerTest
+        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.UserControllerTest test
+
+      - name: Run SprintControllerTest
+        run: mvn -B -Dtest=com.springboot.MyToDoList.controller.SprintControllerTest test
