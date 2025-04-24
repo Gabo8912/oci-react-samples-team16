@@ -3,9 +3,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-
-// Configuration constants
-const LONG_TASK_THRESHOLD = 4; // hours
+const LONG_TASK_THRESHOLD = 4;
 const DEFAULT_SPRINT_ID = 2;
 
 function NewItem(props) {
@@ -20,7 +18,6 @@ function NewItem(props) {
 
   const hours = parseFloat(duration);
 
-  // Style configurations
   const commonInputStyle = {
     height: "40px",
     fontSize: "16px",
@@ -37,38 +34,33 @@ function NewItem(props) {
     textTransform: "none",
   };
 
-  // Fetch available sprints when component mounts
   useEffect(() => {
-    fetch('http://localhost:8081/api/sprints')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch sprints');
-        }
-        return response.json();
+    fetch("http://localhost:8081/api/sprints")
+      .then((res) => res.json())
+      .then((data) => {
+        setAvailableSprints(data);
+        setSprintId(data[0]?.sprintId || DEFAULT_SPRINT_ID);
       })
-      .then(data => {
-        if (data && data.length > 0) {
-          setAvailableSprints(data);
-          // Set to first sprint ID by default
-          setSprintId(data[0].sprintId || DEFAULT_SPRINT_ID);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching sprints:', error);
-        // Fallback to default sprint if API fails
-        setAvailableSprints([{ sprintId: DEFAULT_SPRINT_ID, sprintName: `Sprint ${DEFAULT_SPRINT_ID}` }]);
+      .catch(() => {
+        setAvailableSprints([
+          {
+            sprintId: DEFAULT_SPRINT_ID,
+            sprintName: `Sprint ${DEFAULT_SPRINT_ID}`,
+          },
+        ]);
         setSprintId(DEFAULT_SPRINT_ID);
       });
   }, []);
 
-  // Fetch usuarios
   useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then(data => {
-        setAvailableUsers(data);
-        if (data.length > 0) {
-          setSelectedUserId(data[0].id);
+    fetch("http://localhost:8081/auth/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAvailableUsers(data);
+          if (data.length > 0) {
+            setSelectedUserId(data[0].id);
+          }
         }
       })
       .catch(console.error);
@@ -88,32 +80,28 @@ function NewItem(props) {
     }
 
     if (isNaN(hours) || hours <= 0) {
-      alert("Por favor, ingresa una duración válida (mayor a 0).");
+      alert("Por favor, ingresa una duración válida.");
       return;
     }
 
     if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
-      alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
+      alert(
+        `Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`
+      );
       return;
     }
 
     props.addItem(item.trim(), hours, subTasks, sprintId, selectedUserId);
-
-    // Reset form
     setItem("");
     setDuration("");
     setSubTasks([]);
     setNewSubTask("");
-    setSprintId(availableSprints[0]?.id || DEFAULT_SPRINT_ID);
+    setSprintId(availableSprints[0]?.sprintId || DEFAULT_SPRINT_ID);
     setSelectedUserId(availableUsers[0]?.id || "");
   };
 
   const addSubTaskToList = () => {
-    if (!newSubTask.trim()) {
-      alert("La subtarea no puede estar vacía.");
-      return;
-    }
-
+    if (!newSubTask.trim()) return;
     setSubTasks([...subTasks, newSubTask.trim()]);
     setNewSubTask("");
   };
@@ -128,7 +116,6 @@ function NewItem(props) {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "8px" }}
       >
-        {/* Main inputs row */}
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             id="newiteminput"
@@ -154,11 +141,11 @@ function NewItem(props) {
 
           <select
             value={selectedUserId}
-            onChange={e => setSelectedUserId(Number(e.target.value))}
+            onChange={(e) => setSelectedUserId(Number(e.target.value))}
             style={{ ...commonInputStyle, width: "140px" }}
           >
             <option value="">— Asignar usuario —</option>
-            {availableUsers.map(u => (
+            {availableUsers.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.username || u.email}
               </option>
@@ -172,17 +159,11 @@ function NewItem(props) {
             min="0"
             step="0.5"
             onChange={(e) => setDuration(e.target.value)}
-            style={{
-              ...commonInputStyle,
-              width: "120px",
-              WebkitAppearance: "none",
-              MozAppearance: "textfield",
-            }}
+            style={{ ...commonInputStyle, width: "120px" }}
           />
         </div>
 
-        {/* Subtasks section */}
-        {!isNaN(hours) && hours > LONG_TASK_THRESHOLD && (
+        {hours > LONG_TASK_THRESHOLD && (
           <div
             style={{
               border: "1px solid #ccc",
@@ -190,7 +171,7 @@ function NewItem(props) {
               borderRadius: "4px",
             }}
           >
-            <h4 style={{ margin: "0 0 8px 0" }}>Agregar Subtareas</h4>
+            <h4 style={{ marginBottom: "8px" }}>Agregar Subtareas</h4>
             <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
               <input
                 type="text"
@@ -217,12 +198,13 @@ function NewItem(props) {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      fontSize: "16px",
-                      marginBottom: "4px",
                     }}
                   >
                     <span>{sub}</span>
-                    <IconButton onClick={() => removeSubTask(index)} size="small">
+                    <IconButton
+                      onClick={() => removeSubTask(index)}
+                      size="small"
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </li>
@@ -232,7 +214,6 @@ function NewItem(props) {
           </div>
         )}
 
-        {/* Submit button */}
         <Button
           className="AddButton"
           variant="contained"
