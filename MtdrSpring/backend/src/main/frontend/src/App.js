@@ -23,6 +23,9 @@ import { useAuth } from "./context/AuthContext";
 import HoursDialog from "./HoursDialog";
 
 
+console.log("API_LIST:", API_LIST);
+
+
 const COMPLETED_TASKS_TO_SHOW = 5;
 const LONG_TASK_DURATION = 4;
 const COMPLETED_TASKS_PANEL_WIDTH = '350px';
