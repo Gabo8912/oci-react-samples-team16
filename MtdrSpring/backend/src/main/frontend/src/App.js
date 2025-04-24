@@ -19,7 +19,7 @@ import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
-import { useAuth } from "./context/AuthContext";
+//import { useAuth } from "./context/AuthContext";
 import HoursDialog from "./HoursDialog";
 
 
