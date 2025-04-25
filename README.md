@@ -44,7 +44,7 @@ spring.datasource.url=jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/ruta
 
 # DEPLOYMENT (comentar si estás trabajando localmente)
 # spring.datasource.url=jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=/app/wallet
-
+```
 ## 2. 🌍 Configurar el archivo .env del frontend
 Ubicación:
 /frontend/.env (o donde tengas tu frontend)
