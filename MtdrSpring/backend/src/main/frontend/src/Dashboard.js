@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
+import TeamHoursGraph from './components/TeamHoursGraph';
+import UserHoursGraph from './components/UserHoursGraph';
 
 const StatusChip = ({ status }) => (
   <Chip
@@ -33,6 +35,7 @@ const Dashboard = () => {
   const [loadingUserTasks, setLoadingUserTasks] = useState({}); // Track loading state per user
   const [teams, setTeams] = useState([]); // Add state for teams
   const [expandedTeams, setExpandedTeams] = useState({}); // Add state for team expansion
+  const [teamTasks, setTeamTasks] = useState([]);
 
   // Fetch logged-in user profile
   useEffect(() => {
@@ -154,6 +157,33 @@ const Dashboard = () => {
     }));
   };
 
+  const collectTeamTasks = useCallback(() => {
+    const allTeamTasks = [];
+    teams.forEach(team => {
+      team.userIds.forEach(userId => {
+        // Get tasks for the current user from the userTasks object
+        const userTasksForUser = userTasks[userId] || [];
+        // Convert to array if it's not already one
+        const tasksArray = Array.isArray(userTasksForUser) ? userTasksForUser : Object.values(userTasksForUser);
+        tasksArray.forEach(assignment => {
+          if (assignment.task) {
+            allTeamTasks.push({
+              description: assignment.task.description,
+              estimatedHours: assignment.task.estimatedHours || 0,
+              realHours: assignment.task.realHours || 0,
+              teamName: team.name
+            });
+          }
+        });
+      });
+    });
+    setTeamTasks(allTeamTasks);
+  }, [teams, userTasks]);
+
+  useEffect(() => {
+    collectTeamTasks();
+  }, [teams, userTasks, collectTeamTasks]);
+
   if (loadingUser) return <div className="dashboard-loading">Loading user…</div>;
   if (error) return <div className="dashboard-error">{error}</div>;
 
@@ -184,7 +214,7 @@ const Dashboard = () => {
       )}
 
       <div className="kpi-container">
-        <h3>📊 Tareas Completadas, Horas y Costo por Usuario2</h3>
+        <h3>📊 Tareas Completadas, Horas y Costo por Usuario</h3>
         {loadingStats ? (
           <p>Cargando datos…</p>
         ) : userStats.length === 0 ? (
@@ -287,138 +317,152 @@ const Dashboard = () => {
         )}
       </div>
 
+      {user && userTasks[user.id] && (
+        <div className="dashboard-section" style={{ minHeight: '400px' }}>
+          <h2>Your Task Hours Analysis</h2>
+          <UserHoursGraph userTasks={Array.isArray(userTasks[user.id]) ? userTasks[user.id] : []} />
+        </div>
+      )}
+
       <div className="kpi-container">
         <h3>👥 Tareas por Equipo</h3>
         {teams.length === 0 ? (
           <p>No hay equipos para mostrar.</p>
         ) : (
-          <OracleTable>
-            <TableHead>
-              <TableRow>
-                <TableCell>Equipo</TableCell>
-                <TableCell>Ver Miembros</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {teams.map((team) => (
-                <React.Fragment key={team.id}>
-                  <TableRow>
-                    <TableCell>{team.name}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        aria-label="expand row"
-                        size="small"
-                        onClick={() => handleToggleTeam(team.id)}
-                      >
-                        {expandedTeams[team.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={2}>
-                      <Collapse in={expandedTeams[team.id]} timeout="auto" unmountOnExit>
-                        <Box margin={1}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Usuario</TableCell>
-                                <TableCell>Tareas Completadas</TableCell>
-                                <TableCell>Horas Trabajadas</TableCell>
-                                <TableCell>Costo ($)</TableCell>
-                                <TableCell>Ver Tareas</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {team.userIds.map((userId) => {
-                                const stat = userStats.find((u) => u.id === userId);
-                                if (!stat) return null;
-                                return (
-                                  <React.Fragment key={userId}>
-                                    <TableRow>
-                                      <TableCell>{stat.username}</TableCell>
-                                      <TableCell>{stat.totalTasks}</TableCell>
-                                      <TableCell>{stat.totalHours.toFixed(2)} h</TableCell>
-                                      <TableCell>${stat.cost.toFixed(2)}</TableCell>
-                                      <TableCell>
-                                        <IconButton
-                                          aria-label="expand row"
-                                          size="small"
-                                          onClick={() => handleToggleUserTasks(userId)}
-                                        >
-                                          {expandedUsers[userId] ? (
-                                            <KeyboardArrowUpIcon />
-                                          ) : (
-                                            <KeyboardArrowDownIcon />
-                                          )}
-                                        </IconButton>
-                                      </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                                        <Collapse in={expandedUsers[userId]} timeout="auto" unmountOnExit>
-                                          <Box margin={1}>
-                                            <Table size="small">
-                                              <TableHead>
-                                                <TableRow>
-                                                  <TableCell width="10%">Task</TableCell>
-                                                  <TableCell width="60%">Description</TableCell>
-                                                  <TableCell width="20%">Hours (Est/Real)</TableCell>
-                                                  <TableCell width="10%">Status</TableCell>
-                                                </TableRow>
-                                              </TableHead>
-                                              <TableBody>
-                                                {(userTasks[userId] || []).length === 0 ? (
+          <>
+            <OracleTable>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Equipo</TableCell>
+                  <TableCell>Ver Miembros</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {teams.map((team) => (
+                  <React.Fragment key={team.id}>
+                    <TableRow>
+                      <TableCell>{team.name}</TableCell>
+                      <TableCell>
+                        <IconButton
+                          aria-label="expand row"
+                          size="small"
+                          onClick={() => handleToggleTeam(team.id)}
+                        >
+                          {expandedTeams[team.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={2}>
+                        <Collapse in={expandedTeams[team.id]} timeout="auto" unmountOnExit>
+                          <Box margin={1}>
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Usuario</TableCell>
+                                  <TableCell>Tareas Completadas</TableCell>
+                                  <TableCell>Horas Trabajadas</TableCell>
+                                  <TableCell>Costo ($)</TableCell>
+                                  <TableCell>Ver Tareas</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {team.userIds.map((userId) => {
+                                  const stat = userStats.find((u) => u.id === userId);
+                                  if (!stat) return null;
+                                  return (
+                                    <React.Fragment key={userId}>
+                                      <TableRow>
+                                        <TableCell>{stat.username}</TableCell>
+                                        <TableCell>{stat.totalTasks}</TableCell>
+                                        <TableCell>{stat.totalHours.toFixed(2)} h</TableCell>
+                                        <TableCell>${stat.cost.toFixed(2)}</TableCell>
+                                        <TableCell>
+                                          <IconButton
+                                            aria-label="expand row"
+                                            size="small"
+                                            onClick={() => handleToggleUserTasks(userId)}
+                                          >
+                                            {expandedUsers[userId] ? (
+                                              <KeyboardArrowUpIcon />
+                                            ) : (
+                                              <KeyboardArrowDownIcon />
+                                            )}
+                                          </IconButton>
+                                        </TableCell>
+                                      </TableRow>
+                                      <TableRow>
+                                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                                          <Collapse in={expandedUsers[userId]} timeout="auto" unmountOnExit>
+                                            <Box margin={1}>
+                                              <Table size="small">
+                                                <TableHead>
                                                   <TableRow>
-                                                    <TableCell colSpan={4} style={{ color: "#5b5652" }}>
-                                                      No tasks for this user
-                                                    </TableCell>
+                                                    <TableCell width="10%">Task</TableCell>
+                                                    <TableCell width="60%">Description</TableCell>
+                                                    <TableCell width="20%">Hours (Est/Real)</TableCell>
+                                                    <TableCell width="10%">Status</TableCell>
                                                   </TableRow>
-                                                ) : (
-                                                  userTasks[userId]?.map((assignment) => (
-                                                    <TableRow key={assignment.id}>
-                                                      <TableCell>{assignment.task?.id}</TableCell>
-                                                      <TableCell>{assignment.task?.description}</TableCell>
-                                                      <TableCell>
-                                                        {(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}
-                                                      </TableCell>
-                                                      <TableCell>
-                                                        <Button
-                                                          variant="contained"
-                                                          size="small"
-                                                          style={{
-                                                            backgroundColor:
-                                                              assignment.task?.done ? "#5f7d4f" : "#5b5652",
-                                                            color: "#fff",
-                                                            fontWeight: "bold",
-                                                          }}
-                                                          disabled
-                                                        >
-                                                          {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
-                                                        </Button>
+                                                </TableHead>
+                                                <TableBody>
+                                                  {(userTasks[userId] || []).length === 0 ? (
+                                                    <TableRow>
+                                                      <TableCell colSpan={4} style={{ color: "#5b5652" }}>
+                                                        No tasks for this user
                                                       </TableCell>
                                                     </TableRow>
-                                                  ))
-                                                )}
-                                              </TableBody>
-                                            </Table>
-                                          </Box>
-                                        </Collapse>
-                                      </TableCell>
-                                    </TableRow>
-                                  </React.Fragment>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </OracleTable>
+                                                  ) : (
+                                                    userTasks[userId]?.map((assignment) => (
+                                                      <TableRow key={assignment.id}>
+                                                        <TableCell>{assignment.task?.id}</TableCell>
+                                                        <TableCell>{assignment.task?.description}</TableCell>
+                                                        <TableCell>
+                                                          {(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                          <Button
+                                                            variant="contained"
+                                                            size="small"
+                                                            style={{
+                                                              backgroundColor:
+                                                                assignment.task?.done ? "#5f7d4f" : "#5b5652",
+                                                              color: "#fff",
+                                                              fontWeight: "bold",
+                                                            }}
+                                                            disabled
+                                                          >
+                                                            {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
+                                                          </Button>
+                                                        </TableCell>
+                                                      </TableRow>
+                                                    ))
+                                                  )}
+                                                </TableBody>
+                                              </Table>
+                                            </Box>
+                                          </Collapse>
+                                        </TableCell>
+                                      </TableRow>
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </OracleTable>
+          </>
         )}
+      </div>
+
+      <div className="dashboard-section">
+        <h2>Team Hours Analysis</h2>
+        <TeamHoursGraph teamTasks={teamTasks} />
       </div>
     </div>
   );
