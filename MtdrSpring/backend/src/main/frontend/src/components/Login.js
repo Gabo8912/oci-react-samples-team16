@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import Captcha from './Captcha';
 
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
-
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +25,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${baseUrl}/auth/login`, {
+      const response = await fetch('http://localhost:8081/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,4 +90,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login; 
