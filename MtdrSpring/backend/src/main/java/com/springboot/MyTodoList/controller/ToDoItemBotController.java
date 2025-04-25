@@ -19,7 +19,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -34,6 +33,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
     private enum BotState {
         NONE,
+        AWAITING_USERNAME,
+        AWAITING_PASSWORD,
+        LOGGED_IN,
         AWAITING_DESCRIPTION,
         AWAITING_ESTIMATED_HOURS,
         AWAITING_SUBTASKS_INPUT,
@@ -54,6 +56,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
     private final Map<Long, ToDoItem> pendingToDo = new ConcurrentHashMap<>();
     private final Map<Long, List<String>> pendingSubTasksInput = new ConcurrentHashMap<>();
     private final Map<Long, Integer> pendingRealHoursTask = new ConcurrentHashMap<>();
+    private final Map<Long, String> pendingUsername = new ConcurrentHashMap<>();
+    private final Map<Long, String> pendingPassword = new ConcurrentHashMap<>();
+    private final Map<Long, String> loggedInUsername = new ConcurrentHashMap<>();
 
     public ToDoItemBotController(String botToken,
             String botName,
@@ -82,6 +87,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
         try {
             switch (state) {
+                case AWAITING_USERNAME:
+                    handleUsername(chatId, text);
+                    return;
+                case AWAITING_PASSWORD:
+                    handlePassword(chatId, text);
+                    return;
                 case AWAITING_DESCRIPTION:
                     handleAwaitingDescription(chatId, text);
                     return;
@@ -107,8 +118,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                     break;
             }
 
-            // No flow pending: handle commands
-            if ("/dashboard".equalsIgnoreCase(text)) {
+            // Command routing
+            if (text.equalsIgnoreCase(BotCommands.LOGIN_COMMAND.getCommand())) {
+                handleLoginCommand(chatId);
+            } else if (text.equalsIgnoreCase(BotCommands.EXIT_COMMAND.getCommand())) {
+                handleExitCommand(chatId);
+            } else if (!isAuthenticated(chatId)) {
+                sendMessage(chatId, "⚠️ Debes iniciar sesión primero. Usa /login.");
+            } else if ("/dashboard".equalsIgnoreCase(text)) {
                 handleDashboardCommand(chatId);
             } else if ("/completed".equalsIgnoreCase(text)) {
                 handleCompletedCommand(chatId);
@@ -163,35 +180,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
         msg.setReplyMarkup(kb);
         execute(msg);
     }
-
-    private void handleListCommand(long chatId) {
-        List<ToDoItem> active = toDoItemService.findAll().stream()
-            .filter(i -> !i.isDone())
-            .collect(Collectors.toList());
-    
-        if (active.isEmpty()) {
-            BotHelper.sendMessageToTelegram(chatId, "No tienes tareas activas.", this);
-        } else {
-            StringBuilder sb = new StringBuilder("📋 *Tus tareas activas:*\n\n");
-            Map<Long, List<ToDoItem>> bySprint = active.stream()
-                .collect(Collectors.groupingBy(ToDoItem::getSprintId));
-            for (var entry : bySprint.entrySet()) {
-                Sprint sp = sprintService.getSprintById(entry.getKey().intValue());
-                sb.append("🔹 Sprint ").append(sp.getSprintName()).append("\n");
-                for (ToDoItem t : entry.getValue()) {
-                    sb.append("   ↪️ ").append(t.getDescription())
-                      .append(" (").append(t.getEstimatedHours()).append("h)")
-                      .append("  /done_").append(t.getId())
-                      .append("  /addsubtask\n");
-                }
-                sb.append("\n");
-            }
-            BotHelper.sendMessageToTelegram(chatId, sb.toString(), this);
-        }
-    
-        // Mostrar siempre el menú después
-        sendMainMenu(chatId);
-    }
     
     private void handleCompletedCommand(long chatId) {
         List<ToDoItem> done = toDoItemService.findAll().stream().filter(ToDoItem::isDone).collect(Collectors.toList());
@@ -207,30 +195,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
             sb.append("\n");
         });
         BotHelper.sendMessageToTelegram(chatId, sb.toString(), this);
-    }
 
-    private void handleDashboardCommand(long chatId) {
-        // Similar logic to dashboard.js: stats per user
-        StringBuilder sb = new StringBuilder("📊 *Dashboard: Stats per User*\n\n");
-        userService.getAllUsers().forEach(u -> {
-            List<com.springboot.MyTodoList.model.TaskAssignment> assigns = taskAssignmentService
-                    .getAssignmentsForUser((long) u.getId());
-            int totalTasks = assigns.size();
-            double totalHours = assigns.stream()
-                    .mapToDouble(a -> Optional.ofNullable(a.getTask().getRealHours()).orElse(0)).sum();
-            sb.append("• ").append(u.getUsername())
-                    .append(" — Tasks: ").append(totalTasks)
-                    .append(", Hours: ").append(String.format("%.1f", totalHours))
-                    .append(", Cost: $").append(String.format("%.2f", totalHours * 25))
-                    .append("\n");
-        });
-        BotHelper.sendMessageToTelegram(chatId, sb.toString(), this);
-    }
-
-    /*** CREATION FLOW ***/
-    private void handleAddItemCommand(long chatId) {
-        BotHelper.sendMessageToTelegram(chatId, "🖊️ Describe la nueva tarea:", this);
-        chatState.put(chatId, BotState.AWAITING_DESCRIPTION);
+        // Continuar el flujo mostrando el menú principal
+        try {
+            sendMainMenu(chatId);
+        } catch (Exception e) {
+            logger.error("Error mostrando el menú principal después de tareas completadas", e);
+        }
     }
 
     private void handleAwaitingDescription(long chatId, String text) {
@@ -271,7 +242,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
     private void startSprintSelection(long chatId) {
         ReplyKeyboardMarkup kb = new ReplyKeyboardMarkup();
         kb.setResizeKeyboard(true);
-        kb.setOneTimeKeyboard(true);
+        kb.setOneTimeKeyboard(true);    
     
         List<KeyboardRow> rows = new ArrayList<>();
         for (Sprint s : sprintService.findAll()) {
@@ -431,5 +402,135 @@ private void sendMainMenu(long chatId) {
     }
 }
 
+    // ==== LOGIN FLOW ====
+    private void handleLoginCommand(long chatId) throws TelegramApiException {
+        chatState.put(chatId, BotState.AWAITING_USERNAME);
+        sendMessage(chatId, "Por favor, ingresa tu nombre de usuario:");
+    }
 
+    private void handleUsername(long chatId, String username) throws TelegramApiException {
+        pendingUsername.put(chatId, username);
+        chatState.put(chatId, BotState.AWAITING_PASSWORD);
+        sendMessage(chatId, "Ahora ingresa tu contraseña:");
+    }
+
+    private void handlePassword(long chatId, String password) throws TelegramApiException {
+        pendingPassword.put(chatId, password);
+        String username = pendingUsername.get(chatId);
+
+        Optional<User> user = userService.authenticate(username, password);
+        if (user.isPresent()) {
+            loggedInUsername.put(chatId, username);
+            chatState.put(chatId, BotState.LOGGED_IN);
+
+            // Mostrar mensaje de bienvenida solo al iniciar sesión
+            sendMessage(chatId, "¡Bienvenido! Soy tu Bot de ToDoList. Selecciona una opción:");
+            sendMainMenu(chatId);
+        } else {
+            sendMessage(chatId, "❌ Credenciales incorrectas. Usa /login para intentar de nuevo.");
+            chatState.put(chatId, BotState.NONE);
+        }
+    }
+
+    private boolean isAuthenticated(long chatId) {
+        return loggedInUsername.containsKey(chatId);
+    }
+
+    private void handleExitCommand(long chatId) throws TelegramApiException {
+        chatState.put(chatId, BotState.NONE);
+        loggedInUsername.remove(chatId);
+        sendMessage(chatId, "👋 Sesión cerrada. Usa /login para iniciar de nuevo.");
+    }
+
+    private void sendWelcomeMenu(long chatId) throws TelegramApiException {
+        String text = "¡Bienvenido! Soy tu Bot de ToDoList. Selecciona una opción:";
+        SendMessage msg = new SendMessage();
+        msg.setChatId(String.valueOf(chatId));
+        msg.setText(text);
+
+        ReplyKeyboardMarkup kb = new ReplyKeyboardMarkup();
+        kb.setResizeKeyboard(true);
+        kb.setOneTimeKeyboard(false);
+        List<KeyboardRow> rows = new ArrayList<>();
+        KeyboardRow r1 = new KeyboardRow();
+        r1.add("/dashboard");
+        r1.add("/todolist");
+        rows.add(r1);
+        KeyboardRow r2 = new KeyboardRow();
+        r2.add("/addtask");
+        r2.add("/completed");
+        rows.add(r2);
+        KeyboardRow r3 = new KeyboardRow();
+        r3.add("/exit");
+        rows.add(r3);
+        kb.setKeyboard(rows);
+        msg.setReplyMarkup(kb);
+
+        execute(msg);
+    }
+
+    // ==== DASHBOARD ====
+    private void handleDashboardCommand(long chatId) {
+        String username = loggedInUsername.get(chatId);
+        User currentUser = userService.findByUsername(username).orElseThrow();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("📊 *Dashboard - Perfil de ").append(currentUser.getUsername()).append("*\n");
+        sb.append("• Email: ").append(currentUser.getEmail()).append("\n");
+        sb.append("• Rol: ").append(currentUser.getRole()).append("\n\n");
+
+        sb.append("• Tareas por usuario:\n");
+        userService.getAllUsers().forEach(u -> {
+            List<com.springboot.MyTodoList.model.TaskAssignment> assigns = taskAssignmentService.getAssignmentsForUser((long) u.getId());
+            int totalTasks = assigns.size();
+            double totalHours = assigns.stream()
+                    .mapToDouble(a -> Optional.ofNullable(a.getTask().getRealHours()).orElse(0)).sum();
+            sb.append("   – ").append(u.getUsername())
+              .append(": ").append(totalTasks)
+              .append(" tareas, ").append(String.format("%.1f", totalHours)).append("h\n");
+        });
+
+        BotHelper.sendMessageToTelegram(chatId, sb.toString(), this);
+        try { sendWelcomeMenu(chatId); } catch (Exception ignore) {}
+    }
+
+    // ==== TODOLIST ====
+    private void handleListCommand(long chatId) {
+        List<ToDoItem> active = toDoItemService.findAll().stream()
+                .filter(i -> !i.isDone())
+                .collect(Collectors.toList());
+        if (active.isEmpty()) {
+            BotHelper.sendMessageToTelegram(chatId, "No tienes tareas activas.", this);
+        } else {
+            StringBuilder sb = new StringBuilder("📋 *Tus tareas activas:*\n\n");
+            Map<Long, List<ToDoItem>> bySprint = active.stream()
+                    .collect(Collectors.groupingBy(ToDoItem::getSprintId));
+            bySprint.forEach((sId, list) -> {
+                Sprint sp = sprintService.getSprintById(sId.intValue());
+                sb.append("🔹 Sprint ").append(sp.getSprintName()).append("\n");
+                list.forEach(t -> sb.append("   ↪️ ").append(t.getDescription())
+                        .append(" (").append(t.getEstimatedHours()).append("h) ")
+                        .append("/done_").append(t.getId())
+                        .append(" /addsubtask_").append(t.getId())
+                        .append("\n"));
+                sb.append("\n");
+            });
+            BotHelper.sendMessageToTelegram(chatId, sb.toString(), this);
+        }
+        try { sendWelcomeMenu(chatId); } catch (Exception ignore) {}
+    }
+
+    // ==== ADD TASK ====
+    private void handleAddItemCommand(long chatId) {
+        BotHelper.sendMessageToTelegram(chatId, "🖊️ Describe la nueva tarea:", this);
+        chatState.put(chatId, BotState.AWAITING_DESCRIPTION);
+    }
+
+    // ==== UTIL ====
+    private void sendMessage(long chatId, String text) throws TelegramApiException {
+        SendMessage msg = new SendMessage();
+        msg.setChatId(String.valueOf(chatId));
+        msg.setText(text);
+        execute(msg);
+    }
 }
