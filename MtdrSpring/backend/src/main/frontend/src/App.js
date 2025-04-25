@@ -6,18 +6,18 @@
 */
 import React, { useState, useEffect } from "react";
 import NewItem from "./NewItem";
-import API_URL from "./API";                       // <-- tu URL desde .env
+import API_URL from "./API";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, TableBody, CircularProgress, Paper } from "@mui/material";
+import { Button, TableBody, CircularProgress, Paper, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import Moment from "react-moment";                // formateo de fechas
-import NewSprint from "./NewSprint";              // formulario de sprints
+import Moment from "react-moment";
+import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
 import HoursDialog from "./HoursDialog";
 
 const COMPLETED_TASKS_TO_SHOW = 5;
-const LONG_TASK_DURATION = 4;                     // umbral para subtareas automáticas
+const LONG_TASK_DURATION = 4;
 const COMPLETED_TASKS_PANEL_WIDTH = '350px';
 const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
 
@@ -68,33 +68,63 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
-
-  // calcula % completado para cada tarea
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  const [userTasks, setUserTasks] = useState([]);
+  const [username, setUsername] = useState(localStorage.getItem("username") || null);
+  const [role, setRole] = useState(localStorage.getItem("role") || null);
   function calculateProgress(list) {
     if (!list?.length) return 0;
     const doneCount = list.filter(st => st.done).length;
     return (doneCount / list.length) * 100;
   }
 
-  // Carga inicial de tareas
-  function loadTasks() {
+  // Update your loadUserTasks function
+  function loadUserTasks(userId) {
+    const token = localStorage.getItem("token");
+    
     setLoading(true);
-    fetch(API_URL)
+    fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then(res => {
+        if (res.status === 401) {
+          // Token expired or invalid
+          handleLogout();
+          throw new Error("Session expired");
+        }
         if (!res.ok) throw new Error("Failed to load tasks");
         return res.json();
       })
       .then(data => {
-        setItems(data);
-        data.forEach(item => loadSubTasks(item.id));
+        const tasks = data.map(assignment => assignment.task);
+        setItems(tasks.filter(task => task));
+        tasks.forEach(task => task && loadSubTasks(task.id));
       })
-      .catch(err => setError(err))
+      .catch(err => {
+        setError(err);
+        if (err.message === "Session expired") {
+          setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        }
+      })
       .finally(() => setLoading(false));
   }
 
-  // Carga de subtareas por tarea
+  // Add logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userId");
+    setUserId(null);
+    setUsername(null);
+    setRole(null);
+    setItems([]);
+    // Optionally redirect to login
+  };
+
   function loadSubTasks(taskId) {
-    fetch(`${API_URL}/subtask/${taskId}`)
+    fetch(`${API_URL}/todolist/subtask/${taskId}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to load subtasks");
         return res.json();
@@ -104,27 +134,61 @@ function App() {
       })
       .catch(err => setError(err));
   }
+  function deleteSubTask(subId) {
+    fetch(`${API_URL}/todolist/subtask/${subId}`, {
+      method: "DELETE"
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Delete subtask failed");
+        // Find which task this subtask belongs to
+        const taskId = Object.keys(subTasks).find(key => 
+          subTasks[key].some(st => st.id === subId)
+        );
+        if (taskId) {
+          setSubTasks(prev => ({
+            ...prev,
+            [taskId]: prev[taskId].filter(st => st.id !== subId)
+          }));
+        }
+      })
+      .catch(err => setError(err));
+  }
 
-  // Crear ítem
-  function addItem(text, estimatedHours, realHours, subArray, sprintId, userId) {
+  function addItem(text, estimatedHours, realHours, subArray, sprintId) {
     setInserting(true);
-    fetch(API_URL, {
+    fetch(`${API_URL}/api/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: text, estimatedHours, realHours, sprintId, userId })
+      body: JSON.stringify({ 
+        description: text, 
+        estimatedHours, 
+        realHours, 
+        sprintId,
+        done: false 
+      })
     })
       .then(res => {
         if (!res.ok) throw new Error("Add item failed");
-        return res;
+        return res.json();
       })
-      .then(res => {
-        const id = res.headers.get("location");
-        const newItem = { id, description: text, estimatedHours, realHours, done: false, userId };
-        setItems(prev => [newItem, ...prev]);
-        // subtareas automáticas si es larga
+      .then(newTask => {
+        // Assign the task to the current user
+        return fetch(`${API_URL}/api/task-assignments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            taskId: newTask.id
+          })
+        }).then(() => newTask);
+      })
+      .then(newTask => {
+        setItems(prev => [newTask, ...prev]);
+        
+        // Create subtasks if needed
         if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
           return Promise.all(subArray.map(desc =>
-            fetch(`${API_URL}/subtask/${id}/add`, {
+            fetch(`${API_URL}/api/subtask/${newTask.id}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ description: desc, done: false })
@@ -137,25 +201,25 @@ function App() {
         if (subs.length) {
           setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
         }
+        loadUserTasks(); // Refresh the task list
       })
       .catch(err => setError(err))
       .finally(() => setInserting(false));
   }
 
-  // Borrar ítem
   function deleteItem(id) {
-    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+    fetch(`${API_URL}/api/tasks/${id}`, { method: "DELETE" })
       .then(res => {
         if (!res.ok) throw new Error("Delete failed");
         setItems(prev => prev.filter(it => it.id !== id));
+        loadUserTasks(); // Refresh the task list
       })
       .catch(err => setError(err));
   }
 
-  // Modificar ítem
   function modifyItem(id, description, done, realHours = null) {
     const data = realHours != null ? { description, done, realHours } : { description, done };
-    return fetch(`${API_URL}/${id}`, {
+    return fetch(`${API_URL}/api/tasks/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -166,20 +230,19 @@ function App() {
       });
   }
 
-  // Recargar un ítem puntual
   function reloadOneItem(id) {
-    fetch(`${API_URL}/${id}`)
+    fetch(`${API_URL}/api/tasks/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("Reload failed");
         return res.json();
       })
       .then(updated => {
         setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
+        loadUserTasks(); // Refresh the task list
       })
       .catch(err => setError(err));
   }
 
-  // Marcar tarea como hecha/rehacer
   function toggleDone(e, item) {
     e.preventDefault();
     const nextDone = !item.done;
@@ -196,13 +259,11 @@ function App() {
     }
   }
 
-  // Marcar subtarea
   function toggleSubTaskDone(e, subId) {
     const done = e.target.checked;
-    fetch(`${API_URL}/subtask/${subId}/toggle`, {
+    fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ done })
+      headers: { "Content-Type": "application/json" }
     })
       .then(res => {
         if (!res.ok) throw new Error("Toggle subtask failed");
@@ -218,30 +279,37 @@ function App() {
       .catch(err => setError(err));
   }
 
-  // Agregar subtarea inline
   function addSubTask(taskId, text) {
     if (!text.trim()) return alert("Subtask cannot be empty");
-    fetch(`${API_URL}/subtask/${taskId}/add`, {
+    
+    const subTaskData = {
+      description: text,
+      done: false
+    };
+  
+    fetch(`${API_URL}/todolist/subtask/${taskId}/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: text, done: false })
+      body: JSON.stringify(subTaskData)
     })
       .then(res => {
         if (!res.ok) throw new Error("Add subtask failed");
         return res.json();
       })
       .then(sub => {
-        setSubTasks(prev => ({ ...prev, [taskId]: [...(prev[taskId]||[]), sub] }));
+        setSubTasks(prev => ({ 
+          ...prev, 
+          [taskId]: [...(prev[taskId] || []), sub] 
+        }));
         setNewSubTaskText("");
         setShowSubTaskForm(prev => ({ ...prev, [taskId]: false }));
       })
       .catch(err => setError(err));
   }
 
-  // Form sprint
   function addSprint(sprintData) {
     setIsCreatingSprint(true);
-    fetch(`${API_URL}/sprints`, {
+    fetch(`${API_URL}/api/sprints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(sprintData)
@@ -257,15 +325,22 @@ function App() {
       });
   }
 
-  // Mostrar/ocultar historial
   function toggleHistory() {
     setShowHistory(h => !h);
   }
 
-  // Inicial
+  // Check auth state on load
   useEffect(() => {
-    loadTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const token = localStorage.getItem("token");
+    const storedUserId = localStorage.getItem("userId");
+    
+    if (token && storedUserId) {
+      // Verify token is still valid
+      setUserId(storedUserId);
+      setUsername(localStorage.getItem("username"));
+      setRole(localStorage.getItem("role"));
+      loadUserTasks(storedUserId);
+    }
   }, []);
 
   return (
@@ -275,6 +350,10 @@ function App() {
       ) : (
         <>
           <h1>MY TODO LIST</h1>
+          <Typography variant="h6" gutterBottom>
+            User ID: {userId}
+          </Typography>
+                    
           <NewItem addItem={addItem} isInserting={isInserting} />
 
           <Button
@@ -327,31 +406,31 @@ function App() {
                       </tr>
 
                       {expandedTasks[item.id] && subTasks[item.id]?.map(sub => (
-                        <tr key={sub.id}>
-                          <td className="subtask-description">
-                            <input
-                              type="checkbox"
-                              checked={sub.done}
-                              onChange={e => toggleSubTaskDone(e, sub.id)}
-                            />
-                            {sub.description}
-                          </td>
-                          <td className="date">
-                            <Moment format="MMM Do hh:mm:ss">
-                              {sub.creation_ts}
-                            </Moment>
-                          </td>
-                          <td>
-                            <Button
-                              size="small"
-                              startIcon={<DeleteIcon />}
-                              onClick={() => deleteItem(sub.id)}
-                            >
-                              Delete
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+  <tr key={sub.id}>
+    <td className="subtask-description">
+      <input
+        type="checkbox"
+        checked={sub.done}
+        onChange={e => toggleSubTaskDone(e, sub.id)}
+      />
+      {sub.description}
+    </td>
+    <td className="date">
+      <Moment format="MMM Do hh:mm:ss">
+        {sub.creationDate || new Date()}
+      </Moment>
+    </td>
+    <td>
+      <Button
+        size="small"
+        startIcon={<DeleteIcon />}
+        onClick={() => deleteSubTask(sub.id)}
+      >
+        Delete
+      </Button>
+    </td>
+  </tr>
+))}
 
                       {expandedTasks[item.id] && (
                         <tr>
