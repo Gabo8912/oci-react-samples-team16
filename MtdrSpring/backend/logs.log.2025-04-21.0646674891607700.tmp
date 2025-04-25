@@ -1,0 +1,547 @@
+2025-04-21 00:00:44.417  INFO 22552 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 22552 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:00:44.427  INFO 22552 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:00:44.505  INFO 22552 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:00:44.506  INFO 22552 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:00:44.507  INFO 22552 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:00:44.508  INFO 22552 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:00:44.508  INFO 22552 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:00:45.431  INFO 22552 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:00:45.517  INFO 22552 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 76 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:00:46.341  INFO 22552 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:00:46.357  INFO 22552 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:00:46.357  INFO 22552 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:00:46.513  INFO 22552 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:00:46.514  INFO 22552 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2005 ms
+2025-04-21 00:00:46.919  INFO 22552 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:00:46.920  INFO 22552 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:00:46.920  INFO 22552 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:00:47.064  INFO 22552 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:00:47.157  INFO 22552 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:00:47.399  INFO 22552 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:00:49.436  INFO 22552 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:00:50.556  INFO 22552 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:00:50.570  INFO 22552 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:00:51.249  WARN 22552 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:00:51.469  INFO 22552 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:00:51.765  INFO 22552 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:00:51.932  INFO 22552 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:00:51.988  INFO 22552 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:00:52.001  INFO 22552 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 8.196 seconds (JVM running for 9.05)
+2025-04-21 00:00:52.156  INFO 22552 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:00:52.156  INFO 22552 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:00:52.809  INFO 22552 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:00:57.413  INFO 22552 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:00:57.414  INFO 22552 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:00:57.418  INFO 22552 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2025-04-21 00:01:06.871  WARN 22552 --- [http-nio-8081-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:14.620  WARN 22552 --- [http-nio-8081-exec-4] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:15.441  WARN 22552 --- [http-nio-8081-exec-2] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:15.629  WARN 22552 --- [http-nio-8081-exec-6] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:15.810  WARN 22552 --- [http-nio-8081-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:15.966  WARN 22552 --- [http-nio-8081-exec-8] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:01:25.103  WARN 22552 --- [http-nio-8081-exec-3] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:07:53.557  INFO 22552 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:10:45.842  INFO 6652 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 6652 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:10:45.844  INFO 6652 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:10:45.916  INFO 6652 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:10:45.917  INFO 6652 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:10:45.919  INFO 6652 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:10:45.920  INFO 6652 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:10:45.921  INFO 6652 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:10:46.775  INFO 6652 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:10:46.869  INFO 6652 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 83 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:10:47.754  INFO 6652 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:10:47.775  INFO 6652 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:10:47.776  INFO 6652 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:10:47.925  INFO 6652 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:10:47.925  INFO 6652 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2003 ms
+2025-04-21 00:10:48.394  INFO 6652 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:10:48.396  INFO 6652 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:10:48.396  INFO 6652 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:10:48.547  INFO 6652 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:10:48.623  INFO 6652 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:10:48.843  INFO 6652 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:10:50.820  INFO 6652 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:10:51.839  INFO 6652 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:10:51.851  INFO 6652 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:10:52.540  WARN 6652 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:10:52.796  INFO 6652 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:10:53.093  INFO 6652 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:10:53.256  INFO 6652 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:10:53.299  INFO 6652 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:10:53.310  INFO 6652 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 8.017 seconds (JVM running for 8.842)
+2025-04-21 00:10:53.475  INFO 6652 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:10:53.476  INFO 6652 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:10:54.132  INFO 6652 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:11:01.499  INFO 6652 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:11:01.500  INFO 6652 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:11:01.504  INFO 6652 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+2025-04-21 00:11:47.873  INFO 6652 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:12:48.933  INFO 11372 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 11372 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:12:48.936  INFO 11372 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:12:49.016  INFO 11372 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:12:49.018  INFO 11372 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:12:49.019  INFO 11372 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:12:49.020  INFO 11372 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:12:49.021  INFO 11372 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:12:49.863  INFO 11372 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:12:49.967  INFO 11372 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 93 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:12:50.761  INFO 11372 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:12:50.775  INFO 11372 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:12:50.776  INFO 11372 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:12:50.927  INFO 11372 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:12:50.928  INFO 11372 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1905 ms
+2025-04-21 00:12:51.353  INFO 11372 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:12:51.354  INFO 11372 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:12:51.355  INFO 11372 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:12:51.491  INFO 11372 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:12:51.551  INFO 11372 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:12:51.732  INFO 11372 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:12:53.526  INFO 11372 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:12:54.456  INFO 11372 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:12:54.466  INFO 11372 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:12:55.149  WARN 11372 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:12:55.310  INFO 11372 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:12:55.598  INFO 11372 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:12:55.780  INFO 11372 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:12:55.818  INFO 11372 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:12:55.831  INFO 11372 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 7.467 seconds (JVM running for 8.206)
+2025-04-21 00:12:55.991  INFO 11372 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:12:55.991  INFO 11372 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:12:56.599  INFO 11372 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:13:04.535  INFO 11372 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:13:04.536  INFO 11372 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:13:04.540  INFO 11372 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-04-21 00:13:17.550  WARN 11372 --- [http-nio-8081-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:13:40.629  WARN 11372 --- [http-nio-8081-exec-9] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:13:44.463  WARN 11372 --- [http-nio-8081-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:13:47.407  WARN 11372 --- [http-nio-8081-exec-10] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:21:51.012  INFO 11372 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:23:00.165  INFO 12588 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 12588 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:23:00.168  INFO 12588 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:23:00.243  INFO 12588 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:23:00.244  INFO 12588 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:23:00.244  INFO 12588 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:23:00.246  INFO 12588 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:23:00.246  INFO 12588 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:23:01.172  INFO 12588 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:23:01.278  INFO 12588 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 95 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:23:02.107  INFO 12588 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:23:02.126  INFO 12588 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:23:02.127  INFO 12588 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:23:02.297  INFO 12588 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:23:02.298  INFO 12588 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2051 ms
+2025-04-21 00:23:02.762  INFO 12588 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:23:02.763  INFO 12588 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:23:02.764  INFO 12588 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:23:02.924  INFO 12588 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:23:03.003  INFO 12588 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:23:03.229  INFO 12588 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:23:05.155  INFO 12588 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:23:06.222  INFO 12588 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:23:06.233  INFO 12588 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:23:06.939  WARN 12588 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:23:07.199  INFO 12588 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:23:07.486  INFO 12588 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:23:07.678  INFO 12588 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:23:07.724  INFO 12588 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:23:07.736  INFO 12588 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 8.156 seconds (JVM running for 9.058)
+2025-04-21 00:23:07.888  INFO 12588 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:23:07.889  INFO 12588 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:23:08.535  INFO 12588 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:23:26.763  INFO 12588 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:23:26.764  INFO 12588 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:23:26.766  INFO 12588 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-04-21 00:24:00.115  INFO 12588 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:24:58.752  INFO 3736 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 3736 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:24:58.755  INFO 3736 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:24:58.858  INFO 3736 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:24:58.861  INFO 3736 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:24:58.862  INFO 3736 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:24:58.866  INFO 3736 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:24:58.867  INFO 3736 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:25:00.394  INFO 3736 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:25:00.530  INFO 3736 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 123 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:25:02.008  INFO 3736 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:25:02.028  INFO 3736 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:25:02.030  INFO 3736 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:25:02.258  INFO 3736 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:25:02.259  INFO 3736 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3391 ms
+2025-04-21 00:25:02.879  INFO 3736 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:25:02.883  INFO 3736 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:25:02.885  INFO 3736 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:25:03.094  INFO 3736 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:25:03.257  INFO 3736 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:25:03.537  INFO 3736 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:25:05.413  INFO 3736 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:25:06.445  INFO 3736 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:25:06.456  INFO 3736 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:25:07.128  WARN 3736 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:25:07.301  INFO 3736 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:25:07.569  INFO 3736 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:25:07.720  INFO 3736 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:25:07.767  INFO 3736 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:25:07.778  INFO 3736 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 9.583 seconds (JVM running for 10.442)
+2025-04-21 00:25:07.936  INFO 3736 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:25:07.937  INFO 3736 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:25:08.578  INFO 3736 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:25:11.647  INFO 3736 --- [http-nio-8081-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:25:11.648  INFO 3736 --- [http-nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:25:11.650  INFO 3736 --- [http-nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-04-21 00:25:23.824  WARN 3736 --- [http-nio-8081-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:25:26.509  WARN 3736 --- [http-nio-8081-exec-8] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'int'; nested exception is java.lang.NumberFormatException: For input string: "undefined"]
+2025-04-21 00:26:22.947  INFO 3736 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:27:16.863  INFO 14044 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 14044 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:27:16.866  INFO 14044 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:27:16.932  INFO 14044 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:27:16.933  INFO 14044 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:27:16.934  INFO 14044 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:27:16.936  INFO 14044 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:27:16.936  INFO 14044 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:27:17.796  INFO 14044 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:27:17.882  INFO 14044 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 76 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:27:18.716  INFO 14044 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:27:18.731  INFO 14044 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:27:18.732  INFO 14044 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:27:18.876  INFO 14044 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:27:18.876  INFO 14044 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1939 ms
+2025-04-21 00:27:19.233  INFO 14044 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:27:19.235  INFO 14044 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:27:19.236  INFO 14044 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:27:19.370  INFO 14044 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:27:19.447  INFO 14044 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:27:19.628  INFO 14044 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:27:21.361  INFO 14044 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:27:22.230  INFO 14044 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:27:22.241  INFO 14044 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:27:22.853  WARN 14044 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:27:23.007  INFO 14044 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:27:23.241  INFO 14044 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:27:23.390  INFO 14044 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:27:23.435  INFO 14044 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:27:23.445  INFO 14044 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 7.262 seconds (JVM running for 8.165)
+2025-04-21 00:27:23.574  INFO 14044 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:27:23.575  INFO 14044 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:27:24.183  INFO 14044 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:27:45.396  INFO 14044 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:27:45.396  INFO 14044 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:27:45.398  INFO 14044 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-04-21 00:36:05.301  INFO 14044 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:37:03.745  INFO 6192 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 6192 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:37:03.747  INFO 6192 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:37:03.799  INFO 6192 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:37:03.800  INFO 6192 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:37:03.800  INFO 6192 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:37:03.801  INFO 6192 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:37:03.802  INFO 6192 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:37:04.569  INFO 6192 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:37:04.662  INFO 6192 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 80 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:37:05.306  INFO 6192 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:37:05.319  INFO 6192 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:37:05.319  INFO 6192 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:37:05.444  INFO 6192 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:37:05.444  INFO 6192 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1641 ms
+2025-04-21 00:37:05.783  INFO 6192 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:37:05.784  INFO 6192 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:37:05.785  INFO 6192 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:37:05.903  INFO 6192 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:37:05.974  INFO 6192 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:37:06.165  INFO 6192 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:37:07.874  INFO 6192 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:37:08.779  INFO 6192 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:37:08.788  INFO 6192 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:37:09.326  WARN 6192 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:37:09.487  INFO 6192 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:37:09.737  INFO 6192 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:37:09.870  INFO 6192 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:37:09.911  INFO 6192 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:37:09.921  INFO 6192 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 6.674 seconds (JVM running for 7.319)
+2025-04-21 00:37:10.057  INFO 6192 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:37:10.057  INFO 6192 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:37:10.749  INFO 6192 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:38:13.304  INFO 6192 --- [http-nio-8081-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:38:13.304  INFO 6192 --- [http-nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:38:13.305  INFO 6192 --- [http-nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2025-04-21 00:53:03.289  INFO 6192 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:58:00.584  INFO 21900 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 21900 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 00:58:00.586  INFO 21900 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 00:58:00.650  INFO 21900 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 00:58:00.651  INFO 21900 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 00:58:00.652  INFO 21900 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 00:58:00.653  INFO 21900 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 00:58:00.653  INFO 21900 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 00:58:01.510  INFO 21900 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 00:58:01.603  INFO 21900 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 83 ms. Found 4 JPA repository interfaces.
+2025-04-21 00:58:02.356  INFO 21900 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 00:58:02.370  INFO 21900 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 00:58:02.371  INFO 21900 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 00:58:02.502  INFO 21900 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 00:58:02.503  INFO 21900 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1849 ms
+2025-04-21 00:58:02.888  INFO 21900 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 00:58:02.889  INFO 21900 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 00:58:02.890  INFO 21900 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 00:58:03.021  INFO 21900 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 00:58:03.091  INFO 21900 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 00:58:03.289  INFO 21900 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 00:58:04.968  INFO 21900 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 00:58:05.801  INFO 21900 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 00:58:05.809  INFO 21900 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 00:58:06.382  WARN 21900 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 00:58:06.546  INFO 21900 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 00:58:06.776  INFO 21900 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 00:58:06.915  INFO 21900 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 00:58:06.953  INFO 21900 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 00:58:06.962  INFO 21900 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 6.921 seconds (JVM running for 7.752)
+2025-04-21 00:58:07.113  INFO 21900 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 00:58:07.114  INFO 21900 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 00:58:07.733  INFO 21900 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 00:58:39.913  INFO 21900 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 00:58:39.914  INFO 21900 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 00:58:39.916  INFO 21900 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-04-21 00:59:22.248  WARN 21900 --- [http-nio-8081-exec-3] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1400, SQLState: 23000
+2025-04-21 00:59:22.249 ERROR 21900 --- [http-nio-8081-exec-3] o.h.engine.jdbc.spi.SqlExceptionHelper   : ORA-01400: cannot insert NULL into ("TODOUSER"."TODOITEM"."SPRINT_ID")
+
+2025-04-21 00:59:22.335 ERROR 21900 --- [http-nio-8081-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a]; constraint [null]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement] with root cause
+
+oracle.jdbc.OracleDatabaseException: ORA-01400: cannot insert NULL into ("TODOUSER"."TODOITEM"."SPRINT_ID")
+
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:637) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:564) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1231) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:772) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:299) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:512) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:163) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.executeForRows(T4CPreparedStatement.java:1241) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OracleStatement.executeSQLStatement(OracleStatement.java:1820) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1472) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3761) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OraclePreparedStatement.executeLargeUpdate(OraclePreparedStatement.java:4062) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OraclePreparedStatement.executeUpdate(OraclePreparedStatement.java:4037) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at oracle.jdbc.driver.OraclePreparedStatementWrapper.executeUpdate(OraclePreparedStatementWrapper.java:996) ~[ojdbc11-21.3.0.0.jar:21.3.0.0.0]
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:197) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.dialect.identity.GetGeneratedKeysDelegate.executeAndExtract(GetGeneratedKeysDelegate.java:58) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.id.insert.AbstractReturningDelegate.performInsert(AbstractReturningDelegate.java:43) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:3279) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:3885) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.action.internal.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:84) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.engine.spi.ActionQueue.execute(ActionQueue.java:645) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.engine.spi.ActionQueue.addResolvedEntityInsertAction(ActionQueue.java:282) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.engine.spi.ActionQueue.addInsertAction(ActionQueue.java:263) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.engine.spi.ActionQueue.addAction(ActionQueue.java:317) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.AbstractSaveEventListener.addInsertAction(AbstractSaveEventListener.java:330) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:287) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:193) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:123) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.DefaultPersistEventListener.entityIsTransient(DefaultPersistEventListener.java:185) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:128) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:55) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:107) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.internal.SessionImpl.firePersist(SessionImpl.java:760) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at org.hibernate.internal.SessionImpl.persist(SessionImpl.java:746) ~[hibernate-core-5.6.5.Final.jar:5.6.5.Final]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:362) ~[spring-orm-5.3.16.jar:5.3.16]
+	at jdk.proxy3/jdk.proxy3.$Proxy120.persist(Unknown Source) ~[na:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:311) ~[spring-orm-5.3.16.jar:5.3.16]
+	at jdk.proxy3/jdk.proxy3.$Proxy120.persist(Unknown Source) ~[na:na]
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:637) ~[spring-data-jpa-2.6.2.jar:2.6.2]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:289) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:137) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:121) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:529) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:285) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:639) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:163) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:138) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:80) ~[spring-data-commons-2.6.2.jar:2.6.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:388) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:174) ~[spring-data-jpa-2.6.2.jar:2.6.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:215) ~[spring-aop-5.3.16.jar:5.3.16]
+	at jdk.proxy3/jdk.proxy3.$Proxy123.save(Unknown Source) ~[na:na]
+	at com.springboot.MyTodoList.service.ToDoItemService.addToDoItem(ToDoItemService.java:53) ~[classes/:na]
+	at com.springboot.MyTodoList.service.ToDoItemService$$FastClassBySpringCGLIB$$89e142a7.invoke(<generated>) ~[classes/:na]
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218) ~[spring-core-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:783) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:753) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:388) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:753) ~[spring-aop-5.3.16.jar:5.3.16]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:698) ~[spring-aop-5.3.16.jar:5.3.16]
+	at com.springboot.MyTodoList.service.ToDoItemService$$EnhancerBySpringCGLIB$$2fc99d34.addToDoItem(<generated>) ~[classes/:na]
+	at com.springboot.MyTodoList.controller.ToDoItemController.addToDoItem(ToDoItemController.java:30) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:205) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:150) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1067) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:909) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:681) ~[tomcat-embed-core-9.0.58.jar:4.0.FR]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.16.jar:5.3.16]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.58.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:227) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:327) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:115) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:81) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:122) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:116) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:126) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:81) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:109) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:149) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:103) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:89) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:110) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:80) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:55) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:336) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:211) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:183) ~[spring-security-web-5.6.2.jar:5.6.2]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:354) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:267) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.16.jar:5.3.16]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:197) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:540) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:135) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:359) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:399) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:889) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1735) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-9.0.58.jar:9.0.58]
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+
+2025-04-21 00:59:45.834  INFO 21900 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 01:06:24.266  INFO 23976 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 23976 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 01:06:24.269  INFO 23976 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 01:06:24.422  INFO 23976 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 01:06:24.423  INFO 23976 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 01:06:24.425  INFO 23976 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 01:06:24.426  INFO 23976 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 01:06:24.426  INFO 23976 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 01:06:25.900  INFO 23976 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 01:06:26.003  INFO 23976 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 92 ms. Found 4 JPA repository interfaces.
+2025-04-21 01:06:26.822  INFO 23976 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2025-04-21 01:06:26.836  INFO 23976 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 01:06:26.837  INFO 23976 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 01:06:27.057  INFO 23976 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 01:06:27.058  INFO 23976 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2631 ms
+2025-04-21 01:06:27.740  INFO 23976 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 01:06:27.741  INFO 23976 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 01:06:27.741  INFO 23976 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 01:06:27.900  INFO 23976 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 01:06:27.982  INFO 23976 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 01:06:28.194  INFO 23976 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 01:06:30.153  INFO 23976 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 01:06:31.025  INFO 23976 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 01:06:31.037  INFO 23976 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 01:06:31.617  WARN 23976 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 01:06:31.783  INFO 23976 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 01:06:32.053  INFO 23976 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 01:06:32.193  INFO 23976 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 01:06:32.237  INFO 23976 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+2025-04-21 01:06:32.248  INFO 23976 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 8.461 seconds (JVM running for 9.138)
+2025-04-21 01:06:32.370  INFO 23976 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 01:06:32.371  INFO 23976 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 01:06:33.103  INFO 23976 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 01:06:35.203  INFO 23976 --- [http-nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 01:06:35.204  INFO 23976 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 01:06:35.206  INFO 23976 --- [http-nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-04-21 01:06:49.654  INFO 23976 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 11:21:28.755  INFO 5896 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Starting MyTodoListApplication using Java 21.0.5 on Gabo with PID 5896 (D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend\target\classes started by Gabriel Alvarez Arza in D:\TECMTY\SEMESTRE7\Oracle_bot\oci-react-samples-team16\MtdrSpring\backend)
+2025-04-21 11:21:28.777  INFO 5896 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-04-21 11:21:29.010  INFO 5896 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\jdbc\ojdbc11\21.3.0.0\ojdbc11-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/jdbc/ojdbc11/21.3.0.0/oraclepki.jar
+2025-04-21 11:21:29.012  INFO 5896 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\security\oraclepki\21.3.0.0\oraclepki-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/21.3.0.0/osdt_cert.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_core.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/security/oraclepki/oracle.osdt/osdt_cert.jar
+2025-04-21 11:21:29.014  INFO 5896 --- [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Gabo89\.m2\repository\com\oracle\database\nls\orai18n\21.3.0.0\orai18n-21.3.0.0.jar referenced one or more files that do not exist: file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-mapping.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-utility.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-collation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-translation.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-net.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-servlet.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-lcsd.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/orai18n-tools.jar,file:/C:/Users/Gabo89/.m2/repository/com/oracle/database/nls/orai18n/21.3.0.0/gdk_custom.jar
+2025-04-21 11:21:29.018  INFO 5896 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 11:21:29.019  INFO 5896 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 11:21:31.687  INFO 5896 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 11:21:31.915  INFO 5896 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 205 ms. Found 4 JPA repository interfaces.
+2025-04-21 11:21:33.611  INFO 5896 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2025-04-21 11:21:33.642  INFO 5896 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-21 11:21:33.645  INFO 5896 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.58]
+2025-04-21 11:21:33.883  INFO 5896 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-21 11:21:33.885  INFO 5896 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4863 ms
+2025-04-21 11:21:35.418  INFO 5896 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Driver oracle.jdbc.OracleDriver
+2025-04-21 11:21:35.422  INFO 5896 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using URL: jdbc:oracle:thin:@oraclebotdbteam16_high?TNS_ADMIN=D:/TECMTY/SEMESTRE7/Oracle_bot/oci-react-samples-team16/wallet
+2025-04-21 11:21:35.424  INFO 5896 --- [restartedMain] c.s.MyTodoList.config.DbSettings         : Using Username: TODOUSER
+2025-04-21 11:21:35.789  INFO 5896 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 11:21:35.915  INFO 5896 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.5.Final
+2025-04-21 11:21:36.371  INFO 5896 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2025-04-21 11:21:39.800  INFO 5896 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
+2025-04-21 11:21:41.679  INFO 5896 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-04-21 11:21:41.692  INFO 5896 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 11:21:42.856  WARN 5896 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 11:21:43.176  INFO 5896 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will not secure any request
+2025-04-21 11:21:43.634  INFO 5896 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-21 11:21:43.940  INFO 5896 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-21 11:21:44.010  INFO 5896 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2025-04-21 11:21:44.030  INFO 5896 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Started MyTodoListApplication in 17.121 seconds (JVM running for 19.758)
+2025-04-21 11:21:44.431  INFO 5896 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot Token: 7703408582:AAGvoo1MDvjUBa4e2ytR692XhEwuwqd7biI
+2025-04-21 11:21:44.433  INFO 5896 --- [restartedMain] c.s.M.controller.ToDoItemBotController   : Bot name: gabo_oracle_personal_bot
+2025-04-21 11:21:45.505  INFO 5896 --- [restartedMain] c.s.MyTodoList.MyTodoListApplication     : Bot registered and started succesfully!
+2025-04-21 11:21:56.738  INFO 5896 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-21 11:21:56.740  INFO 5896 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-21 11:21:56.744  INFO 5896 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2025-04-21 11:22:05.496  INFO 5896 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'

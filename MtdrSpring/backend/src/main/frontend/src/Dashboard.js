@@ -6,6 +6,8 @@ import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableCo
 import TeamHoursGraph from './components/TeamHoursGraph';
 import UserHoursGraph from './components/UserHoursGraph';
 
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
 const StatusChip = ({ status }) => (
   <Chip
     label={status}
@@ -32,7 +34,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [expandedUsers, setExpandedUsers] = useState({});
   const [userTasks, setUserTasks] = useState({});
-  const [loadingUserTasks, setLoadingUserTasks] = useState({}); // Track loading state per user
+  const [loadingUserTasks] = useState({}); // Track loading state per user
   const [teams, setTeams] = useState([]); // Add state for teams
   const [expandedTeams, setExpandedTeams] = useState({}); // Add state for team expansion
   const [teamTasks, setTeamTasks] = useState([]);
@@ -48,7 +50,7 @@ const Dashboard = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:8081/auth/user/${username}`, {
+        const response = await fetch(`${baseUrl}/auth/user/${username}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -75,7 +77,7 @@ const Dashboard = () => {
     const fetchUsersAndStats = async () => {
       try {
         setLoadingStats(true);
-        const usersResponse = await fetch("http://localhost:8081/api/users", {
+        const usersResponse = await fetch(`${baseUrl}/api/users`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -86,7 +88,7 @@ const Dashboard = () => {
         // Fetch all tasks for all users in parallel
         const allTasks = {};
         const statsPromises = users.map(async (user) => {
-          const tasksResponse = await fetch(`http://localhost:8081/api/task-assignments/user/${user.id}`, {
+          const tasksResponse = await fetch(`${baseUrl}/api/task-assignments/user/${user.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -126,7 +128,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch("http://localhost:8081/api/task-assignments/teams", {
+        const response = await fetch(`${baseUrl}/api/task-assignments/teams`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

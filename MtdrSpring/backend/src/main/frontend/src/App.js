@@ -19,14 +19,19 @@ import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
-import { useAuth } from "./context/AuthContext";
+//import { useAuth } from "./context/AuthContext";
 import HoursDialog from "./HoursDialog";
+
+
+console.log("API_LIST:", API_LIST);
 
 
 const COMPLETED_TASKS_TO_SHOW = 5;
 const LONG_TASK_DURATION = 4;
 const COMPLETED_TASKS_PANEL_WIDTH = '350px';
 const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
 
 const CompletedTasksContainer = styled(Paper)(({ theme }) => ({
   background: '#f8f8f8',
@@ -64,7 +69,7 @@ const CompletedTaskRow = styled('tr')({
 });
 
 function App() {
-  const { currentUser } = useAuth();
+  //const { currentUser } = useAuth();
   const [isLoading, setLoading] = useState(false);
   const [isInserting, setInserting] = useState(false);
   const [items, setItems] = useState([]);
@@ -292,7 +297,7 @@ function App() {
     console.log('--- Toggling Subtask ---');
     console.log('Subtask ID being sent:', subTaskId);
     console.log('event:', event);
-    console.log('Request URL:', `http://localhost:8081/todolist/subtask/${subTaskId}/toggle`);
+    console.log('Request URL:', `${baseUrl}/todolist/subtask/${subTaskId}/toggle`);
     const checked = event.target.checked;
     fetch(`${API_LIST}/subtask/${subTaskId}/toggle`, {
       method: "PUT",

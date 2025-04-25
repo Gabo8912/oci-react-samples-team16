@@ -1,7 +1,14 @@
+# Usa una imagen base oficial de OpenJDK
 FROM openjdk:22
-#COPY pom.xml /tmp/
-#COPY src /tmp/src/
-WORKDIR /tmp/
+
+# Define el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Expone el puerto en el que corre tu app (Spring Boot por defecto usa 8080)
 EXPOSE 8080
-COPY target/MyTodoList-0.0.1-SNAPSHOT.jar MyTodoList.jar
-ENTRYPOINT ["java","-jar","MyTodoList.jar"]
+
+# Copia el JAR generado al contenedor
+COPY target/MyTodoList-0.0.1-SNAPSHOT.jar app.jar
+
+# Comando de inicio del contenedor
+ENTRYPOINT ["java", "-jar", "app.jar"]

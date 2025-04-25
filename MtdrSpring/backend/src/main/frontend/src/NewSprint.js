@@ -24,6 +24,10 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
 
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
+
+
 // Custom styled components
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',
@@ -170,7 +174,7 @@ function CurrentSprints() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://localhost:8081/api/users');
+        const response = await fetch(`${baseUrl}/api/users`);
         if (!response.ok) throw new Error('Failed to fetch users');
         const usersData = await response.json();
         setUsers(usersData);
@@ -188,12 +192,12 @@ function CurrentSprints() {
         setLoading(true);
         
         // Fetch sprints
-        const sprintsResponse = await fetch('http://localhost:8081/api/sprints');
+        const sprintsResponse = await fetch('${baseUrl}/api/sprints');
         if (!sprintsResponse.ok) throw new Error('Failed to fetch sprints');
         const sprintsData = await sprintsResponse.json();
         
         // Fetch all tasks
-        const tasksResponse = await fetch('http://localhost:8081/todolist');
+        const tasksResponse = await fetch('${baseUrl}/todolist');
         if (!tasksResponse.ok) throw new Error('Failed to fetch tasks');
         const tasksData = await tasksResponse.json();
         
@@ -211,7 +215,7 @@ function CurrentSprints() {
         // Fetch subtasks for each task
         const subtasksMap = {};
         for (const task of tasksData) {
-          const subtaskResponse = await fetch(`http://localhost:8081/todolist/subtask/${task.id}`);
+          const subtaskResponse = await fetch(`${baseUrl}/todolist/subtask/${task.id}`);
           if (subtaskResponse.ok) {
             const subtaskData = await subtaskResponse.json();
             subtasksMap[task.id] = subtaskData;
@@ -268,7 +272,7 @@ function CurrentSprints() {
 
   const viewTaskAssignments = async (taskId) => {
     try {
-      const response = await fetch(`http://localhost:8081/api/task-assignments/task/${taskId}`);
+      const response = await fetch(`${baseUrl}/api/task-assignments/task/${taskId}`);
       if (!response.ok) throw new Error('Failed to fetch task assignments');
       const assignments = await response.json();
       setSelectedTaskAssignments(assignments);
@@ -287,7 +291,7 @@ function CurrentSprints() {
     
     // Load subtasks if not already loaded
     if (!subtasks[taskId]) {
-      fetch(`http://localhost:8081/todolist/subtask/${taskId}`)
+      fetch(`${baseUrl}/todolist/subtask/${taskId}`)
         .then(response => {
           if (response.ok) return response.json();
           throw new Error('Failed to fetch subtasks');
@@ -315,7 +319,7 @@ function CurrentSprints() {
       }
   
       // Update sprint status to COMPLETED
-      const response = await fetch(`http://localhost:8081/api/sprints/${sprintId}/complete`, {
+      const response = await fetch(`${baseUrl}/api/sprints/${sprintId}/complete`, {
         method: 'POST'
       });
   
@@ -339,7 +343,7 @@ function CurrentSprints() {
 
   const uncompleteSprint = async (sprintId) => {
     try {
-      const response = await fetch(`http://localhost:8081/api/sprints/${sprintId}/uncomplete`, {
+      const response = await fetch(`${baseUrl}/api/sprints/${sprintId}/uncomplete`, {
         method: 'POST'
       });
   
@@ -387,7 +391,7 @@ function CurrentSprints() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8081/todolist/${taskId}`, {
+      const response = await fetch(`${baseUrl}/todolist/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -418,7 +422,7 @@ function CurrentSprints() {
     const checked = event.target.checked;
     
     try {
-      const response = await fetch(`http://localhost:8081/todolist/subtask/${subTaskId}/toggle`, {
+      const response = await fetch(`${baseUrl}/todolist/subtask/${subTaskId}/toggle`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -441,7 +445,7 @@ function CurrentSprints() {
         });
         
         // Recalculate progress for the parent task
-        const parentTaskResponse = await fetch(`http://localhost:8081/todolist/${taskId}`);
+        const parentTaskResponse = await fetch(`${baseUrl}/todolist/${taskId}`);
         if (parentTaskResponse.ok) {
           const parentTask = await parentTaskResponse.json();
           
@@ -469,7 +473,7 @@ function CurrentSprints() {
     }
     
     try {
-      const response = await fetch(`http://localhost:8081/todolist/subtask/${taskId}/add`, {
+      const response = await fetch(`${baseUrl}/todolist/subtask/${taskId}/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -501,7 +505,7 @@ function CurrentSprints() {
 
   const deleteSubTask = async (taskId, subTaskId) => {
     try {
-      const response = await fetch(`http://localhost:8081/todolist/subtask/${subTaskId}`, {
+      const response = await fetch(`${baseUrl}/todolist/subtask/${subTaskId}`, {
         method: 'DELETE'
       });
       

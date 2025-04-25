@@ -5,6 +5,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const LONG_TASK_THRESHOLD = 4;
 const DEFAULT_SPRINT_ID = 2;
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
+
 
 function NewItem(props) {
   const [item, setItem] = useState("");
@@ -35,7 +38,7 @@ function NewItem(props) {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/sprints")
+    fetch(`${baseUrl}/api/sprints`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.length > 0) {
@@ -51,7 +54,7 @@ function NewItem(props) {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8081/auth/users")
+    fetch(`${baseUrl}/auth/users`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
