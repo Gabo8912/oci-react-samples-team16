@@ -1,0 +1,7 @@
+.completed-task {
+    opacity: 0.7;
+    background-color: #f0f0f0;
+  }
+  .completed-task td {
+    text-decoration: line-through;
+  }
