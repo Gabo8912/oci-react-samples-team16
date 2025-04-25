@@ -50,9 +50,12 @@ Ubicación:
 /frontend/.env (o donde tengas tu frontend)
 Este archivo define la URL base con la que React se comunica con el backend.
 ### ✅ Para correr localmente:
+```
 REACT_APP_BACKEND_URL=http://localhost:8081
 #REACT_APP_BACKEND_URL=http://160.34.212.189
-
+```
 ### 🚀 Para despliegue:
+```
 #REACT_APP_BACKEND_URL=http://localhost:8081
 REACT_APP_BACKEND_URL=http://160.34.212.189
+```
