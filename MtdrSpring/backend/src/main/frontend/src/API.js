@@ -14,4 +14,6 @@
  * @author  jean.de.lavarene@oracle.com
  */
 // Use the environment variable for the API base URL
-const API_LIST = `${process.env.REACT_APP_BACKEND_URL}/todolist`;
+const API_URL = `${process.env.REACT_APP_BACKEND_URL}/todolist`;
+
+export default API_URL;
