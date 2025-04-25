@@ -1,95 +1,133 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Login.css';
-import Captcha from './Captcha';
+import React, { useState } from "react";
+import loginImage from "./Wallpaper.jpg"; 
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
-const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [isHuman, setIsHuman] = useState(false);
-  const navigate = useNavigate();
+const Login = ({ onLoginSuccess }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (!showCaptcha) {
-      setShowCaptcha(true);
-      return;
+
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("username", username); // Store username for Dashboard
+      onLoginSuccess();
+    } else {
+      setError("Credenciales incorrectas");
     }
-
-    if (!isHuman) {
-      setError('Please verify you are human');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('username', username);
-        navigate('/dashboard');
-      } else {
-        setError('Credenciales incorrectas');
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    }
-  };
-
-  const handleCaptchaVerify = () => {
-    setIsHuman(true);
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h2>Login</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="error-message">{error}</p>}
-          {showCaptcha && !isHuman && (
-            <div className="captcha-section">
-              <Captcha onVerify={handleCaptchaVerify} />
-            </div>
-          )}
-          <button type="submit" className="login-button">
-            {showCaptcha ? 'Continue' : 'Start Session'}
+    <div style={styles.pageContainer}>
+      {/* 📌 Mitad Izquierda - Imagen */}
+      <div style={styles.leftSide}>
+        <img src={loginImage} alt="Login" style={styles.image} />
+      </div>
+
+      {/* 📌 Mitad Derecha - Formulario */}
+      <div style={styles.rightSide}>
+        <h2>Iniciar Sesión</h2>
+        <form onSubmit={handleLogin} style={styles.form}>
+          {error && <p style={styles.error}>{error}</p>}
+          <input
+            type="text"
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>
+            Iniciar Sesión
           </button>
         </form>
       </div>
     </div>
   );
+};
+
+// ✅ Estilos en JS
+const styles = {
+  pageContainer: {
+    position: "absolute",
+    top: "0px",
+    left: "0px",
+    display: "flex",
+    width: "100vw",
+    height: "100vh",
+  },
+  leftSide: {
+    width: "50%",
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  rightSide: {
+    width: "50%",
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "20px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    width: "80%",
+    maxWidth: "350px",
+  },
+  input: {
+    margin: "10px 0",
+    padding: "12px",
+    fontSize: "16px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    width: "100%",
+    backgroundColor: "E6D7C3",
+  },
+  button: {
+    padding: "12px",
+    fontSize: "18px",
+    backgroundColor: "#FE141C",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  error: {
+    color: "red",
+    fontSize: "14px",
+  },
 };
 
 export default Login;

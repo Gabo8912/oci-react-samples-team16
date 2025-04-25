@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import './Login.css';
 import Captcha from './Captcha';
+
+
+const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -9,7 +12,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [isHuman, setIsHuman] = useState(false);
-  const navigate = useNavigate();
+  const history = useHistory();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8081/auth/login', {
+      const response = await fetch(`${baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,7 +40,7 @@ const Login = () => {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', username);
-        navigate('/dashboard');
+        history.push('/dashboard');
       } else {
         setError('Credenciales incorrectas');
       }

@@ -192,12 +192,12 @@ function CurrentSprints() {
         setLoading(true);
         
         // Fetch sprints
-        const sprintsResponse = await fetch('${baseUrl}/api/sprints');
+        const sprintsResponse = await fetch(`${baseUrl}/api/sprints`);
         if (!sprintsResponse.ok) throw new Error('Failed to fetch sprints');
         const sprintsData = await sprintsResponse.json();
         
         // Fetch all tasks
-        const tasksResponse = await fetch('${baseUrl}/todolist');
+        const tasksResponse = await fetch(`${baseUrl}/todolist`);
         if (!tasksResponse.ok) throw new Error('Failed to fetch tasks');
         const tasksData = await tasksResponse.json();
         

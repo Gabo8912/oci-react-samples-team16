@@ -3,44 +3,31 @@
 ##
 ## Copyright (c) 2022 Oracle, Inc.
 ## Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
-This is dumb sybau
-yogurt
-gurt:yo
-
-dilan test
 */
 import React, { useState, useEffect } from "react";
 import NewItem from "./NewItem";
-import API_LIST from "./API";
+import API_URL from "./API";                       // <-- tu URL desde .env
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, TableBody, CircularProgress, Paper } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import Moment from "react-moment";
-import NewSprint from "./NewSprint";
+import Moment from "react-moment";                // formateo de fechas
+import NewSprint from "./NewSprint";              // formulario de sprints
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CompletedTasksHistory from "./CompletedTasksHistory";
-//import { useAuth } from "./context/AuthContext";
 import HoursDialog from "./HoursDialog";
 
-
-console.log("API_LIST:", API_LIST);
-
-
 const COMPLETED_TASKS_TO_SHOW = 5;
-const LONG_TASK_DURATION = 4;
+const LONG_TASK_DURATION = 4;                     // umbral para subtareas automáticas
 const COMPLETED_TASKS_PANEL_WIDTH = '350px';
 const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
-
-const CompletedTasksContainer = styled(Paper)(({ theme }) => ({
+const CompletedTasksContainer = styled(Paper)(() => ({
   background: '#f8f8f8',
   padding: '1.5rem',
-  marginTop: '0',
+  marginTop: 0,
   width: COMPLETED_TASKS_PANEL_WIDTH,
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
   borderRadius: '0.5rem',
-  height: 'fit-content',
   position: 'fixed',
   top: COMPLETED_TASKS_PANEL_POSITION.top,
   right: COMPLETED_TASKS_PANEL_POSITION.right,
@@ -69,11 +56,10 @@ const CompletedTaskRow = styled('tr')({
 });
 
 function App() {
-  //const { currentUser } = useAuth();
   const [isLoading, setLoading] = useState(false);
   const [isInserting, setInserting] = useState(false);
   const [items, setItems] = useState([]);
-  const [error, setError] = useState();
+  const [error, setError] = useState(null);
   const [subTasks, setSubTasks] = useState({});
   const [expandedTasks, setExpandedTasks] = useState({});
   const [newSubTaskText, setNewSubTaskText] = useState("");
@@ -83,582 +69,349 @@ function App() {
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
 
-
-  const addSprint = (sprintData) => {
-    setIsCreatingSprint(true);
-    fetch(`${API_LIST}/sprints`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(sprintData)
-    })
-      .then(response => response.json())
-      .then(data => {
-        setIsCreatingSprint(false);
-      })
-      .catch(error => {
-        console.error('Error creating sprint:', error);
-        setIsCreatingSprint(false);
-      });
-  };
-
-  function deleteItem(deleteId) {
-    fetch(`${API_LIST}/${deleteId}`, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response;
-        }
-        throw new Error("Something went wrong (add sprint) ...");
-      })
-      .then(
-        () => {
-          const remainingItems = items.filter((item) => item.id !== deleteId);
-          setItems(remainingItems);
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+  // calcula % completado para cada tarea
+  function calculateProgress(list) {
+    if (!list?.length) return 0;
+    const doneCount = list.filter(st => st.done).length;
+    return (doneCount / list.length) * 100;
   }
 
-  function toggleDone(event, item) {
-    event.preventDefault();
+  // Carga inicial de tareas
+  function loadTasks() {
+    setLoading(true);
+    fetch(API_URL)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to load tasks");
+        return res.json();
+      })
+      .then(data => {
+        setItems(data);
+        data.forEach(item => loadSubTasks(item.id));
+      })
+      .catch(err => setError(err))
+      .finally(() => setLoading(false));
+  }
 
-    const newDone = !item.done;
+  // Carga de subtareas por tarea
+  function loadSubTasks(taskId) {
+    fetch(`${API_URL}/subtask/${taskId}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to load subtasks");
+        return res.json();
+      })
+      .then(data => {
+        setSubTasks(prev => ({ ...prev, [taskId]: data }));
+      })
+      .catch(err => setError(err));
+  }
 
-    if (
-      newDone &&
-      subTasks[item.id] &&
-      subTasks[item.id].length > 0 &&
-      !subTasks[item.id].every(st => st.done)
-    ) {
-      alert("Error: all subtasks must be completed before marking this task as done.");
-      return;
+  // Crear ítem
+  function addItem(text, estimatedHours, realHours, subArray, sprintId, userId) {
+    setInserting(true);
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text, estimatedHours, realHours, sprintId, userId })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Add item failed");
+        return res;
+      })
+      .then(res => {
+        const id = res.headers.get("location");
+        const newItem = { id, description: text, estimatedHours, realHours, done: false, userId };
+        setItems(prev => [newItem, ...prev]);
+        // subtareas automáticas si es larga
+        if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
+          return Promise.all(subArray.map(desc =>
+            fetch(`${API_URL}/subtask/${id}/add`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ description: desc, done: false })
+            }).then(r => r.json())
+          ));
+        }
+        return [];
+      })
+      .then(subs => {
+        if (subs.length) {
+          setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
+        }
+      })
+      .catch(err => setError(err))
+      .finally(() => setInserting(false));
+  }
+
+  // Borrar ítem
+  function deleteItem(id) {
+    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+      .then(res => {
+        if (!res.ok) throw new Error("Delete failed");
+        setItems(prev => prev.filter(it => it.id !== id));
+      })
+      .catch(err => setError(err));
+  }
+
+  // Modificar ítem
+  function modifyItem(id, description, done, realHours = null) {
+    const data = realHours != null ? { description, done, realHours } : { description, done };
+    return fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Modify failed");
+        return res.json();
+      });
+  }
+
+  // Recargar un ítem puntual
+  function reloadOneItem(id) {
+    fetch(`${API_URL}/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Reload failed");
+        return res.json();
+      })
+      .then(updated => {
+        setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
+      })
+      .catch(err => setError(err));
+  }
+
+  // Marcar tarea como hecha/rehacer
+  function toggleDone(e, item) {
+    e.preventDefault();
+    const nextDone = !item.done;
+    if (nextDone && subTasks[item.id]?.some(st => !st.done)) {
+      return alert("Error: all subtasks must be completed before marking this task done.");
     }
-
-    if (newDone) {
+    if (nextDone) {
       setCurrentTaskToClose(item);
       setShowHoursDialog(true);
     } else {
       modifyItem(item.id, item.description, false)
-        .then(() => reloadOneIteam(item.id))
-        .catch(err => {
-          console.error(err);
-          setError(err);
-        });
+        .then(() => reloadOneItem(item.id))
+        .catch(err => setError(err));
     }
   }
 
-
-
-
-  function reloadOneIteam(id) {
-    fetch(`${API_LIST}/${id}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to reload item");
-        return res.json();
-      })
-      .then(itemFromServer => {
-        setItems(items.map(item =>
-          item.id === id
-            ? {
-              ...item,
-              description: itemFromServer.description,
-              done: itemFromServer.done,
-              realHours: itemFromServer.realHours
-            }
-            : item
-        ));
-      })
-      .catch(setError);
-  }
-
-  function modifyItem(id, description, done, realHours = null) {
-    const data = { description, done };
-    if (realHours != null) data.realHours = realHours;
-
-    return fetch(`${API_LIST}/${id}`, {
+  // Marcar subtarea
+  function toggleSubTaskDone(e, subId) {
+    const done = e.target.checked;
+    fetch(`${API_URL}/subtask/${subId}/toggle`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ done })
     })
       .then(res => {
-        if (!res.ok) throw new Error("Failed to update task");
+        if (!res.ok) throw new Error("Toggle subtask failed");
         return res.json();
-      });
-  }
-
-  function loadSubTasks(taskId) {
-    fetch(`${API_LIST}/subtask/${taskId}`)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong (loadSubTasks)...");
       })
-      .then(
-        (result) => {
-          setSubTasks((prevSubtasks) => ({
-            ...prevSubtasks,
-            [taskId]: result,
-          }));
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+      .then(result => {
+        const pid = result.parentTask.id;
+        setSubTasks(prev => ({
+          ...prev,
+          [pid]: prev[pid].map(st => st.id === subId ? result : st)
+        }));
+      })
+      .catch(err => setError(err));
   }
 
-  function toggleSubtasksVisibility(taskId) {
-    setExpandedTasks((prevExpandedTasks) => ({
-      ...prevExpandedTasks,
-      [taskId]: !prevExpandedTasks[taskId],
-    }));
-  }
-
-  function toggleSubTaskFormVisibility(taskId) {
-    setShowSubTaskForm((prevShowSubTaskForm) => ({
-      ...prevShowSubTaskForm,
-      [taskId]: !prevShowSubTaskForm[taskId],
-    }));
-  }
-
+  // Agregar subtarea inline
   function addSubTask(taskId, text) {
-    if (!text.trim()) {
-      window.alert("Error: Subtasks cannot be empty");
-      return;
-    }
-    fetch(`${API_LIST}/subtask/${taskId}/add`, {
+    if (!text.trim()) return alert("Subtask cannot be empty");
+    fetch(`${API_URL}/subtask/${taskId}/add`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ description: text, done: false }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text, done: false })
     })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong (addSubTask)...");
+      .then(res => {
+        if (!res.ok) throw new Error("Add subtask failed");
+        return res.json();
       })
-      .then(
-        (result) => {
-          setSubTasks((prevSubTasks) => ({
-            ...prevSubTasks,
-            [taskId]: [...(prevSubTasks[taskId] || []), result],
-          }));
-          setNewSubTaskText("");
-          setShowSubTaskForm((prevShowSubTaskForm) => ({
-            ...prevShowSubTaskForm,
-            [taskId]: false,
-          }));
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+      .then(sub => {
+        setSubTasks(prev => ({ ...prev, [taskId]: [...(prev[taskId]||[]), sub] }));
+        setNewSubTaskText("");
+        setShowSubTaskForm(prev => ({ ...prev, [taskId]: false }));
+      })
+      .catch(err => setError(err));
   }
 
-  function deleteSubTask(taskId, subTaskId) {
-    fetch(`${API_LIST}/subtask/${subTaskId}`, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response;
-        }
-        throw new Error("Something went wrong (deleteSubTask) ...");
-      })
-      .then(
-        () => {
-          setSubTasks((prevSubTasks) => ({
-            ...prevSubTasks,
-            [taskId]: prevSubTasks[taskId].filter(
-              (subTask) => subTask.id !== subTaskId
-            ),
-          }));
-        },
-        (error) => {
-          setError(error);
-        }
-      );
-  }
-
-  function calculateProgress(subTasks) {
-    if (!subTasks || subTasks.length === 0) return 0;
-    const completed = subTasks.filter((subTask) => subTask.done).length;
-    return (completed / subTasks.length) * 100;
-  }
-
-  function toggleSubTaskDone(event, subTaskId) {
-    console.log('--- Toggling Subtask ---');
-    console.log('Subtask ID being sent:', subTaskId);
-    console.log('event:', event);
-    console.log('Request URL:', `${baseUrl}/todolist/subtask/${subTaskId}/toggle`);
-    const checked = event.target.checked;
-    fetch(`${API_LIST}/subtask/${subTaskId}/toggle`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ done: checked }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong (toggleSubTaskDone)...");
-      })
-      .then(
-        (result) => {
-          const taskId = result.parentTask.id;
-          setSubTasks((prevSubTasks) => ({
-            ...prevSubTasks,
-            [taskId]: prevSubTasks[taskId].map((subTask) =>
-              subTask.id === subTaskId ? result : subTask
-            ),
-          }));
-        },
-        (error) => {
-          setError(error);
-        }
-      );
-  }
-
-  const toggleHistory = () => {
-    setShowHistory(!showHistory);
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    fetch(API_LIST)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong ... (toggleHistory)");
-      })
-      .then(
-        (result) => {
-          setLoading(false);
-          setItems(result);
-          result.forEach((item) => {
-            loadSubTasks(item.id);
-          });
-        },
-        (error) => {
-          setLoading(false);
-          setError(error);
-        }
-      );
-  }, []);
-
-  function addItem(text, estimatedHours, realHours, subTasksArray, sprintId, userId) {
-    setInserting(true);
-    const data = {
-      description: text,
-      estimatedHours: estimatedHours,
-      realHours: realHours,
-      sprintId: sprintId,
-      userId: userId,
-    };
-  
-    fetch(API_LIST, {
+  // Form sprint
+  function addSprint(sprintData) {
+    setIsCreatingSprint(true);
+    fetch(`${API_URL}/sprints`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sprintData)
     })
-      .then((response) => {
-        if (response.ok) {
-          return response;
-        }
-        throw new Error("Something went wrong (addItem)...");
+      .then(res => {
+        if (!res.ok) throw new Error("Sprint creation failed");
+        return res.json();
       })
-      .then((result) => {
-        const id = result.headers.get("location");
-        const newItem = {
-          id: id,
-          description: text,
-          estimatedHours: estimatedHours,
-          realHours: realHours,
-          done: false,
-          userId: userId,
-        };
-        setItems([newItem, ...items]);
-  
-        // ✅ Post to TaskAssignmentController
-        fetch(`/api/task-assignments?taskId=${id}&userId=${userId}`, {
-          method: "POST",
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Failed to create task assignment.");
-            }
-            return response.json();
-          })
-          .then((assignment) => {
-            console.log("Task assignment created:", assignment);
-          })
-          .catch((error) => {
-            console.error("Error creating task assignment:", error);
-          });
-  
-        // ✅ Handle subtasks if needed
-        if (estimatedHours > LONG_TASK_DURATION && subTasksArray?.length > 0) {
-          subTasksArray.forEach((subTaskText) => {
-            fetch(`${API_LIST}/subtask/${id}/add`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ description: subTaskText, done: false }),
-            })
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error("Error adding subtask");
-                }
-                return response.json();
-              })
-              .then((resultSub) => {
-                setSubTasks((prevSubTasks) => ({
-                  ...prevSubTasks,
-                  [id]: [...(prevSubTasks[id] || []), resultSub],
-                }));
-              })
-              .catch((error) => setError(error));
-          });
-        }
-  
-        setInserting(false);
-      })
-      .catch((error) => {
-        setInserting(false);
-        setError(error);
+      .then(() => setIsCreatingSprint(false))
+      .catch(err => {
+        setError(err);
+        setIsCreatingSprint(false);
       });
   }
-  
+
+  // Mostrar/ocultar historial
+  function toggleHistory() {
+    setShowHistory(h => !h);
+  }
+
+  // Inicial
+  useEffect(() => {
+    loadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="App">
       {showHistory ? (
-        <CompletedTasksHistory onBack={toggleHistory} />
+        <CompletedTasksHistory onBack={toggleHistory} items={items.filter(i => i.done)} limit={COMPLETED_TASKS_TO_SHOW}/>
       ) : (
         <>
           <h1>MY TODO LIST</h1>
           <NewItem addItem={addItem} isInserting={isInserting} />
-          {error && <p>Error: {error.message}</p>}
+
+          <Button
+            variant="outlined"
+            startIcon={<ExpandMoreIcon />}
+            onClick={toggleHistory}
+            style={{ margin: '1rem 0' }}
+          >
+            View Full History
+          </Button>
+
+          {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
           {isLoading && <CircularProgress />}
+
           {!isLoading && (
-            <>
-              <div id="maincontent" style={{
-                width: '100%',
-                maxWidth: '800px',
-                margin: '0 auto',
-              }}>
-                <table id="itemlistNotDone" className="itemlist">
-                  <TableBody>
-                    {items.map(
-                      (item) =>
-                        !item.done && (
-                          <React.Fragment key={item.id}>
-                            <tr>
-                              <td className="description">
-                                {item.description}
-                                <Button
-                                  onClick={() => toggleSubtasksVisibility(item.id)}
-                                >
-                                  {expandedTasks[item.id] ? "▼" : "►"}
-                                </Button>
-                                <div className="progress">
-                                  <div
-                                    className="progress-bar"
-                                    style={{
-                                      width: `${calculateProgress(
-                                        subTasks[item.id]
-                                      )}%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </td>
-                              <td className="date">
-                                <Moment format="MMM Do hh:mm:ss">
-                                  {item.createdAt}
-                                </Moment>
-                              </td>
-                              <td>
-                                <Button
-                                  variant="contained"
-                                  className="DoneButton"
-                                  onClick={(event) => toggleDone(event, item)}
-                                  size="small"
-                                >
-                                  Done
-                                </Button>
-                              </td>
-                            </tr>
+            <div style={{ maxWidth: 800, margin: '0 auto' }}>
+              <table className="itemlist">
+                <TableBody>
+                  {items.filter(item => !item.done).map(item => (
+                    <React.Fragment key={item.id}>
+                      <tr>
+                        <td className="description">
+                          {item.description}
+                          <Button onClick={() => {
+                            setExpandedTasks(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                          }}>
+                            {expandedTasks[item.id] ? '▼' : '►'}
+                          </Button>
+                          <div className="progress">
+                            <div
+                              className="progress-bar"
+                              style={{ width: `${calculateProgress(subTasks[item.id])}%` }}
+                            />
+                          </div>
+                        </td>
+                        <td className="date">
+                          <Moment format="MMM Do hh:mm:ss">
+                            {item.createdAt}
+                          </Moment>
+                        </td>
+                        <td>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={e => toggleDone(e, item)}
+                          >
+                            Done
+                          </Button>
+                        </td>
+                      </tr>
 
-                            {expandedTasks[item.id] &&
-                              subTasks[item.id] &&
-                              subTasks[item.id].map((subTask) => (
-                                <tr key={subTask.id}>
-                                  <td className="subtask-description">
-                                    <input
-                                      type="checkbox"
-                                      checked={subTask.done}
-                                      onChange={(event) =>
-                                        toggleSubTaskDone(event, subTask.id)
-                                      }
-                                    />
-                                    {subTask.description}
-                                  </td>
-                                  <td>
-                                    <Button
-                                      startIcon={<DeleteIcon />}
-                                      variant="contained"
-                                      className="DeleteButton"
-                                      onClick={() =>
-                                        deleteSubTask(item.id, subTask.id)
-                                      }
-                                      size="small"
-                                    >
-                                      Delete
-                                    </Button>
-                                  </td>
-                                  <td className="date">
-                                    <Moment format="MMM Do hh:mm:ss">
-                                      {subTask.creation_ts}
-                                    </Moment>
-                                  </td>
-                                </tr>
-                              ))}
-
-                            {expandedTasks[item.id] && (
-                              <tr>
-                                <td colSpan="3">
-                                  <Button
-                                    onClick={() =>
-                                      toggleSubTaskFormVisibility(item.id)
-                                    }
-                                  >
-                                    {showSubTaskForm[item.id]
-                                      ? "Hide Subtask Form"
-                                      : "Add Subtask"}
-                                  </Button>
-                                  {showSubTaskForm[item.id] && (
-                                    <div>
-                                      <input
-                                        type="text"
-                                        value={newSubTaskText}
-                                        onChange={(e) =>
-                                          setNewSubTaskText(e.target.value)
-                                        }
-                                        placeholder="Description"
-                                      />
-                                      <Button
-                                        onClick={() =>
-                                          addSubTask(item.id, newSubTaskText)
-                                        }
-                                      >
-                                        Add subtask
-                                      </Button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        )
-                    )}
-                  </TableBody>
-                </table>
-                <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
-              </div>
-              <CompletedTasksContainer>
-                <CompletedTasksHeader>
-                  Latest Completed Tasks
-                  <Button
-                    variant="contained"
-                    startIcon={<ExpandMoreIcon />}
-                    onClick={toggleHistory}
-                    size="small"
-                    style={{
-                      backgroundColor: '#5f7d4f',
-                      color: 'white',
-                      padding: '0.2rem 0.5rem',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    View Full History
-                  </Button>
-                </CompletedTasksHeader>
-                <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: '#888' }}>
-                  Showing {Math.min(COMPLETED_TASKS_TO_SHOW, items.filter(item => item.done).length)} of {items.filter(item => item.done).length} completed tasks
-                </div>
-                <table className="itemlist" style={{ width: '100%', marginTop: '0' }}>
-                  <TableBody>
-                    {items
-                      .filter(item => item.done)
-                      .slice(0, COMPLETED_TASKS_TO_SHOW)
-                      .map((item) => (
-                        <CompletedTaskRow key={item.id}>
-                          <td className="description" style={{ width: '60%' }}>{item.description}</td>
-                          <td className="date" style={{ width: '25%' }}>
-                            <Moment format="MMM Do hh:mm:ss">{item.createdAt}</Moment>
+                      {expandedTasks[item.id] && subTasks[item.id]?.map(sub => (
+                        <tr key={sub.id}>
+                          <td className="subtask-description">
+                            <input
+                              type="checkbox"
+                              checked={sub.done}
+                              onChange={e => toggleSubTaskDone(e, sub.id)}
+                            />
+                            {sub.description}
                           </td>
-                          <td style={{ width: '15%', textAlign: 'right' }}>
+                          <td className="date">
+                            <Moment format="MMM Do hh:mm:ss">
+                              {sub.creation_ts}
+                            </Moment>
+                          </td>
+                          <td>
                             <Button
-                              variant="contained"
-                              className="DoneButton"
-                              onClick={(event) =>
-                                toggleDone(event, item)
-                                }
-                              
                               size="small"
-                              style={{ marginRight: '0.5rem' }}
-                            >
-                              Undo
-                            </Button>
-                            <Button
                               startIcon={<DeleteIcon />}
-                              variant="contained"
-                              className="DeleteButton"
-                              onClick={() => deleteItem(item.id)}
-                              size="small"
+                              onClick={() => deleteItem(sub.id)}
                             >
                               Delete
                             </Button>
                           </td>
-                        </CompletedTaskRow>
+                        </tr>
                       ))}
-                  </TableBody>
-                </table>
-              </CompletedTasksContainer>
 
-              <HoursDialog
-                open={showHoursDialog}
-                onClose={() => setShowHoursDialog(false)}
-                onConfirm={(realHours) => {
-                  modifyItem(currentTaskToClose.id, currentTaskToClose.description, true, realHours)
-                    .then(() => {
-                      setShowHoursDialog(false);
-                      reloadOneIteam(currentTaskToClose.id);
-                    })
-                    .catch(err => {
-                      setError(err);
-                      setShowHoursDialog(false);
-                    });
-                }}
-              />
+                      {expandedTasks[item.id] && (
+                        <tr>
+                          <td colSpan={3}>
+                            <Button onClick={() => {
+                              setShowSubTaskForm(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                            }}>
+                              {showSubTaskForm[item.id] ? 'Hide Subtask Form' : 'Add Subtask'}
+                            </Button>
+                            {showSubTaskForm[item.id] && (
+                              <div>
+                                <input
+                                  type="text"
+                                  value={newSubTaskText}
+                                  onChange={e => setNewSubTaskText(e.target.value)}
+                                  placeholder="Description"
+                                />
+                                <Button onClick={() => addSubTask(item.id, newSubTaskText)}>
+                                  Add subtask
+                                </Button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </table>
 
-
-
-            </>
+              <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
+            </div>
           )}
+
+          <CompletedTasksContainer>
+            <CompletedTasksHeader>
+              Latest Completed Tasks
+              <Button
+                variant="contained"
+                size="small"
+                onClick={toggleHistory}
+                style={{ marginLeft: '1rem' }}
+              >
+                View Full History
+              </Button>
+            </CompletedTasksHeader>
+          </CompletedTasksContainer>
+
+          <HoursDialog
+            open={showHoursDialog}
+            onClose={() => setShowHoursDialog(false)}
+            onConfirm={realHours => {
+              modifyItem(currentTaskToClose.id, currentTaskToClose.description, true, realHours)
+                .then(() => {
+                  reloadOneItem(currentTaskToClose.id);
+                  setShowHoursDialog(false);
+                })
+                .catch(err => setError(err));
+            }}
+          />
         </>
       )}
     </div>
