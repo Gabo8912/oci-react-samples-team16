@@ -1,4 +1,4 @@
-package com.springboot.MyTodoList.model;
+/* package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -87,4 +87,4 @@ public class Team {
                 ", creationDate=" + creationDate +
                 '}';
     }
-}
+}*/

@@ -1,4 +1,4 @@
-package com.springboot.MyTodoList.service;
+/*package com.springboot.MyTodoList.service;
 
 import com.springboot.MyTodoList.model.Team;
 
@@ -10,4 +10,4 @@ public interface TeamService {
     Team addTeam(Team team);
     Team updateTeam(Integer id, Team team);
     boolean deleteTeam(Integer id);
-}
+} */
