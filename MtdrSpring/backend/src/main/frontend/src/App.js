@@ -4,7 +4,7 @@
 ## Copyright (c) 2022 Oracle, Inc.
 ## Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
 */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import NewItem from "./NewItem";
 import API_URL from "./API";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -45,16 +45,6 @@ const CompletedTasksHeader = styled('h2')({
   borderBottom: '1px solid #ddd',
 });
 
-/*const CompletedTaskRow = styled('tr')({
-  '& td': {
-    padding: '0.3rem 0.5rem',
-    fontSize: '0.9rem',
-  },
-  '&:hover': {
-    backgroundColor: '#f5f5f5',
-  },
-});
-*/
 function App() {
   const [isLoading, setLoading] = useState(false);
   const [isInserting, setInserting] = useState(false);
@@ -69,49 +59,9 @@ function App() {
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
   const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  
-  //const [userTasks, setUserTasks] = useState([]);
   const [/*username,*/ setUsername] = useState(localStorage.getItem("username") || null);
   const [/*role,*/ setRole] = useState(localStorage.getItem("role") || null);
-  function calculateProgress(list) {
-    if (!list?.length) return 0;
-    const doneCount = list.filter(st => st.done).length;
-    return (doneCount / list.length) * 100;
-  }
 
-  // Update your loadUserTasks function
-  function loadUserTasks(userId) {
-    const token = localStorage.getItem("token");
-    
-    setLoading(true);
-    fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => {
-        if (res.status === 401) {
-          // Token expired or invalid
-          handleLogout();
-          throw new Error("Session expired");
-        }
-        if (!res.ok) throw new Error("Failed to load tasks");
-        return res.json();
-      })
-      .then(data => {
-        const tasks = data.map(assignment => assignment.task);
-        setItems(tasks.filter(task => task));
-        tasks.forEach(task => task && loadSubTasks(task.id));
-      })
-      .catch(err => {
-        setError(err);
-        if (err.message === "Session expired") {
-          setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }
-
-  // Add logout function
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -121,27 +71,63 @@ function App() {
     setUsername(null);
     setRole(null);
     setItems([]);
-    // Optionally redirect to login
   };
 
-  function loadSubTasks(taskId) {
+  const loadUserTasks = useCallback((userId) => {
+    const token = localStorage.getItem("token");
+
+    setLoading(true);
+    fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          handleLogout();
+          throw new Error("Session expired");
+        }
+        if (!res.ok) throw new Error("Failed to load tasks");
+        return res.json();
+      })
+      .then((data) => {
+        const tasks = data.map((assignment) => assignment.task);
+        setItems(tasks.filter((task) => task));
+        tasks.forEach((task) => task && loadSubTasks(task.id));
+      })
+      .catch((err) => {
+        setError(err);
+        if (err.message === "Session expired") {
+          setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const loadSubTasks = (taskId) => {
     fetch(`${API_URL}/todolist/subtask/${taskId}`)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Failed to load subtasks");
         return res.json();
       })
-      .then(data => {
-        setSubTasks(prev => ({ ...prev, [taskId]: data }));
+      .then((data) => {
+        setSubTasks((prev) => ({ ...prev, [taskId]: data }));
       })
-      .catch(err => setError(err));
+      .catch((err) => setError(err));
+  };
+
+  function calculateProgress(list) {
+    if (!list?.length) return 0;
+    const doneCount = list.filter(st => st.done).length;
+    return (doneCount / list.length) * 100;
   }
+
   function deleteSubTask(subId) {
     fetch(`${API_URL}/todolist/subtask/${subId}`, {
       method: "DELETE"
     })
       .then(res => {
         if (!res.ok) throw new Error("Delete subtask failed");
-        // Find which task this subtask belongs to
         const taskId = Object.keys(subTasks).find(key => 
           subTasks[key].some(st => st.id === subId)
         );
@@ -173,7 +159,6 @@ function App() {
         return res.json();
       })
       .then(newTask => {
-        // Assign the task to the current user
         return fetch(`${API_URL}/api/task-assignments`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -185,8 +170,6 @@ function App() {
       })
       .then(newTask => {
         setItems(prev => [newTask, ...prev]);
-        
-        // Create subtasks if needed
         if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
           return Promise.all(subArray.map(desc =>
             fetch(`${API_URL}/api/subtask/${newTask.id}`, {
@@ -202,22 +185,12 @@ function App() {
         if (subs.length) {
           setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
         }
-        loadUserTasks(); // Refresh the task list
+        loadUserTasks(userId);
       })
       .catch(err => setError(err))
       .finally(() => setInserting(false));
   }
-/* 
-  function deleteItem(id) {
-    fetch(`${API_URL}/api/tasks/${id}`, { method: "DELETE" })
-      .then(res => {
-        if (!res.ok) throw new Error("Delete failed");
-        setItems(prev => prev.filter(it => it.id !== id));
-        loadUserTasks(); // Refresh the task list
-      })
-      .catch(err => setError(err));
-  }
-*/
+
   function modifyItem(id, description, done, realHours = null) {
     const data = realHours != null ? { description, done, realHours } : { description, done };
     return fetch(`${API_URL}/api/tasks/${id}`, {
@@ -239,7 +212,7 @@ function App() {
       })
       .then(updated => {
         setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
-        loadUserTasks(); // Refresh the task list
+        loadUserTasks(userId);
       })
       .catch(err => setError(err));
   }
@@ -261,7 +234,6 @@ function App() {
   }
 
   function toggleSubTaskDone(e, subId) {
-    //const done = e.target.checked;
     fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" }
@@ -330,7 +302,6 @@ function App() {
     setShowHistory(h => !h);
   }
 
-  // Check auth state on load
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUserId = localStorage.getItem("userId");
@@ -341,7 +312,7 @@ function App() {
       setRole(localStorage.getItem("role"));
       loadUserTasks(storedUserId);
     }
-  }, [loadUserTasks, setRole, setUsername]); // Add missing dependencies
+  }, [loadUserTasks]);
 
   return (
     <div className="App">
