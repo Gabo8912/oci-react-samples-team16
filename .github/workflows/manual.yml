@@ -26,6 +26,19 @@ jobs:
       - name: Send greeting
         run: echo "Hello ${{ inputs.name }}"
 
+      # Code formatting step
+      - name: Format Java code with google-java-format
+        run: |
+          cd MtdrSpring/backend
+          curl -sSOL https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar
+          find src -name '*.java' | xargs java -jar google-java-format-1.15.0-all-deps.jar --replace
+
+      # Linting with Checkstyle
+      - name: Run Checkstyle
+        run: |
+          cd MtdrSpring/backend
+          mvn -B checkstyle:check
+
       - name: Build with Maven
         run: cd MtdrSpring/backend && mvn -B clean compile
 
