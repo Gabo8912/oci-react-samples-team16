@@ -1,3 +1,5 @@
+name: Manual workflow
+
 on:
   workflow_dispatch:
     inputs:
@@ -40,4 +42,4 @@ jobs:
         run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TaskAssignmentControllerTest test
 
       - name: Run TeamControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TeamControllerTest test), what do i need to complete this task
+        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TeamControllerTest test
