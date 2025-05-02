@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
+import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper/*, Chip*/ } from "@mui/material";
 import TeamHoursGraph from './components/TeamHoursGraph';
 import UserHoursGraph from './components/UserHoursGraph';
 
