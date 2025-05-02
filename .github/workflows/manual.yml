@@ -1,6 +1,10 @@
-name: Manual workflow
+name: CI/CD Pipeline
 
 on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       name:
@@ -31,11 +35,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Your original greeting step (unchanged)
       - name: Send greeting
         run: echo "Hello ${{ inputs.name }}"
 
+      # Build + new formatting/linting
       - name: Build with Maven
         run: cd MtdrSpring/backend && mvn -B clean compile
 
+      - name: Format and Lint Java
+        run: |
+          cd MtdrSpring/backend
+          mvn com.coveo:fmt-maven-plugin:format  # Auto-format code
+          mvn checkstyle:check                   # Lint (fails if errors exist)
+
+      # Original test step (unchanged)
       - name: Run All Tests
         run: cd MtdrSpring/backend && mvn -B test
+
+      # New: Frontend security audit
+      - name: NPM Security Audit
+        run: |
+          cd MtdrSpring/backend/src/main/frontend
+          npm audit --audit-level=critical
