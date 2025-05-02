@@ -102,7 +102,7 @@ function App() {
         }
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [handleLogout]);
 
   const loadSubTasks = (taskId) => {
     fetch(`${API_URL}/todolist/subtask/${taskId}`)
@@ -312,7 +312,7 @@ function App() {
       setRole(localStorage.getItem("role"));
       loadUserTasks(storedUserId);
     }
-  }, [loadUserTasks]);
+  }, [loadUserTasks, setRole, setUsername]);
 
   return (
     <div className="App">
