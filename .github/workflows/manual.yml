@@ -41,15 +41,12 @@ jobs:
       - name: Build with Maven
         run: cd MtdrSpring/backend && mvn -B clean compile
 
-      - name: Format Java Code (with JDK 17 fix)
+      - name: Format and Lint Java Code
         run: |
           cd MtdrSpring/backend
-          mvn com.coveo:fmt-maven-plugin:format \
-            -DargLine="--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-                       --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED"
-
-      - name: Lint Java (Checkstyle)
-        run: cd MtdrSpring/backend && mvn checkstyle:check
+          # Apply formatting and verify code style
+          mvn spotless:apply
+          mvn checkstyle:check
 
       - name: Run All Tests
         run: cd MtdrSpring/backend && mvn -B test
