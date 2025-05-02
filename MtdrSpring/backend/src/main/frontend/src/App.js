@@ -45,7 +45,7 @@ const CompletedTasksHeader = styled('h2')({
   borderBottom: '1px solid #ddd',
 });
 
-const CompletedTaskRow = styled('tr')({
+/*const CompletedTaskRow = styled('tr')({
   '& td': {
     padding: '0.3rem 0.5rem',
     fontSize: '0.9rem',
@@ -54,7 +54,7 @@ const CompletedTaskRow = styled('tr')({
     backgroundColor: '#f5f5f5',
   },
 });
-
+*/
 function App() {
   const [isLoading, setLoading] = useState(false);
   const [isInserting, setInserting] = useState(false);
@@ -68,9 +68,10 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
-  const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  const [userTasks, setUserTasks] = useState([]);
-  const [username, setUsername] = useState(localStorage.getItem("username") || null);
-  const [role, setRole] = useState(localStorage.getItem("role") || null);
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  
+  //const [userTasks, setUserTasks] = useState([]);
+  const [/*username,*/ setUsername] = useState(localStorage.getItem("username") || null);
+  const [/*role,*/ setRole] = useState(localStorage.getItem("role") || null);
   function calculateProgress(list) {
     if (!list?.length) return 0;
     const doneCount = list.filter(st => st.done).length;
@@ -206,7 +207,7 @@ function App() {
       .catch(err => setError(err))
       .finally(() => setInserting(false));
   }
-
+/* 
   function deleteItem(id) {
     fetch(`${API_URL}/api/tasks/${id}`, { method: "DELETE" })
       .then(res => {
@@ -216,7 +217,7 @@ function App() {
       })
       .catch(err => setError(err));
   }
-
+*/
   function modifyItem(id, description, done, realHours = null) {
     const data = realHours != null ? { description, done, realHours } : { description, done };
     return fetch(`${API_URL}/api/tasks/${id}`, {
@@ -260,7 +261,7 @@ function App() {
   }
 
   function toggleSubTaskDone(e, subId) {
-    const done = e.target.checked;
+    //const done = e.target.checked;
     fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" }
