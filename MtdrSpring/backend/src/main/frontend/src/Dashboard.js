@@ -8,7 +8,7 @@ import UserHoursGraph from './components/UserHoursGraph';
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
-const StatusChip = ({ status }) => (
+/*const StatusChip = ({ status }) => (
   <Chip
     label={status}
     style={{
@@ -18,7 +18,7 @@ const StatusChip = ({ status }) => (
     }}
     size="small"
   />
-);
+);*/
 
 const OracleTable = (props) => (
   <TableContainer component={Paper} style={{ background: "#fef9f2" }}>
