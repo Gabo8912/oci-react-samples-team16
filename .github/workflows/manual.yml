@@ -17,6 +17,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -29,17 +37,5 @@ jobs:
       - name: Build with Maven
         run: cd MtdrSpring/backend && mvn -B clean compile
 
-      - name: Run ToDoItemControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.ToDoItemControllerTest test
-
-      - name: Run UserControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.UserControllerTest test
-
-      - name: Run SprintControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.SprintControllerTest test
-
-      - name: Run TaskAssignmentControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TaskAssignmentControllerTest test
-
-      - name: Run TeamControllerTest
-        run: cd MtdrSpring/backend && mvn -B -Dtest=com.springboot.MyToDoList.controller.TeamControllerTest test
+      - name: Run All Tests
+        run: cd MtdrSpring/backend && mvn -B test
