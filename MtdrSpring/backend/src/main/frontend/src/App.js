@@ -334,15 +334,14 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUserId = localStorage.getItem("userId");
-    
+
     if (token && storedUserId) {
-      // Verify token is still valid
       setUserId(storedUserId);
       setUsername(localStorage.getItem("username"));
       setRole(localStorage.getItem("role"));
       loadUserTasks(storedUserId);
     }
-  }, []);
+  }, [loadUserTasks, setRole, setUsername]); // Add missing dependencies
 
   return (
     <div className="App">
