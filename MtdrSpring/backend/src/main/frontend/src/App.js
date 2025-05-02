@@ -62,7 +62,7 @@ function App() {
   const [/*username,*/ setUsername] = useState(localStorage.getItem("username") || null);
   const [/*role,*/ setRole] = useState(localStorage.getItem("role") || null);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
@@ -71,7 +71,7 @@ function App() {
     setUsername(null);
     setRole(null);
     setItems([]);
-  };
+  }, [setUserId, setUsername, setRole, setItems]);
 
   const loadUserTasks = useCallback((userId) => {
     const token = localStorage.getItem("token");
