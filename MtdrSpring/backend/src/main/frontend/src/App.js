@@ -294,7 +294,7 @@ function App() {
     const data = {
       description: text,
       duration: hours,
-      sprintId: sprintId,
+      sprintId: 2,
       userId: 3 // Optional - only if backend expects it
     };
     fetch(API_LIST, {
