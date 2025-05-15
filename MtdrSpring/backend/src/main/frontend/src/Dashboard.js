@@ -259,13 +259,17 @@ const Dashboard = () => {
 
       {user && userTasks[user.id] && (
         <div className="dashboard-section" style={{ minHeight: '400px' }}>
-          <h2>Your Task Hours Analysis</h2>
-          <UserHoursGraph userTasks={Array.isArray(userTasks[user.id]) ? userTasks[user.id] : []} />
+          <h2>Users hours analysis</h2>
+          <UserHoursGraph 
+            allUsers={userStats.map(u => ({ id: u.id, username: u.username }))}
+            userTasks={userTasks}
+          />
+
         </div>
       )}
 
       <div className="kpi-container">
-        <h3>👥 Tareas por Equipo</h3>
+        <h3>Tareas por equipo</h3>
         {teams.length === 0 ? (
           <p>No hay equipos para mostrar.</p>
         ) : (
@@ -300,10 +304,10 @@ const Dashboard = () => {
                               <TableHead>
                                 <TableRow>
                                   <TableCell>Usuario</TableCell>
-                                  <TableCell>Tareas Completadas</TableCell>
-                                  <TableCell>Horas Trabajadas</TableCell>
+                                  <TableCell>Tareas completadas</TableCell>
+                                  <TableCell>Horas trabajadas</TableCell>
                                   <TableCell>Costo ($)</TableCell>
-                                  <TableCell>Ver Tareas</TableCell>
+                                  <TableCell>Ver tareas</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -401,7 +405,7 @@ const Dashboard = () => {
       </div>
 
       <div className="dashboard-section">
-        <h2>Team Hours Analysis</h2>
+        <h2>Team hours analysis</h2>
         <TeamHoursGraph teamTasks={teamTasks} />
       </div>
     </div>
