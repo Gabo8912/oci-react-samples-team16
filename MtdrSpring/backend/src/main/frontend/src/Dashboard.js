@@ -2,23 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper/*, Chip*/ } from "@mui/material";
+import { IconButton, Collapse, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import TeamHoursGraph from './components/TeamHoursGraph';
 import UserHoursGraph from './components/UserHoursGraph';
+import CurrentSprints from "./NewSprint"; // 👈 Added this import
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
-
-/*const StatusChip = ({ status }) => (
-  <Chip
-    label={status}
-    style={{
-      backgroundColor: status === "COMPLETED" ? "#5f7d4f" : "#5b5652",
-      color: "#fef9f2",
-      fontWeight: "bold"
-    }}
-    size="small"
-  />
-);*/
 
 const OracleTable = (props) => (
   <TableContainer component={Paper} style={{ background: "#fef9f2" }}>
@@ -34,12 +23,11 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [expandedUsers, setExpandedUsers] = useState({});
   const [userTasks, setUserTasks] = useState({});
-  const [loadingUserTasks] = useState({}); // Track loading state per user
-  const [teams, setTeams] = useState([]); // Add state for teams
-  const [expandedTeams, setExpandedTeams] = useState({}); // Add state for team expansion
+  const [loadingUserTasks] = useState({});
+  const [teams, setTeams] = useState([]);
+  const [expandedTeams, setExpandedTeams] = useState({});
   const [teamTasks, setTeamTasks] = useState([]);
 
-  // Fetch logged-in user profile
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -49,17 +37,12 @@ const Dashboard = () => {
           setLoadingUser(false);
           return;
         }
-
         const response = await fetch(`${baseUrl}/auth/user/${username}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
+        if (!response.ok) throw new Error("Failed to fetch user data");
         const userData = await response.json();
         setUser(userData);
         setLoadingUser(false);
@@ -68,11 +51,9 @@ const Dashboard = () => {
         setLoadingUser(false);
       }
     };
-
     fetchUserData();
   }, []);
 
-  // Fetch all users and their aggregated task stats
   useEffect(() => {
     const fetchUsersAndStats = async () => {
       try {
@@ -84,8 +65,6 @@ const Dashboard = () => {
         });
         if (!usersResponse.ok) throw new Error("Failed to fetch users");
         const users = await usersResponse.json();
-
-        // Fetch all tasks for all users in parallel
         const allTasks = {};
         const statsPromises = users.map(async (user) => {
           const tasksResponse = await fetch(`${baseUrl}/api/task-assignments/user/${user.id}`, {
@@ -95,13 +74,11 @@ const Dashboard = () => {
           });
           const tasks = tasksResponse.ok ? await tasksResponse.json() : [];
           allTasks[user.id] = tasks;
-
           const totalTasks = tasks.length;
           const totalHours = tasks.reduce((sum, assignment) => {
             const hours = assignment.task?.realHours;
             return sum + (typeof hours === "number" ? hours : 0);
           }, 0);
-
           return {
             id: user.id,
             username: user.username,
@@ -110,21 +87,18 @@ const Dashboard = () => {
             cost: totalHours * 25,
           };
         });
-
         const usersStats = await Promise.all(statsPromises);
         setUserStats(usersStats);
-        setUserTasks(allTasks); // Preload all user tasks here
+        setUserTasks(allTasks);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoadingStats(false);
       }
     };
-
     fetchUsersAndStats();
   }, []);
 
-  // Fetch teams on mount
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -136,14 +110,11 @@ const Dashboard = () => {
         if (!response.ok) throw new Error("Failed to fetch teams");
         const data = await response.json();
         setTeams(data);
-      } catch (err) {
-        // handle error
-      }
+      } catch (err) {}
     };
     fetchTeams();
   }, []);
 
-  // handleToggleUserTasks now only toggles expand/collapse
   const handleToggleUserTasks = (userId) => {
     setExpandedUsers((prev) => ({
       ...prev,
@@ -151,7 +122,6 @@ const Dashboard = () => {
     }));
   };
 
-  // Toggle team expand/collapse
   const handleToggleTeam = (teamId) => {
     setExpandedTeams((prev) => ({
       ...prev,
@@ -163,9 +133,7 @@ const Dashboard = () => {
     const allTeamTasks = [];
     teams.forEach(team => {
       team.userIds.forEach(userId => {
-        // Get tasks for the current user from the userTasks object
         const userTasksForUser = userTasks[userId] || [];
-        // Convert to array if it's not already one
         const tasksArray = Array.isArray(userTasksForUser) ? userTasksForUser : Object.values(userTasksForUser);
         tasksArray.forEach(assignment => {
           if (assignment.task) {
@@ -199,18 +167,9 @@ const Dashboard = () => {
         <div className="user-info-container">
           <div className="user-info-card">
             <h3>User Profile</h3>
-            <div className="user-info-item">
-              <span className="label">Username:</span>
-              <span className="value">{user.username}</span>
-            </div>
-            <div className="user-info-item">
-              <span className="label">Email:</span>
-              <span className="value">{user.email}</span>
-            </div>
-            <div className="user-info-item">
-              <span className="label">Role:</span>
-              <span className="value">{user.role}</span>
-            </div>
+            <div className="user-info-item"><span className="label">Username:</span><span className="value">{user.username}</span></div>
+            <div className="user-info-item"><span className="label">Email:</span><span className="value">{user.email}</span></div>
+            <div className="user-info-item"><span className="label">Role:</span><span className="value">{user.role}</span></div>
           </div>
         </div>
       )}
@@ -241,65 +200,41 @@ const Dashboard = () => {
                     <TableCell>{stat.totalHours.toFixed(2)} h</TableCell>
                     <TableCell>${stat.cost.toFixed(2)}</TableCell>
                     <TableCell>
-                      <IconButton
-                        aria-label="expand row"
-                        size="small"
-                        onClick={() => handleToggleUserTasks(stat.id)}
-                      >
-                        {expandedUsers[stat.id] ? (
-                          <KeyboardArrowUpIcon />
-                        ) : (
-                          <KeyboardArrowDownIcon />
-                        )}
+                      <IconButton onClick={() => handleToggleUserTasks(stat.id)}>
+                        {expandedUsers[stat.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                       </IconButton>
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                    <TableCell colSpan={5} style={{ paddingBottom: 0, paddingTop: 0 }}>
                       <Collapse in={expandedUsers[stat.id]} timeout="auto" unmountOnExit>
                         <Box margin={1}>
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell width="10%">Task</TableCell>
-                                <TableCell width="60%">Description</TableCell>
-                                <TableCell width="20%">Hours (Est/Real)</TableCell>
-                                <TableCell width="10%">Status</TableCell>
+                                <TableCell>Task</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Hours (Est/Real)</TableCell>
+                                <TableCell>Status</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
                               {loadingUserTasks[stat.id] ? (
                                 <TableRow>
-                                  <TableCell colSpan={4} style={{ color: "#5b5652" }}>
-                                    Loading tasks...
-                                  </TableCell>
+                                  <TableCell colSpan={4}>Loading tasks...</TableCell>
                                 </TableRow>
-                              ) : (userTasks[stat.id] && userTasks[stat.id].length === 0) ? (
+                              ) : (userTasks[stat.id]?.length === 0) ? (
                                 <TableRow>
-                                  <TableCell colSpan={4} style={{ color: "#5b5652" }}>
-                                    No tasks for this user
-                                  </TableCell>
+                                  <TableCell colSpan={4}>No tasks for this user</TableCell>
                                 </TableRow>
                               ) : (
                                 userTasks[stat.id]?.map((assignment) => (
                                   <TableRow key={assignment.id}>
                                     <TableCell>{assignment.task?.id}</TableCell>
                                     <TableCell>{assignment.task?.description}</TableCell>
+                                    <TableCell>{(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}</TableCell>
                                     <TableCell>
-                                      {(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Button
-                                        variant="contained"
-                                        size="small"
-                                        style={{
-                                          backgroundColor:
-                                            assignment.task?.done ? "#5f7d4f" : "#5b5652",
-                                          color: "#fff",
-                                          fontWeight: "bold",
-                                        }}
-                                        disabled
-                                      >
+                                      <Button variant="contained" size="small" style={{ backgroundColor: assignment.task?.done ? "#5f7d4f" : "#5b5652", color: "#fff" }} disabled>
                                         {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
                                       </Button>
                                     </TableCell>
@@ -318,6 +253,9 @@ const Dashboard = () => {
           </OracleTable>
         )}
       </div>
+
+      {/* 👇 Injected CurrentSprints component */}
+      <CurrentSprints />
 
       {user && userTasks[user.id] && (
         <div className="dashboard-section" style={{ minHeight: '400px' }}>

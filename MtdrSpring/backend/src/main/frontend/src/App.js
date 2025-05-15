@@ -59,8 +59,8 @@ function App() {
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
   const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  
-  const [/*username,*/ setUsername] = useState(localStorage.getItem("username") || null);
-  const [/*role,*/ setRole] = useState(localStorage.getItem("role") || null);
+  const [username, setUsername] = useState(localStorage.getItem("username") || null);
+  const [role, setRole] = useState(localStorage.getItem("role") || null);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
