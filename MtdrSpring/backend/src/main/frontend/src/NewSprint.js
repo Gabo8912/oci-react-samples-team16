@@ -606,9 +606,10 @@ function CurrentSprints() {
                     </TableCell>
                     <TableCell>
                       <StatusChip 
-                        label={sprint.status} 
+                        label={sprint.status === "IN_PROGRESS" ? "IN PROGRESS" : sprint.status}
                         status={sprint.status}
                       />
+
                     </TableCell>
                     <TableCell>
                       {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}

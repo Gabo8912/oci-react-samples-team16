@@ -235,7 +235,7 @@ const Dashboard = () => {
                                     <TableCell>{(assignment.task?.estimatedHours ?? 0).toFixed(1)} / {(assignment.task?.realHours ?? 0).toFixed(1)}</TableCell>
                                     <TableCell>
                                       <Button variant="contained" size="small" style={{ backgroundColor: assignment.task?.done ? "#5f7d4f" : "#5b5652", color: "#fff" }} disabled>
-                                        {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
+                                        {assignment.task?.done ? "COMPLETED" : "IN PROGRESS"}
                                       </Button>
                                     </TableCell>
                                   </TableRow>
@@ -371,7 +371,7 @@ const Dashboard = () => {
                                                             }}
                                                             disabled
                                                           >
-                                                            {assignment.task?.done ? "COMPLETED" : "IN_PROGRESS"}
+                                                            {assignment.task?.done ? "COMPLETED" : "IN PROGRESS"}
                                                           </Button>
                                                         </TableCell>
                                                       </TableRow>
