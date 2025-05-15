@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -21,20 +21,49 @@ ChartJS.register(
   Legend
 );
 
-const UserHoursGraph = ({ userTasks }) => {
-  // Ensure userTasks is an array and has data
-  if (!userTasks || !Array.isArray(userTasks) || userTasks.length === 0) {
-    return <div className="graph-container">No tasks available to display</div>;
+const UserHoursGraph = ({ userTasks, allUsers }) => {
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserTasks, setSelectedUserTasks] = useState([]);
+
+  useEffect(() => {
+    if (allUsers?.length > 0 && selectedUserId === null) {
+      const defaultUserId = allUsers[0].id;
+      setSelectedUserId(defaultUserId);
+      setSelectedUserTasks(userTasks[defaultUserId] || []);
+    }
+  }, [allUsers, userTasks]);
+
+  const handleChange = (e) => {
+    const newUserId = parseInt(e.target.value, 10);
+    setSelectedUserId(newUserId);
+    setSelectedUserTasks(userTasks[newUserId] || []);
+  };
+
+  if (!allUsers || allUsers.length === 0) {
+    return <div className="graph-container">No users available</div>;
   }
 
-  // Filter and prepare data for the logged-in user's tasks
-  const taskData = userTasks
-    .filter(assignment => assignment.task) // Ensure task exists
+  const taskData = selectedUserTasks
+    .filter(assignment => assignment.task)
     .map(assignment => ({
       description: assignment.task.description || 'Unknown Task',
       estimatedHours: assignment.task.estimatedHours || 0,
       realHours: assignment.task.realHours || 0
     }));
+
+  if (taskData.length === 0) {
+    return (
+      <div className="graph-container">
+        <label>Select User: </label>
+        <select value={selectedUserId || ''} onChange={handleChange}>
+          {allUsers.map(user => (
+            <option key={user.id} value={user.id}>{user.username}</option>
+          ))}
+        </select>
+        <p>No tasks available for this user</p>
+      </div>
+    );
+  }
 
   const data = {
     labels: taskData.map(task => task.description),
@@ -58,7 +87,7 @@ const UserHoursGraph = ({ userTasks }) => {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // This prevents the shrinking issue
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
@@ -72,7 +101,7 @@ const UserHoursGraph = ({ userTasks }) => {
       },
       title: {
         display: true,
-        text: 'Your Task Hours Comparison',
+        text: `Task Hours Comparison for ${allUsers.find(u => u.id === selectedUserId)?.username || 'User'}`,
         font: {
           size: 16,
           family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
@@ -88,15 +117,13 @@ const UserHoursGraph = ({ userTasks }) => {
           text: 'Hours',
           font: {
             size: 14,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
             weight: 'bold',
             style: 'italic'
           }
         },
         ticks: {
           font: {
-            size: 12,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif"
+            size: 12
           }
         }
       },
@@ -106,7 +133,6 @@ const UserHoursGraph = ({ userTasks }) => {
           text: 'Tasks',
           font: {
             size: 14,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
             weight: 'bold',
             style: 'italic'
           }
@@ -115,8 +141,7 @@ const UserHoursGraph = ({ userTasks }) => {
           maxRotation: 45,
           minRotation: 45,
           font: {
-            size: 12,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif"
+            size: 12
           }
         }
       }
@@ -125,9 +150,15 @@ const UserHoursGraph = ({ userTasks }) => {
 
   return (
     <div className="graph-container" style={{ height: '400px', width: '100%' }}>
+      <label style={{ marginBottom: '1rem', display: 'block' }}>Select User:</label>
+      <select value={selectedUserId || ''} onChange={handleChange} style={{ marginBottom: '1rem' }}>
+        {allUsers.map(user => (
+          <option key={user.id} value={user.id}>{user.username}</option>
+        ))}
+      </select>
       <Line data={data} options={options} />
     </div>
   );
 };
 
-export default UserHoursGraph; 
+export default UserHoursGraph;
