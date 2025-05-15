@@ -7,37 +7,69 @@ const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
 
-    const response = await fetch(`${baseUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      // 1. First authenticate
+      const loginResponse = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("username", username); // Store username for Dashboard
+      if (!loginResponse.ok) {
+        throw new Error("Credenciales incorrectas");
+      }
+
+      const authData = await loginResponse.json();
+      
+      // 2. Store auth data
+      localStorage.setItem("token", authData.token);
+      localStorage.setItem("role", authData.role);
+      localStorage.setItem("username", username);
+
+      // 3. Fetch user details to get ID
+      const userResponse = await fetch(`${baseUrl}/auth/user/${username}`, {
+        headers: {
+          "Authorization": `Bearer ${authData.token}`
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("No se pudo obtener los datos del usuario");
+      }
+
+      const userData = await userResponse.json();
+      localStorage.setItem("userId", userData.id);
+
+      // 4. Complete login
       onLoginSuccess();
-    } else {
-      setError("Credenciales incorrectas");
+      
+    } catch (err) {
+      setError(err.message);
+      // Clear any partial auth data
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("username");
+      localStorage.removeItem("userId");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div style={styles.pageContainer}>
-      {/* 📌 Mitad Izquierda - Imagen */}
+      {/* Left Side - Image */}
       <div style={styles.leftSide}>
         <img src={loginImage} alt="Login" style={styles.image} />
       </div>
 
-      {/* 📌 Mitad Derecha - Formulario */}
+      {/* Right Side - Form */}
       <div style={styles.rightSide}>
         <h2>Iniciar Sesión</h2>
         <form onSubmit={handleLogin} style={styles.form}>
@@ -58,8 +90,12 @@ const Login = ({ onLoginSuccess }) => {
             required
             style={styles.input}
           />
-          <button type="submit" style={styles.button}>
-            Iniciar Sesión
+          <button 
+            type="submit" 
+            style={styles.button}
+            disabled={isLoading}
+          >
+            {isLoading ? "Cargando..." : "Iniciar Sesión"}
           </button>
         </form>
       </div>
