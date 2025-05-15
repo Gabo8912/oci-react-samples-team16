@@ -432,7 +432,6 @@ function App() {
                 </TableBody>
               </table>
 
-              <NewSprint addSprint={addSprint} isCreating={isCreatingSprint} />
             </div>
           )}
 

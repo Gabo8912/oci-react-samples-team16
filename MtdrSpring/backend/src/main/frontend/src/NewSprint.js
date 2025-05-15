@@ -563,7 +563,7 @@ function CurrentSprints() {
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
         }}
       >
-        Current Sprints :D
+        Current sprints hours Breakdown
       </Typography>
       
       <TableContainer>
@@ -606,9 +606,10 @@ function CurrentSprints() {
                     </TableCell>
                     <TableCell>
                       <StatusChip 
-                        label={sprint.status} 
+                        label={sprint.status === "IN_PROGRESS" ? "IN PROGRESS" : sprint.status}
                         status={sprint.status}
                       />
+
                     </TableCell>
                     <TableCell>
                       {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}
