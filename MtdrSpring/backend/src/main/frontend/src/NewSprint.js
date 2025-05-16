@@ -15,7 +15,11 @@ import {
   Box,
   TextField,
   Button,
-  Checkbox
+  Checkbox,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -23,10 +27,27 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
-
-
 
 // Custom styled components
 const OraclePaper = styled(Paper)(({ theme }) => ({
@@ -159,7 +180,7 @@ const AssignmentsModal = ({ assignments, onClose }) => {
 
 function CurrentSprints() {
   const [sprints, setSprints] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState({});
   const [subtasks, setSubtasks] = useState({});
   const [expandedSprints, setExpandedSprints] = useState({});
   const [expandedTasks, setExpandedTasks] = useState({});
@@ -170,6 +191,7 @@ function CurrentSprints() {
   const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
   const [users, setUsers] = useState([]);
+  const [selectedGraphType, setSelectedGraphType] = useState('totalHours'); // 'totalHours', 'developerHours', 'developerTasks'
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -261,6 +283,25 @@ function CurrentSprints() {
     });
 
     return developerHours;
+  };
+
+  const calculateDeveloperTasks = (sprintId) => {
+    const sprintTasks = tasks[sprintId] || [];
+    const developerTasks = {};
+
+    sprintTasks.forEach(task => {
+      if (task.userId) {
+        if (!developerTasks[task.userId]) {
+          developerTasks[task.userId] = { total: 0, completed: 0 };
+        }
+        developerTasks[task.userId].total++;
+        if (task.done) {
+          developerTasks[task.userId].completed++;
+        }
+      }
+    });
+
+    return developerTasks;
   };
 
   const toggleSprintExpansion = (sprintId) => {
@@ -520,6 +561,119 @@ function CurrentSprints() {
     }
   };
 
+  const getGraphData = () => {
+    // Professional color palette
+    const colors = {
+      blue: {
+        background: 'rgba(54, 162, 235, 0.6)',
+        border: 'rgb(54, 162, 235)'
+      },
+      green: {
+        background: 'rgba(75, 192, 192, 0.6)',
+        border: 'rgb(75, 192, 192)'
+      },
+      purple: {
+        background: 'rgba(153, 102, 255, 0.6)',
+        border: 'rgb(153, 102, 255)'
+      },
+      orange: {
+        background: 'rgba(255, 159, 64, 0.6)',
+        border: 'rgb(255, 159, 64)'
+      },
+      red: {
+        background: 'rgba(255, 99, 132, 0.6)',
+        border: 'rgb(255, 99, 132)'
+      },
+      teal: {
+        background: 'rgba(0, 128, 128, 0.6)',
+        border: 'rgb(0, 128, 128)'
+      }
+    };
+
+    // Predefined color combinations for developers
+    const developerColors = [
+      colors.blue,
+      colors.green,
+      colors.purple,
+      colors.orange,
+      colors.red,
+      colors.teal
+    ];
+
+    switch (selectedGraphType) {
+      case 'totalHours':
+        return {
+          labels: sprints.map(sprint => sprint.sprintName),
+          datasets: [{
+            label: 'Total Hours per Sprint',
+            data: sprints.map(sprint => calculateSprintHours(sprint.sprintId).real),
+            backgroundColor: colors.blue.background,
+            borderColor: colors.blue.border,
+            borderWidth: 1
+          }]
+        };
+      
+      case 'developerHours':
+        return {
+          labels: sprints.map(sprint => sprint.sprintName),
+          datasets: users.map((user, index) => ({
+            label: user.username,
+            data: sprints.map(sprint => {
+              const developerHours = calculateDeveloperHours(sprint.sprintId);
+              return developerHours[user.id] || 0;
+            }),
+            backgroundColor: developerColors[index % developerColors.length].background,
+            borderColor: developerColors[index % developerColors.length].border,
+            borderWidth: 1
+          }))
+        };
+      
+      case 'developerTasks':
+        return {
+          labels: sprints.map(sprint => sprint.sprintName),
+          datasets: users.map((user, index) => ({
+            label: `${user.username} - Completed Tasks`,
+            data: sprints.map(sprint => {
+              const developerTasks = calculateDeveloperTasks(sprint.sprintId);
+              return developerTasks[user.id]?.completed || 0;
+            }),
+            backgroundColor: developerColors[index % developerColors.length].background,
+            borderColor: developerColors[index % developerColors.length].border,
+            borderWidth: 1
+          }))
+        };
+      
+      default:
+        return null;
+    }
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: selectedGraphType === 'totalHours' ? 'Total Hours per Sprint' :
+              selectedGraphType === 'developerHours' ? 'Hours per Developer per Sprint' :
+              'Completed Tasks per Developer per Sprint',
+        font: {
+          size: 16,
+          family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+          weight: 'bold'
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  };
+
   if (loading) {
     return (
       <OraclePaper>
@@ -565,6 +719,25 @@ function CurrentSprints() {
       >
         Current sprints hours Breakdown
       </Typography>
+      
+      <Box sx={{ mb: 3 }}>
+        <FormControl fullWidth>
+          <InputLabel>Select Graph Type</InputLabel>
+          <Select
+            value={selectedGraphType}
+            onChange={(e) => setSelectedGraphType(e.target.value)}
+            label="Select Graph Type"
+          >
+            <MenuItem value="totalHours">Total Hours per Sprint</MenuItem>
+            <MenuItem value="developerHours">Hours per Developer per Sprint</MenuItem>
+            <MenuItem value="developerTasks">Completed Tasks per Developer per Sprint</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box sx={{ height: '400px', mb: 3 }}>
+        <Bar data={getGraphData()} options={chartOptions} />
+      </Box>
       
       <TableContainer>
         <OracleTable>
