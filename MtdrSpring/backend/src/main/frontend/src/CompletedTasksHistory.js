@@ -56,74 +56,55 @@ function CompletedTasksHistory({ onBack }) {
   const [error, setError] = useState();
 
   useEffect(() => {
-    setLoading(true);
-    fetch(API_LIST)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("Something went wrong ...");
-        }
-      })
-      .then(
-        (result) => {
-          setLoading(false);
-          // Filter only completed tasks
-          const completedItems = result.filter(item => item.done);
-          setItems(completedItems);
-        },
-        (error) => {
-          setLoading(false);
-          setError(error);
-        }
-      );
+    fetchCompletedTasks();
   }, []);
 
-  function deleteItem(deleteId) {
-    fetch(API_LIST + "/" + deleteId, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response;
-        } else {
-          throw new Error("Something went wrong ...");
-        }
+  function fetchCompletedTasks() {
+    setLoading(true);
+    fetch(API_LIST)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch task list");
+        return res.json();
       })
-      .then(
-        () => {
-          const remainingItems = items.filter((item) => item.id !== deleteId);
-          setItems(remainingItems);
-        },
-        (error) => {
-          setError(error);
-        }
-      );
+      .then((result) => {
+        const completedItems = result.filter(item => item.done);
+        setItems(completedItems);
+      })
+      .catch((err) => setError(err))
+      .finally(() => setLoading(false));
   }
 
-  function toggleDone(event, id, description, done) {
+  function deleteTask(taskId) {
+    fetch(`${API_LIST}/${taskId}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to delete task");
+        return res;
+      })
+      .then(() => {
+        setItems(prev => prev.filter(item => item.id !== taskId));
+      })
+      .catch((err) => setError(err));
+  }
+
+  function revertCompletionStatus(event, id, description, newDoneState) {
     event.preventDefault();
-    fetch(API_LIST + "/" + id, {
+    fetch(`${API_LIST}/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ description: description, done: done }),
-    }).then((response) => {
-      if (response.ok) {
-        return response;
-      } else {
-        throw new Error("Something went wrong ...");
-      }
-    }).then(() => {
-      // Remove the item from the list when marked as not done
-      if (!done) {
-        const remainingItems = items.filter((item) => item.id !== id);
-        setItems(remainingItems);
-      }
-    }).catch((error) => {
-      setError(error);
-    });
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description, done: newDoneState }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to update task status");
+        return res;
+      })
+      .then(() => {
+        if (!newDoneState) {
+          setItems(prev => prev.filter(item => item.id !== id));
+        }
+      })
+      .catch((err) => setError(err));
   }
 
   return (
@@ -137,16 +118,16 @@ function CompletedTasksHistory({ onBack }) {
           Back to Todo List
         </BackButton>
         <HistoryTitle>Completed Tasks History</HistoryTitle>
-        <div style={{ width: '100px' }}></div> {/* Spacer for alignment */}
+        <div style={{ width: '100px' }} aria-hidden="true" />
       </HistoryHeader>
-      
+
       {error && <p>Error: {error.message}</p>}
       {isLoading && <CircularProgress />}
-      
+
       {!isLoading && items.length === 0 && (
         <p>No completed tasks found.</p>
       )}
-      
+
       {!isLoading && items.length > 0 && (
         <HistoryTable>
           <TableBody>
@@ -164,8 +145,8 @@ function CompletedTasksHistory({ onBack }) {
                   <Button
                     variant="contained"
                     className="DoneButton"
-                    onClick={(event) =>
-                      toggleDone(event, item.id, item.description, !item.done)
+                    onClick={(e) =>
+                      revertCompletionStatus(e, item.id, item.description, false)
                     }
                     size="small"
                     style={{ marginRight: '0.5rem' }}
@@ -176,7 +157,7 @@ function CompletedTasksHistory({ onBack }) {
                     startIcon={<DeleteIcon />}
                     variant="contained"
                     className="DeleteButton"
-                    onClick={() => deleteItem(item.id)}
+                    onClick={() => deleteTask(item.id)}
                     size="small"
                   >
                     Delete
@@ -190,5 +171,6 @@ function CompletedTasksHistory({ onBack }) {
     </HistoryContainer>
   );
 }
+
 
 export default CompletedTasksHistory; 

@@ -62,245 +62,248 @@ function App() {
   const [username, setUsername] = useState(localStorage.getItem("username") || null);
   const [role, setRole] = useState(localStorage.getItem("role") || null);
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
-    localStorage.removeItem("userId");
-    setUserId(null);
-    setUsername(null);
-    setRole(null);
-    setItems([]);
-  }, [setUserId, setUsername, setRole, setItems]);
+const LONG_TASK_DURATION = 4;
 
-  const loadUserTasks = useCallback((userId) => {
-    const token = localStorage.getItem("token");
+const handleLogout = useCallback(() => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userId");
+  setUserId(null);
+  setUsername(null);
+  setRole(null);
+  setItems([]);
+}, [setUserId, setUsername, setRole, setItems]);
 
-    setLoading(true);
-    fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+const loadUserTasks = useCallback((userId) => {
+  const token = localStorage.getItem("token");
+
+  setLoading(true);
+  fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (res.status === 401) {
+        handleLogout();
+        throw new Error("Session expired");
+      }
+      if (!res.ok) throw new Error("Failed to load tasks");
+      return res.json();
     })
-      .then((res) => {
-        if (res.status === 401) {
-          handleLogout();
-          throw new Error("Session expired");
-        }
-        if (!res.ok) throw new Error("Failed to load tasks");
-        return res.json();
-      })
-      .then((data) => {
-        const tasks = data.map((assignment) => assignment.task);
-        setItems(tasks.filter((task) => task));
-        tasks.forEach((task) => task && loadSubTasks(task.id));
-      })
-      .catch((err) => {
-        setError(err);
-        if (err.message === "Session expired") {
-          setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [handleLogout]);
-
-  const loadSubTasks = (taskId) => {
-    fetch(`${API_URL}/todolist/subtask/${taskId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load subtasks");
-        return res.json();
-      })
-      .then((data) => {
-        setSubTasks((prev) => ({ ...prev, [taskId]: data }));
-      })
-      .catch((err) => setError(err));
-  };
-
-  function calculateProgress(list) {
-    if (!list?.length) return 0;
-    const doneCount = list.filter(st => st.done).length;
-    return (doneCount / list.length) * 100;
-  }
-
-  function deleteSubTask(subId) {
-    fetch(`${API_URL}/todolist/subtask/${subId}`, {
-      method: "DELETE"
+    .then((data) => {
+      const tasks = data.map((assignment) => assignment.task);
+      setItems(tasks.filter((task) => task));
+      tasks.forEach((task) => task && loadSubTasks(task.id));
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Delete subtask failed");
-        const taskId = Object.keys(subTasks).find(key => 
-          subTasks[key].some(st => st.id === subId)
-        );
-        if (taskId) {
-          setSubTasks(prev => ({
-            ...prev,
-            [taskId]: prev[taskId].filter(st => st.id !== subId)
-          }));
-        }
-      })
-      .catch(err => setError(err));
-  }
-
-  function addItem(text, estimatedHours, realHours, subArray, sprintId) {
-    setInserting(true);
-    fetch(`${API_URL}/api/tasks`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        description: text, 
-        estimatedHours, 
-        realHours, 
-        sprintId,
-        done: false 
-      })
+    .catch((err) => {
+      setError(err);
+      if (err.message === "Session expired") {
+        setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+      }
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Add item failed");
-        return res.json();
-      })
-      .then(newTask => {
-        return fetch(`${API_URL}/api/task-assignments`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            taskId: newTask.id
-          })
-        }).then(() => newTask);
-      })
-      .then(newTask => {
-        setItems(prev => [newTask, ...prev]);
-        if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
-          return Promise.all(subArray.map(desc =>
-            fetch(`${API_URL}/api/subtask/${newTask.id}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ description: desc, done: false })
-            }).then(r => r.json())
-          ));
-        }
-        return [];
-      })
-      .then(subs => {
-        if (subs.length) {
-          setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
-        }
-        loadUserTasks(userId);
-      })
-      .catch(err => setError(err))
-      .finally(() => setInserting(false));
-  }
+    .finally(() => setLoading(false));
+}, [handleLogout]);
 
-  function modifyItem(id, description, done, realHours = null) {
-    const data = realHours != null ? { description, done, realHours } : { description, done };
-    return fetch(`${API_URL}/api/tasks/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+const loadSubTasks = (taskId) => {
+  fetch(`${API_URL}/todolist/subtask/${taskId}`)
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to load subtasks");
+      return res.json();
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Modify failed");
-        return res.json();
-      });
-  }
-
-  function reloadOneItem(id) {
-    fetch(`${API_URL}/api/tasks/${id}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Reload failed");
-        return res.json();
-      })
-      .then(updated => {
-        setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
-        loadUserTasks(userId);
-      })
-      .catch(err => setError(err));
-  }
-
-  function toggleDone(e, item) {
-    e.preventDefault();
-    const nextDone = !item.done;
-    if (nextDone && subTasks[item.id]?.some(st => !st.done)) {
-      return alert("Error: all subtasks must be completed before marking this task done.");
-    }
-    if (nextDone) {
-      setCurrentTaskToClose(item);
-      setShowHoursDialog(true);
-    } else {
-      modifyItem(item.id, item.description, false)
-        .then(() => reloadOneItem(item.id))
-        .catch(err => setError(err));
-    }
-  }
-
-  function toggleSubTaskDone(e, subId) {
-    fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" }
+    .then((data) => {
+      setSubTasks((prev) => ({ ...prev, [taskId]: data }));
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Toggle subtask failed");
-        return res.json();
-      })
-      .then(result => {
-        const pid = result.parentTask.id;
+    .catch((err) => setError(err));
+};
+
+function calculateProgress(list) {
+  if (!list?.length) return 0;
+  const doneCount = list.filter(st => st.done).length;
+  return (doneCount / list.length) * 100;
+}
+
+function deleteSubtask(subId) {
+  fetch(`${API_URL}/todolist/subtask/${subId}`, {
+    method: "DELETE"
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to delete subtask");
+      const taskId = Object.keys(subTasks).find(key =>
+        subTasks[key].some(st => st.id === subId)
+      );
+      if (taskId) {
         setSubTasks(prev => ({
           ...prev,
-          [pid]: prev[pid].map(st => st.id === subId ? result : st)
+          [taskId]: prev[taskId].filter(st => st.id !== subId)
         }));
-      })
-      .catch(err => setError(err));
-  }
+      }
+    })
+    .catch(err => setError(err));
+}
 
-  function addSubTask(taskId, text) {
-    if (!text.trim()) return alert("Subtask cannot be empty");
-    
-    const subTaskData = {
-      description: text,
+function createTask(description, estimatedHours, realHours, subArray, sprintId) {
+  setInserting(true);
+  fetch(`${API_URL}/api/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      description,
+      estimatedHours,
+      realHours,
+      sprintId,
       done: false
-    };
-  
-    fetch(`${API_URL}/todolist/subtask/${taskId}/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(subTaskData)
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Add subtask failed");
-        return res.json();
-      })
-      .then(sub => {
-        setSubTasks(prev => ({ 
-          ...prev, 
-          [taskId]: [...(prev[taskId] || []), sub] 
-        }));
-        setNewSubTaskText("");
-        setShowSubTaskForm(prev => ({ ...prev, [taskId]: false }));
-      })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to create new task");
+      return res.json();
+    })
+    .then(newTask => {
+      return fetch(`${API_URL}/api/task-assignments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          taskId: newTask.id
+        })
+      }).then(() => newTask);
+    })
+    .then(newTask => {
+      setItems(prev => [newTask, ...prev]);
+      if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
+        return Promise.all(subArray.map(desc =>
+          fetch(`${API_URL}/api/subtask/${newTask.id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ description: desc, done: false })
+          }).then(r => r.json())
+        ));
+      }
+      return [];
+    })
+    .then(subs => {
+      if (subs.length) {
+        setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
+      }
+      loadUserTasks(userId);
+    })
+    .catch(err => setError(err))
+    .finally(() => setInserting(false));
+}
+
+function updateTask(id, description, done, realHours = null) {
+  const data = realHours != null ? { description, done, realHours } : { description, done };
+  return fetch(`${API_URL}/api/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to update task");
+      return res.json();
+    });
+}
+
+function reloadTaskById(id) {
+  fetch(`${API_URL}/api/tasks/${id}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to reload task");
+      return res.json();
+    })
+    .then(updated => {
+      setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
+      loadUserTasks(userId);
+    })
+    .catch(err => setError(err));
+}
+
+function toggleTaskCompletion(e, item) {
+  e.preventDefault();
+  const nextDone = !item.done;
+  if (nextDone && subTasks[item.id]?.some(st => !st.done)) {
+    return alert("Error: all subtasks must be completed before marking this task done.");
+  }
+  if (nextDone) {
+    setCurrentTaskToClose(item);
+    setShowHoursDialog(true);
+  } else {
+    updateTask(item.id, item.description, false)
+      .then(() => reloadTaskById(item.id))
       .catch(err => setError(err));
   }
+}
 
-  function addSprint(sprintData) {
-    setIsCreatingSprint(true);
-    fetch(`${API_URL}/api/sprints`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(sprintData)
+function toggleSubtaskCompletion(e, subId) {
+  fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to toggle subtask status");
+      return res.json();
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Sprint creation failed");
-        return res.json();
-      })
-      .then(() => setIsCreatingSprint(false))
-      .catch(err => {
-        setError(err);
-        setIsCreatingSprint(false);
-      });
-  }
+    .then(result => {
+      const pid = result.parentTask.id;
+      setSubTasks(prev => ({
+        ...prev,
+        [pid]: prev[pid].map(st => st.id === subId ? result : st)
+      }));
+    })
+    .catch(err => setError(err));
+}
 
-  function toggleHistory() {
-    setShowHistory(h => !h);
-  }
+function addSubTask(taskId, text) {
+  if (!text.trim()) return alert("Subtask cannot be empty");
+
+  const subTaskData = {
+    description: text,
+    done: false
+  };
+
+  fetch(`${API_URL}/todolist/subtask/${taskId}/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subTaskData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to add subtask");
+      return res.json();
+    })
+    .then(sub => {
+      setSubTasks(prev => ({
+        ...prev,
+        [taskId]: [...(prev[taskId] || []), sub]
+      }));
+      setNewSubTaskText("");
+      setShowSubTaskForm(prev => ({ ...prev, [taskId]: false }));
+    })
+    .catch(err => setError(err));
+}
+
+function addSprint(sprintData) {
+  setIsCreatingSprint(true);
+  fetch(`${API_URL}/api/sprints`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sprintData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Sprint creation failed");
+      return res.json();
+    })
+    .then(() => setIsCreatingSprint(false))
+    .catch(err => {
+      setError(err);
+      setIsCreatingSprint(false);
+    });
+}
+
+function toggleHistory() {
+  setShowHistory(h => !h);
+}
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");

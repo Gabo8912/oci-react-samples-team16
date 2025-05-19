@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,21 +8,28 @@ import {
   TextField,
 } from "@mui/material";
 
+const ERROR_INVALID_HOURS = "Debe ingresar un número válido.";
+
 const HoursDialog = ({ open, onClose, onConfirm }) => {
-  const [input, setInput] = useState("");
+  const [hoursInput, setHoursInput] = useState("");
 
   const handleConfirm = () => {
-    const parsed = parseFloat(input);
+    const parsed = parseFloat(hoursInput);
     if (isNaN(parsed) || parsed < 0) {
-      alert("Debe ingresar un número válido.");
+      alert(ERROR_INVALID_HOURS);
       return;
     }
     onConfirm(parsed);
-    setInput("");
+    setHoursInput("");
+  };
+
+  const handleClose = () => {
+    setHoursInput("");  // Reset on cancel
+    onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Registrar horas reales</DialogTitle>
       <DialogContent>
         <TextField
@@ -31,12 +38,13 @@ const HoursDialog = ({ open, onClose, onConfirm }) => {
           label="Horas trabajadas"
           type="number"
           fullWidth
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          aria-label="Horas trabajadas"
+          value={hoursInput}
+          onChange={(e) => setHoursInput(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
+        <Button onClick={handleClose}>Cancelar</Button>
         <Button onClick={handleConfirm} variant="contained">
           Guardar
         </Button>

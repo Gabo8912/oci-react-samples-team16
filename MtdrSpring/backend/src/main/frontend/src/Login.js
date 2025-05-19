@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import loginImage from "./Wallpaper.jpg"; 
+import loginImage from "./Wallpaper.jpg";
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
+const ERROR_INVALID_CREDENTIALS = "Credenciales incorrectas";
+const ERROR_USER_FETCH_FAILED = "No se pudo obtener los datos del usuario";
 
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
@@ -9,54 +12,52 @@ const Login = ({ onLoginSuccess }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const clearAuthStorage = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userId");
+  };
+
+  const loginUser = async (username, password) => {
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!response.ok) throw new Error(ERROR_INVALID_CREDENTIALS);
+    return response.json();
+  };
+
+  const fetchUserInfo = async (username, token) => {
+    const response = await fetch(`${baseUrl}/auth/user/${username}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error(ERROR_USER_FETCH_FAILED);
+    return response.json();
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      // 1. First authenticate
-      const loginResponse = await fetch(`${baseUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const authData = await loginUser(username, password);
 
-      if (!loginResponse.ok) {
-        throw new Error("Credenciales incorrectas");
-      }
-
-      const authData = await loginResponse.json();
-      
-      // 2. Store auth data
       localStorage.setItem("token", authData.token);
       localStorage.setItem("role", authData.role);
       localStorage.setItem("username", username);
 
-      // 3. Fetch user details to get ID
-      const userResponse = await fetch(`${baseUrl}/auth/user/${username}`, {
-        headers: {
-          "Authorization": `Bearer ${authData.token}`
-        }
-      });
-
-      if (!userResponse.ok) {
-        throw new Error("No se pudo obtener los datos del usuario");
-      }
-
-      const userData = await userResponse.json();
+      const userData = await fetchUserInfo(username, authData.token);
       localStorage.setItem("userId", userData.id);
 
-      // 4. Complete login
       onLoginSuccess();
-      
     } catch (err) {
       setError(err.message);
-      // Clear any partial auth data
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("username");
-      localStorage.removeItem("userId");
+      clearAuthStorage();
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +91,8 @@ const Login = ({ onLoginSuccess }) => {
             required
             style={styles.input}
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             style={styles.button}
             disabled={isLoading}
           >
@@ -103,12 +104,12 @@ const Login = ({ onLoginSuccess }) => {
   );
 };
 
-// ✅ Estilos en JS
+// Estilos en JS
 const styles = {
   pageContainer: {
     position: "absolute",
-    top: "0px",
-    left: "0px",
+    top: 0,
+    left: 0,
     display: "flex",
     width: "100vw",
     height: "100vh",
@@ -148,7 +149,7 @@ const styles = {
     borderRadius: "5px",
     border: "1px solid #ccc",
     width: "100%",
-    backgroundColor: "E6D7C3",
+    backgroundColor: "#E6D7C3",
   },
   button: {
     padding: "12px",

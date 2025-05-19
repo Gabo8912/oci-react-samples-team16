@@ -28,134 +28,146 @@ const Dashboard = () => {
   const [expandedTeams, setExpandedTeams] = useState({});
   const [teamTasks, setTeamTasks] = useState([]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const username = localStorage.getItem("username");
-        if (!username) {
-          setError("No user is logged in");
-          setLoadingUser(false);
-          return;
-        }
-        const response = await fetch(`${baseUrl}/auth/user/${username}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!response.ok) throw new Error("Failed to fetch user data");
-        const userData = await response.json();
-        setUser(userData);
-        setLoadingUser(false);
-      } catch (err) {
-        setError(err.message);
-        setLoadingUser(false);
-      }
-    };
-    fetchUserData();
-  }, []);
+const HOURLY_RATE = 25;
 
-  useEffect(() => {
-    const fetchUsersAndStats = async () => {
-      try {
-        setLoadingStats(true);
-        const usersResponse = await fetch(`${baseUrl}/api/users`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!usersResponse.ok) throw new Error("Failed to fetch users");
-        const users = await usersResponse.json();
-        const allTasks = {};
-        const statsPromises = users.map(async (user) => {
-          const tasksResponse = await fetch(`${baseUrl}/api/task-assignments/user/${user.id}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+const fetchWithAuth = async (url) => {
+  return fetch(url, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+};
+
+useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const username = localStorage.getItem("username");
+      if (!username) {
+        setError("No user is logged in");
+        setLoadingUser(false);
+        return;
+      }
+
+      const response = await fetchWithAuth(`${baseUrl}/auth/user/${username}`);
+      if (!response.ok) throw new Error("Failed to fetch user data");
+
+      const userData = await response.json();
+      setUser(userData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  fetchUserData();
+}, []);
+
+useEffect(() => {
+  const fetchUserStatsAndTasks = async () => {
+    try {
+      setLoadingStats(true);
+
+      const usersResponse = await fetchWithAuth(`${baseUrl}/api/users`);
+      if (!usersResponse.ok) throw new Error("Failed to fetch users");
+
+      const users = await usersResponse.json();
+      const allTasks = {};
+
+      const statsPromises = users.map(async (user) => {
+        const taskResponse = await fetchWithAuth(`${baseUrl}/api/task-assignments/user/${user.id}`);
+        const tasks = taskResponse.ok ? await taskResponse.json() : [];
+
+        allTasks[user.id] = tasks;
+
+        const totalTasks = tasks.length;
+        const totalHours = tasks.reduce((sum, assignment) => {
+          const hours = assignment.task?.realHours;
+          return sum + (typeof hours === "number" ? hours : 0);
+        }, 0);
+
+        return {
+          id: user.id,
+          username: user.username,
+          totalTasks,
+          totalHours,
+          cost: totalHours * HOURLY_RATE,
+        };
+      });
+
+      const usersStats = await Promise.all(statsPromises);
+      setUserStats(usersStats);
+      setUserTasks(allTasks);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  fetchUserStatsAndTasks();
+}, []);
+
+useEffect(() => {
+  const fetchTeams = async () => {
+    try {
+      const response = await fetchWithAuth(`${baseUrl}/api/task-assignments/teams`);
+      if (!response.ok) throw new Error("Failed to fetch teams");
+      const data = await response.json();
+      setTeams(data);
+    } catch (err) {
+      console.error("Team fetch failed:", err.message);
+      setError("Failed to load teams.");
+    }
+  };
+
+  fetchTeams();
+}, []);
+
+const handleToggleUserTasks = (userId) => {
+  setExpandedUsers((prev) => ({
+    ...prev,
+    [userId]: !prev[userId],
+  }));
+};
+
+const handleToggleTeam = (teamId) => {
+  setExpandedTeams((prev) => ({
+    ...prev,
+    [teamId]: !prev[teamId],
+  }));
+};
+
+const collectTeamTasks = useCallback(() => {
+  const allTeamTasks = [];
+  teams.forEach(team => {
+    team.userIds.forEach(userId => {
+      const userTasksForUser = userTasks[userId] || [];
+      const tasksArray = Array.isArray(userTasksForUser)
+        ? userTasksForUser
+        : Object.values(userTasksForUser);
+      tasksArray.forEach(assignment => {
+        if (assignment.task) {
+          allTeamTasks.push({
+            description: assignment.task.description,
+            estimatedHours: assignment.task.estimatedHours || 0,
+            realHours: assignment.task.realHours || 0,
+            teamName: team.name
           });
-          const tasks = tasksResponse.ok ? await tasksResponse.json() : [];
-          allTasks[user.id] = tasks;
-          const totalTasks = tasks.length;
-          const totalHours = tasks.reduce((sum, assignment) => {
-            const hours = assignment.task?.realHours;
-            return sum + (typeof hours === "number" ? hours : 0);
-          }, 0);
-          return {
-            id: user.id,
-            username: user.username,
-            totalTasks,
-            totalHours,
-            cost: totalHours * 25,
-          };
-        });
-        const usersStats = await Promise.all(statsPromises);
-        setUserStats(usersStats);
-        setUserTasks(allTasks);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-    fetchUsersAndStats();
-  }, []);
-
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await fetch(`${baseUrl}/api/task-assignments/teams`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!response.ok) throw new Error("Failed to fetch teams");
-        const data = await response.json();
-        setTeams(data);
-      } catch (err) {}
-    };
-    fetchTeams();
-  }, []);
-
-  const handleToggleUserTasks = (userId) => {
-    setExpandedUsers((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
-
-  const handleToggleTeam = (teamId) => {
-    setExpandedTeams((prev) => ({
-      ...prev,
-      [teamId]: !prev[teamId],
-    }));
-  };
-
-  const collectTeamTasks = useCallback(() => {
-    const allTeamTasks = [];
-    teams.forEach(team => {
-      team.userIds.forEach(userId => {
-        const userTasksForUser = userTasks[userId] || [];
-        const tasksArray = Array.isArray(userTasksForUser) ? userTasksForUser : Object.values(userTasksForUser);
-        tasksArray.forEach(assignment => {
-          if (assignment.task) {
-            allTeamTasks.push({
-              description: assignment.task.description,
-              estimatedHours: assignment.task.estimatedHours || 0,
-              realHours: assignment.task.realHours || 0,
-              teamName: team.name
-            });
-          }
-        });
+        }
       });
     });
-    setTeamTasks(allTeamTasks);
-  }, [teams, userTasks]);
+  });
+  setTeamTasks(allTeamTasks);
+}, [teams, userTasks]);
 
-  useEffect(() => {
-    collectTeamTasks();
-  }, [teams, userTasks, collectTeamTasks]);
+useEffect(() => {
+  collectTeamTasks();
+}, [teams, userTasks, collectTeamTasks]);
 
-  if (loadingUser) return <div className="dashboard-loading">Loading user…</div>;
-  if (error) return <div className="dashboard-error">{error}</div>;
+if (loadingUser) return <div className="dashboard-loading">Loading user…</div>;
+if (error) return <div className="dashboard-error">{error}</div>;
+
 
   return (
     <div className="dashboard-container">
