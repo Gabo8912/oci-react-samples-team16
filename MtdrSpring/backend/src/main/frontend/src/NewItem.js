@@ -7,11 +7,15 @@ const LONG_TASK_THRESHOLD = 4;
 const DEFAULT_SPRINT_ID = 2;
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
+const ERROR_EMPTY_TASK = "La tarea no puede estar vacía.";
+const ERROR_INVALID_DURATION = "Por favor, ingresa una duración válida.";
+const ERROR_LONG_TASK_REQUIRES_SUBTASK = `Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`;
+const ERROR_NO_USER = "Debes asignar la tarea a un usuario.";
+const ERROR_EMPTY_SUBTASK = "La subtarea no puede estar vacía.";
 
-
-function NewItem(props) {
-  const [item, setItem] = useState("");
-  const [duration, setDuration] = useState("");
+function NewItem({ addItem, isInserting }) {
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskDuration, setTaskDuration] = useState("");
   const [subTasks, setSubTasks] = useState([]);
   const [newSubTask, setNewSubTask] = useState("");
   const [sprintId, setSprintId] = useState(DEFAULT_SPRINT_ID);
@@ -19,7 +23,7 @@ function NewItem(props) {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
 
-  const hours = parseFloat(duration);
+  const durationInHours = parseFloat(taskDuration);
 
   const commonInputStyle = {
     height: "40px",
@@ -37,11 +41,13 @@ function NewItem(props) {
     textTransform: "none",
   };
 
+  const isBlank = (str) => !str || !str.trim();
+
   useEffect(() => {
     fetch(`${baseUrl}/api/sprints`)
       .then((res) => res.json())
       .then((data) => {
-        if (data?.length > 0) {
+        if (data?.length) {
           setAvailableSprints(data);
           setSprintId(data[0].sprintId);
         }
@@ -65,33 +71,27 @@ function NewItem(props) {
       .catch(console.error);
   }, []);
 
+  const validateTaskInput = () => {
+    if (!selectedUserId) return ERROR_NO_USER;
+    if (isBlank(taskDescription)) return ERROR_EMPTY_TASK;
+    if (isNaN(durationInHours) || durationInHours <= 0) return ERROR_INVALID_DURATION;
+    if (durationInHours > LONG_TASK_THRESHOLD && subTasks.length === 0) return ERROR_LONG_TASK_REQUIRES_SUBTASK;
+    return null;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!selectedUserId) {
-      alert("Debes asignar la tarea a un usuario.");
+    const validationError = validateTaskInput();
+    if (validationError) {
+      alert(validationError);
       return;
     }
 
-    if (!item.trim()) {
-      alert("La tarea no puede estar vacía.");
-      return;
-    }
+    addItem(taskDescription.trim(), durationInHours, durationInHours, subTasks, sprintId, selectedUserId);
 
-    if (isNaN(hours) || hours <= 0) {
-      alert("Por favor, ingresa una duración válida.");
-      return;
-    }
-
-    if (hours > LONG_TASK_THRESHOLD && subTasks.length === 0) {
-      alert(`Tareas mayores a ${LONG_TASK_THRESHOLD} horas deben tener al menos una subtarea.`);
-      return;
-    }
-
-    props.addItem(item.trim(), hours, hours, subTasks, sprintId, selectedUserId);
-
-    setItem("");
-    setDuration("");
+    // Reset form state
+    setTaskDescription("");
+    setTaskDuration("");
     setSubTasks([]);
     setNewSubTask("");
     setSprintId(availableSprints[0]?.sprintId || DEFAULT_SPRINT_ID);
@@ -99,8 +99,8 @@ function NewItem(props) {
   };
 
   const addSubTaskToList = () => {
-    if (!newSubTask.trim()) {
-      alert("La subtarea no puede estar vacía.");
+    if (isBlank(newSubTask)) {
+      alert(ERROR_EMPTY_SUBTASK);
       return;
     }
     setSubTasks([...subTasks, newSubTask.trim()]);
@@ -116,12 +116,11 @@ function NewItem(props) {
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
-            id="newiteminput"
             placeholder="Nueva tarea"
             type="text"
             autoComplete="off"
-            value={item}
-            onChange={(e) => setItem(e.target.value)}
+            value={taskDescription}
+            onChange={(e) => setTaskDescription(e.target.value)}
             style={{ ...commonInputStyle, flex: 1 }}
           />
 
@@ -153,10 +152,10 @@ function NewItem(props) {
           <input
             type="number"
             placeholder="Duración (hrs)"
-            value={duration}
+            value={taskDuration}
             min="0"
             step="0.5"
-            onChange={(e) => setDuration(e.target.value)}
+            onChange={(e) => setTaskDuration(e.target.value)}
             style={{
               ...commonInputStyle,
               width: "120px",
@@ -166,8 +165,7 @@ function NewItem(props) {
           />
         </div>
 
-        {/* Subtasks (only if long task) */}
-        {!isNaN(hours) && hours > LONG_TASK_THRESHOLD && (
+        {!isNaN(durationInHours) && durationInHours > LONG_TASK_THRESHOLD && (
           <div style={{ border: "1px solid #ccc", padding: "10px", borderRadius: "4px" }}>
             <h4 style={{ margin: "0 0 8px 0" }}>Agregar Subtareas</h4>
             <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
@@ -209,12 +207,12 @@ function NewItem(props) {
         <Button
           className="AddButton"
           variant="contained"
-          disabled={props.isInserting}
+          disabled={isInserting}
           type="submit"
           size="small"
           style={buttonStyle}
         >
-          {props.isInserting ? "Agregando…" : "Agregar"}
+          {isInserting ? "Agregando…" : "Agregar"}
         </Button>
       </form>
     </div>
