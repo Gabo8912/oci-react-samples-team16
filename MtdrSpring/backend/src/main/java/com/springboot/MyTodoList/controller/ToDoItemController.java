@@ -2,7 +2,6 @@ package com.springboot.MyTodoList.controller;
 
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.service.ToDoItemService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,61 +9,53 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/todolist")
 public class ToDoItemController {
-    @Autowired
-    private ToDoItemService toDoItemService;
 
-    @GetMapping(value = "/todolist")
+    private static final String HEADER_LOCATION = "location";
+    private static final String HEADER_EXPOSE = "Access-Control-Expose-Headers";
+
+    private final ToDoItemService toDoItemService;
+
+    public ToDoItemController(ToDoItemService toDoItemService) {
+        this.toDoItemService = toDoItemService;
+    }
+
+    @GetMapping
     public List<ToDoItem> getAllToDoItems() {
         return toDoItemService.findAll();
     }
 
-    @GetMapping(value = "/todolist/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ToDoItem> getToDoItemById(@PathVariable int id) {
         return toDoItemService.getItemById(id);
     }
 
-    @PostMapping(value = "/todolist")
-    public ResponseEntity addToDoItem(@RequestBody ToDoItem todoItem) {
-        ToDoItem td = toDoItemService.addToDoItem(todoItem);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("location", "" + td.getId());
-        responseHeaders.set("Access-Control-Expose-Headers", "location");
-        return ResponseEntity.ok()
-                .headers(responseHeaders).build();
+    @PostMapping
+    public ResponseEntity<Void> addToDoItem(@RequestBody ToDoItem todoItem) {
+        ToDoItem created = toDoItemService.addToDoItem(todoItem);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HEADER_LOCATION, "/api/todolist/" + created.getId());
+        headers.set(HEADER_EXPOSE, HEADER_LOCATION);
+        return ResponseEntity.ok().headers(headers).build();
     }
 
-    @PutMapping(value = "/todolist/{id}")
-    public ResponseEntity<ToDoItem> updateToDoItem(
-        @RequestBody ToDoItem toDoItem, 
-        @PathVariable int id) {
-        
-        ToDoItem updatedItem = toDoItemService.updateToDoItem(id, toDoItem);
-        if (updatedItem == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updatedItem);
+    @PutMapping("/{id}")
+    public ResponseEntity<ToDoItem> updateToDoItem(@PathVariable int id, @RequestBody ToDoItem toDoItem) {
+        ToDoItem updated = toDoItemService.updateToDoItem(id, toDoItem);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/todolist/{id}/complete")
-    public ResponseEntity<ToDoItem> completeTask(
-            @PathVariable int id,
-            @RequestParam int realHours) {
-
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<ToDoItem> completeTask(@PathVariable int id, @RequestParam int realHours) {
         ToDoItem updated = toDoItemService.markTaskAsDone(id, realHours);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updated);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping(value = "/todolist/{id}")
-    public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") int id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteToDoItem(@PathVariable int id) {
         boolean deleted = toDoItemService.deleteToDoItem(id);
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(true);
+        return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/tasks/{id}/progress")

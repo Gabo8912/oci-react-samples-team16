@@ -258,395 +258,174 @@ function CurrentSprints() {
     fetchData();
   }, []);
   // Add these helper functions at the top of the component
-  const calculateSprintHours = (sprintId) => {
-    const sprintTasks = tasks[sprintId] || [];
-    return sprintTasks.reduce(
-      (totals, task) => ({
-        estimated: totals.estimated + (task.estimatedHours || 0),
-        real: totals.real + (task.realHours || 0)
-      }),
-      { estimated: 0, real: 0 }
-    );
-  };
+// Constants
+const SPRINT_STATUS = {
+  COMPLETED: "COMPLETED",
+  IN_PROGRESS: "IN_PROGRESS"
+};
 
-  const calculateDeveloperHours = (sprintId) => {
-    const sprintTasks = tasks[sprintId] || [];
-    const developerHours = {};
+const GRAPH_TYPES = {
+  TOTAL_HOURS: 'totalHours',
+  DEVELOPER_HOURS: 'developerHours',
+  DEVELOPER_TASKS: 'developerTasks'
+};
 
-    sprintTasks.forEach(task => {
-      if (task.userId && task.realHours) {
-        if (!developerHours[task.userId]) {
-          developerHours[task.userId] = 0;
-        }
-        developerHours[task.userId] += task.realHours;
+const CHART_COLORS = {
+  blue: { background: 'rgba(54, 162, 235, 0.6)', border: 'rgb(54, 162, 235)' },
+  green: { background: 'rgba(75, 192, 192, 0.6)', border: 'rgb(75, 192, 192)' },
+  purple: { background: 'rgba(153, 102, 255, 0.6)', border: 'rgb(153, 102, 255)' },
+  orange: { background: 'rgba(255, 159, 64, 0.6)', border: 'rgb(255, 159, 64)' },
+  red: { background: 'rgba(255, 99, 132, 0.6)', border: 'rgb(255, 99, 132)' },
+  teal: { background: 'rgba(0, 128, 128, 0.6)', border: 'rgb(0, 128, 128)' }
+};
+
+const DEVELOPER_COLORS = [
+  CHART_COLORS.blue,
+  CHART_COLORS.green,
+  CHART_COLORS.purple,
+  CHART_COLORS.orange,
+  CHART_COLORS.red,
+  CHART_COLORS.teal
+];
+
+// Helper Functions
+const calculateHours = (tasks, field) => {
+  return tasks.reduce((total, task) => total + (task[field] || 0), 0);
+};
+
+const groupByDeveloper = (tasks, field, initialValue) => {
+  const result = {};
+  tasks.forEach(task => {
+    if (task.userId) {
+      if (!result[task.userId]) {
+        result[task.userId] = initialValue;
       }
-    });
-
-    return developerHours;
-  };
-
-  const calculateDeveloperTasks = (sprintId) => {
-    const sprintTasks = tasks[sprintId] || [];
-    const developerTasks = {};
-
-    sprintTasks.forEach(task => {
-      if (task.userId) {
-        if (!developerTasks[task.userId]) {
-          developerTasks[task.userId] = { total: 0, completed: 0 };
-        }
-        developerTasks[task.userId].total++;
-        if (task.done) {
-          developerTasks[task.userId].completed++;
-        }
-      }
-    });
-
-    return developerTasks;
-  };
-
-  const toggleSprintExpansion = (sprintId) => {
-    setExpandedSprints(prev => ({
-      ...prev,
-      [sprintId]: !prev[sprintId]
-    }));
-  };
-
-  const viewTaskAssignments = async (taskId) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/task-assignments/task/${taskId}`);
-      if (!response.ok) throw new Error('Failed to fetch task assignments');
-      const assignments = await response.json();
-      setSelectedTaskAssignments(assignments);
-      setShowAssignmentsModal(true);
-    } catch (err) {
-      console.error('Error fetching task assignments:', err);
-      alert('Error loading task assignments: ' + err.message);
-    }
-  };
-
-  const toggleTaskExpansion = (taskId) => {
-    setExpandedTasks(prev => ({
-      ...prev,
-      [taskId]: !prev[taskId]
-    }));
-    
-    // Load subtasks if not already loaded
-    if (!subtasks[taskId]) {
-      fetch(`${baseUrl}/todolist/subtask/${taskId}`)
-        .then(response => {
-          if (response.ok) return response.json();
-          throw new Error('Failed to fetch subtasks');
-        })
-        .then(data => {
-          setSubtasks(prev => ({
-            ...prev,
-            [taskId]: data
-          }));
-        })
-        .catch(err => console.error('Error loading subtasks:', err));
-    }
-  };
-
-  const completeSprint = async (sprintId) => {
-    try {
-      // Get all tasks for this sprint
-      const sprintTasks = tasks[sprintId] || [];
-      
-      // Verify all tasks are completed
-      const allTasksDone = sprintTasks.every(task => task.done);
-      if (!allTasksDone) {
-        alert("Cannot complete sprint - not all tasks are done!");
-        return;
-      }
-  
-      // Update sprint status to COMPLETED
-      const response = await fetch(`${baseUrl}/api/sprints/${sprintId}/complete`, {
-        method: 'POST'
-      });
-  
-      if (response.ok) {
-        // Update local state
-        setSprints(prev => 
-          prev.map(sprint => 
-            sprint.sprintId === sprintId 
-              ? { ...sprint, status: "COMPLETED" } 
-              : sprint
-          )
-        );
+      if (typeof initialValue === 'object') {
+        result[task.userId].total++;
+        if (task.done) result[task.userId].completed++;
       } else {
-        throw new Error('Failed to complete sprint');
+        result[task.userId] += task[field] || 0;
       }
-    } catch (err) {
-      console.error('Error completing sprint:', err);
-      alert('Error completing sprint: ' + err.message);
     }
+  });
+  return result;
+};
+
+// Main Functions
+const getSprintHours = (sprintId, tasks) => {
+  const sprintTasks = tasks[sprintId] || [];
+  return {
+    estimated: calculateHours(sprintTasks, 'estimatedHours'),
+    real: calculateHours(sprintTasks, 'realHours')
   };
+};
 
-  const uncompleteSprint = async (sprintId) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/sprints/${sprintId}/uncomplete`, {
-        method: 'POST'
-      });
-  
-      if (response.ok) {
-        setSprints(prev => 
-          prev.map(sprint => 
-            sprint.sprintId === sprintId 
-              ? { ...sprint, status: "IN_PROGRESS" } 
-              : sprint
-          )
-        );
-      } else {
-        throw new Error('Failed to uncomplete sprint');
-      }
-    } catch (err) {
-      console.error('Error uncompleting sprint:', err);
-      alert('Error uncompleting sprint: ' + err.message);
-    }
-  };
-  
-  const isSprintComplete = (sprintId) => {
-    const sprintTasks = tasks[sprintId] || [];
-    return sprintTasks.length > 0 && sprintTasks.every(task => task.done);
-  };
+const getDeveloperHours = (sprintId, tasks) => {
+  return groupByDeveloper(tasks[sprintId] || [], 'realHours', 0);
+};
 
-  const toggleSubTaskForm = (taskId) => {
-    setShowSubTaskForm(prev => ({
-      ...prev,
-      [taskId]: !prev[taskId]
-    }));
-  };
+const getDeveloperTasks = (sprintId, tasks) => {
+  return groupByDeveloper(tasks[sprintId] || [], null, { total: 0, completed: 0 });
+};
 
-  const calculateProgress = (taskId) => {
-    if (!subtasks[taskId] || subtasks[taskId].length === 0) return 0;
-    const completed = subtasks[taskId].filter(subTask => subTask.done).length;
-    return (completed / subtasks[taskId].length) * 100;
-  };
+const isSprintComplete = (sprintId, tasks) => {
+  const sprintTasks = tasks[sprintId] || [];
+  return sprintTasks.length > 0 && sprintTasks.every(task => task.done);
+};
 
-  const toggleTaskDone = async (taskId, description, currentStatus) => {
-    try {
-      // Check if all subtasks are completed before marking task as done
-      if (!currentStatus && subtasks[taskId] && subtasks[taskId].length > 0 && 
-          !subtasks[taskId].every(subTask => subTask.done)) {
-        alert("Error: All subtasks must be completed before marking the main task as done.");
-        return;
-      }
+const toggleExpansion = (prevState, id) => ({
+  ...prevState,
+  [id]: !prevState[id]
+});
 
-      const response = await fetch(`${baseUrl}/todolist/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          description: description, 
-          done: !currentStatus 
-        })
-      });
+const fetchWithErrorHandling = async (url, options = {}) => {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching ${url}:`, error);
+    throw error;
+  }
+};
 
-      if (response.ok) {
-        const updatedTask = await response.json();
-        // Update tasks state
-        const updatedTasks = { ...tasks };
-        for (const sprintId in updatedTasks) {
-          updatedTasks[sprintId] = updatedTasks[sprintId].map(task => 
-            task.id === taskId ? updatedTask : task
-          );
-        }
-        setTasks(updatedTasks);
-      }
-    } catch (err) {
-      console.error('Error toggling task status:', err);
-    }
-  };
+const updateSprintStatus = async (sprintId, status, baseUrl) => {
+  const endpoint = status === SPRINT_STATUS.COMPLETED ? 'complete' : 'uncomplete';
+  await fetchWithErrorHandling(`${baseUrl}/api/sprints/${sprintId}/${endpoint}`, {
+    method: 'POST'
+  });
+  return status;
+};
 
-  const toggleSubTaskDone = async (event, subTaskId, taskId) => {
-    const checked = event.target.checked;
+const updateTaskStatus = async (taskId, description, done, baseUrl) => {
+  return fetchWithErrorHandling(`${baseUrl}/todolist/${taskId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description, done })
+  });
+};
+
+const updateSubTaskStatus = async (subTaskId, done, baseUrl) => {
+  return fetchWithErrorHandling(`${baseUrl}/todolist/subtask/${subTaskId}/toggle`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ done })
+  });
+};
+
+const manageSubTask = async (taskId, subTaskId, method, description, baseUrl) => {
+  const url = method === 'POST' 
+    ? `${baseUrl}/todolist/subtask/${taskId}/add`
+    : `${baseUrl}/todolist/subtask/${subTaskId}`;
     
-    try {
-      const response = await fetch(`${baseUrl}/todolist/subtask/${subTaskId}/toggle`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ done: checked })
-      });
-      
-      if (response.ok) {
-        const updatedSubtask = await response.json();
-        
-        // Update local state
-        setSubtasks(prevSubtasks => {
-          const updated = {
-            ...prevSubtasks,
-            [taskId]: prevSubtasks[taskId].map(subTask => 
-              subTask.id === subTaskId ? updatedSubtask : subTask
-            )
-          };
-          return updated;
-        });
-        
-        // Recalculate progress for the parent task
-        const parentTaskResponse = await fetch(`${baseUrl}/todolist/${taskId}`);
-        if (parentTaskResponse.ok) {
-          const parentTask = await parentTaskResponse.json();
-          
-          // Update parent task in state
-          setTasks(prevTasks => {
-            const updated = {...prevTasks};
-            for (const sprintId in updated) {
-              updated[sprintId] = updated[sprintId].map(task => 
-                task.id === taskId ? parentTask : task
-              );
-            }
-            return updated;
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Error toggling subtask status:', err);
-    }
-  };
+  return fetchWithErrorHandling(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: method === 'POST' ? JSON.stringify({ description, done: false }) : undefined
+  });
+};
 
-  const addSubTask = async (taskId) => {
-    if (!newSubTaskText.trim()) {
-      alert("Error: Subtasks cannot be empty");
-      return;
-    }
+const getGraphData = (selectedGraphType, sprints, tasks, users) => {
+  const getDatasetConfig = (user, index) => ({
+    label: user.username,
+    backgroundColor: DEVELOPER_COLORS[index % DEVELOPER_COLORS.length].background,
+    borderColor: DEVELOPER_COLORS[index % DEVELOPER_COLORS.length].border,
+    borderWidth: 1
+  });
+
+  switch (selectedGraphType) {
+    case GRAPH_TYPES.TOTAL_HOURS:
+      return {
+        labels: sprints.map(sprint => sprint.sprintName),
+        datasets: [{
+          ...getDatasetConfig({ username: 'Total Hours' }, 0),
+          data: sprints.map(sprint => getSprintHours(sprint.sprintId, tasks).real)
+        }]
+      };
     
-    try {
-      const response = await fetch(`${baseUrl}/todolist/subtask/${taskId}/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          description: newSubTaskText, 
-          done: false 
-        })
-      });
-      
-      if (response.ok) {
-        const newSubTask = await response.json();
-        // Update local state
-        setSubtasks(prev => ({
-          ...prev,
-          [taskId]: [...(prev[taskId] || []), newSubTask]
-        }));
-        
-        setNewSubTaskText("");
-        setShowSubTaskForm(prev => ({
-          ...prev,
-          [taskId]: false
-        }));
-      }
-    } catch (err) {
-      console.error('Error adding subtask:', err);
-    }
-  };
-
-  const deleteSubTask = async (taskId, subTaskId) => {
-    try {
-      const response = await fetch(`${baseUrl}/todolist/subtask/${subTaskId}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        setSubtasks(prev => ({
-          ...prev,
-          [taskId]: prev[taskId].filter(subTask => subTask.id !== subTaskId)
-        }));
-      }
-    } catch (err) {
-      console.error('Error deleting subtask:', err);
-    }
-  };
-
-  const getGraphData = () => {
-    // Professional color palette
-    const colors = {
-      blue: {
-        background: 'rgba(54, 162, 235, 0.6)',
-        border: 'rgb(54, 162, 235)'
-      },
-      green: {
-        background: 'rgba(75, 192, 192, 0.6)',
-        border: 'rgb(75, 192, 192)'
-      },
-      purple: {
-        background: 'rgba(153, 102, 255, 0.6)',
-        border: 'rgb(153, 102, 255)'
-      },
-      orange: {
-        background: 'rgba(255, 159, 64, 0.6)',
-        border: 'rgb(255, 159, 64)'
-      },
-      red: {
-        background: 'rgba(255, 99, 132, 0.6)',
-        border: 'rgb(255, 99, 132)'
-      },
-      teal: {
-        background: 'rgba(0, 128, 128, 0.6)',
-        border: 'rgb(0, 128, 128)'
-      }
-    };
-
-    // Predefined color combinations for developers
-    const developerColors = [
-      colors.blue,
-      colors.green,
-      colors.purple,
-      colors.orange,
-      colors.red,
-      colors.teal
-    ];
-
-    switch (selectedGraphType) {
-      case 'totalHours':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: [{
-            label: 'Total Hours per Sprint',
-            data: sprints.map(sprint => calculateSprintHours(sprint.sprintId).real),
-            backgroundColor: colors.blue.background,
-            borderColor: colors.blue.border,
-            borderWidth: 1
-          }]
-        };
-      
-      case 'developerHours':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: users.map((user, index) => ({
-            label: user.username,
-            data: sprints.map(sprint => {
-              const developerHours = calculateDeveloperHours(sprint.sprintId);
-              return developerHours[user.id] || 0;
-            }),
-            backgroundColor: developerColors[index % developerColors.length].background,
-            borderColor: developerColors[index % developerColors.length].border,
-            borderWidth: 1
-          }))
-        };
-      
-      case 'developerTasks':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: users.map((user, index) => ({
-            label: `${user.username} - Completed Tasks`,
-            data: sprints.map(sprint => {
-              const developerTasks = calculateDeveloperTasks(sprint.sprintId);
-              return developerTasks[user.id]?.completed || 0;
-            }),
-            backgroundColor: developerColors[index % developerColors.length].background,
-            borderColor: developerColors[index % developerColors.length].border,
-            borderWidth: 1
-          }))
-        };
-      
-      default:
-        return null;
-    }
-  };
+    case GRAPH_TYPES.DEVELOPER_HOURS:
+      return {
+        labels: sprints.map(sprint => sprint.sprintName),
+        datasets: users.map((user, index) => ({
+          ...getDatasetConfig(user, index),
+          data: sprints.map(sprint => getDeveloperHours(sprint.sprintId, tasks)[user.id] || 0)
+        }))
+      };
+    
+    case GRAPH_TYPES.DEVELOPER_TASKS:
+      return {
+        labels: sprints.map(sprint => sprint.sprintName),
+        datasets: users.map((user, index) => ({
+          ...getDatasetConfig(user, index),
+          label: `${user.username} - Completed Tasks`,
+          data: sprints.map(sprint => getDeveloperTasks(sprint.sprintId, tasks)[user.id]?.completed || 0)
+        }))
+      };
+    
+    default:
+      return null;
+  }
+};
 
   const chartOptions = {
     responsive: true,

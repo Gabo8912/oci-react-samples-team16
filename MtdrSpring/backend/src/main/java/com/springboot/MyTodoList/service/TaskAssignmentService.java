@@ -6,34 +6,38 @@ import com.springboot.MyTodoList.model.User;
 import com.springboot.MyTodoList.repository.TaskAssignmentRepository;
 import com.springboot.MyTodoList.repository.ToDoItemRepository;
 import com.springboot.MyTodoList.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
-import java.util.Optional;
+
 @Service
 public class TaskAssignmentService {
 
-    @Autowired
-    private TaskAssignmentRepository taskAssignmentRepository;
-    
-    @Autowired
-    private ToDoItemRepository toDoItemRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
+    private final TaskAssignmentRepository taskAssignmentRepository;
+    private final ToDoItemRepository toDoItemRepository;
+    private final UserRepository userRepository;
+
+    public TaskAssignmentService(
+        TaskAssignmentRepository taskAssignmentRepository,
+        ToDoItemRepository toDoItemRepository,
+        UserRepository userRepository
+    ) {
+        this.taskAssignmentRepository = taskAssignmentRepository;
+        this.toDoItemRepository = toDoItemRepository;
+        this.userRepository = userRepository;
+    }
 
     public TaskAssignment createAssignment(Long taskId, Long userId) {
-        // Convert Long to Integer for repository calls
-        Optional<ToDoItem> task = toDoItemRepository.findById(taskId.intValue());
-        Optional<User> user = userRepository.findById(userId.intValue());
-        
-        if (task.isPresent() && user.isPresent()) {
-            TaskAssignment newAssignment = new TaskAssignment();
-            newAssignment.setTask(task.get());
-            newAssignment.setUser(user.get());
-            return taskAssignmentRepository.save(newAssignment);
-        }
-        throw new IllegalArgumentException("Task or User not found with provided IDs");
+        ToDoItem task = toDoItemRepository.findById(taskId.intValue())
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        User user = userRepository.findById(userId.intValue())
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        TaskAssignment assignment = new TaskAssignment();
+        assignment.setTask(task);
+        assignment.setUser(user);
+        return taskAssignmentRepository.save(assignment);
     }
 
     public List<TaskAssignment> getAssignmentsForUser(Long userId) {
