@@ -21,31 +21,78 @@ ChartJS.register(
   Legend
 );
 
-const UserHoursGraph = ({ userTasks, allUsers }) => {
+const UserHoursGraph = ({ userTasks, allUsers, teamTasks }) => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserTasks, setSelectedUserTasks] = useState([]);
+  const [availableUsers, setAvailableUsers] = useState([]);
 
   useEffect(() => {
-    if (allUsers?.length > 0 && selectedUserId === null) {
-      const defaultUserId = allUsers[0].id;
-      setSelectedUserId(defaultUserId);
-      setSelectedUserTasks(userTasks[defaultUserId] || []);
+    // Determine which data format we're using and filter out managers
+    if (teamTasks) {
+      // New format - extract users from teamTasks
+      const userMap = {};
+      teamTasks.forEach(task => {
+        if (!userMap[task.userId]) {
+          userMap[task.userId] = {
+            id: task.userId,
+            username: allUsers?.find(u => u.id === task.userId)?.username || `User ${task.userId}`
+          };
+        }
+      });
+      setAvailableUsers(Object.values(userMap));
+    } else if (allUsers) {
+      // Old format - filter out managers
+      setAvailableUsers(allUsers.filter(user => {
+        const userData = allUsers.find(u => u.id === user.id);
+        return !userData || userData.role !== "Manager";
+      }));
     }
-  }, [allUsers, userTasks]);
+  }, [allUsers, teamTasks]);
+
+  useEffect(() => {
+    if (availableUsers.length > 0 && selectedUserId === null) {
+      const defaultUserId = availableUsers[0].id;
+      setSelectedUserId(defaultUserId);
+      updateSelectedTasks(defaultUserId);
+    }
+  }, [availableUsers]);
+
+  const updateSelectedTasks = (userId) => {
+    if (teamTasks) {
+      // New format - filter teamTasks for selected user
+      setSelectedUserTasks(
+        teamTasks
+          .filter(task => task.userId === userId)
+          .map(task => ({
+            task: {
+              id: task.id, // <-- Add this line
+              description: task.description,
+              estimatedHours: task.estimatedHours,
+              realHours: task.realHours
+            }
+          }))
+      );
+    } else if (userTasks) {
+      // Old format - use userTasks directly
+      setSelectedUserTasks(userTasks[userId] || []);
+    }
+  };
 
   const handleChange = (e) => {
     const newUserId = parseInt(e.target.value, 10);
     setSelectedUserId(newUserId);
-    setSelectedUserTasks(userTasks[newUserId] || []);
+    updateSelectedTasks(newUserId);
   };
 
-  if (!allUsers || allUsers.length === 0) {
+  if (!availableUsers || availableUsers.length === 0) {
     return <div className="graph-container">No users available</div>;
   }
 
   const taskData = selectedUserTasks
     .filter(assignment => assignment.task)
     .map(assignment => ({
+      id: assignment.task.id ?? 'N/A',
+      username: allUsers?.find(u => u.id === selectedUserId)?.username || `User ${selectedUserId}`,
       description: assignment.task.description || 'Unknown Task',
       estimatedHours: assignment.task.estimatedHours || 0,
       realHours: assignment.task.realHours || 0
@@ -56,7 +103,7 @@ const UserHoursGraph = ({ userTasks, allUsers }) => {
       <div className="graph-container">
         <label>Select User: </label>
         <select value={selectedUserId || ''} onChange={handleChange}>
-          {allUsers.map(user => (
+          {availableUsers.map(user => (
             <option key={user.id} value={user.id}>{user.username}</option>
           ))}
         </select>
@@ -66,7 +113,7 @@ const UserHoursGraph = ({ userTasks, allUsers }) => {
   }
 
   const data = {
-    labels: taskData.map(task => task.description),
+    labels: taskData.map(task => `${task.id}`), // Only show task ID
     datasets: [
       {
         label: 'Estimated Hours',
@@ -101,7 +148,7 @@ const UserHoursGraph = ({ userTasks, allUsers }) => {
       },
       title: {
         display: true,
-        text: `Task Hours Comparison for ${allUsers.find(u => u.id === selectedUserId)?.username || 'User'}`,
+        text: `Task Hours Comparison for ${availableUsers.find(u => u.id === selectedUserId)?.username || 'User'}`,
         font: {
           size: 16,
           family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
@@ -152,7 +199,7 @@ const UserHoursGraph = ({ userTasks, allUsers }) => {
     <div className="graph-container" style={{ height: '400px', width: '100%' }}>
       <label style={{ marginBottom: '1rem', display: 'block' }}>Select User:</label>
       <select value={selectedUserId || ''} onChange={handleChange} style={{ marginBottom: '1rem' }}>
-        {allUsers.map(user => (
+        {availableUsers.map(user => (
           <option key={user.id} value={user.id}>{user.username}</option>
         ))}
       </select>

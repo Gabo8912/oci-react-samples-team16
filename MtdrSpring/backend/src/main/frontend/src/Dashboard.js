@@ -25,6 +25,67 @@ const Dashboard = () => {
   const [activeView, setActiveView] = useState(null);
   const [expandedUsers, setExpandedUsers] = useState({});
   const [expandedTeams, setExpandedTeams] = useState({});
+  
+  const [sprints, setSprints] = useState([]);
+  const [sprintTasks, setSprintTasks] = useState({});
+  const [sprintSubtasks, setSprintSubtasks] = useState({});
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingSprints, setLoadingSprints] = useState(true);
+  const [sprintError, setSprintError] = useState(null);
+
+  useEffect(() => {
+    const fetchSprintData = async () => {
+      try {
+        setLoadingSprints(true);
+
+        const [sprintRes, taskRes, userRes] = await Promise.all([
+          fetch(`${baseUrl}/api/sprints`),
+          fetch(`${baseUrl}/todolist`),
+          fetch(`${baseUrl}/api/users`)
+        ]);
+
+        if (!sprintRes.ok || !taskRes.ok || !userRes.ok) throw new Error("Failed to fetch sprint data");
+
+        const [sprintsData, tasksData, usersData] = await Promise.all([
+          sprintRes.json(),
+          taskRes.json(),
+          userRes.json()
+        ]);
+
+        // Organize tasks by sprint
+        const tasksBySprint = {};
+        for (const task of tasksData) {
+          if (task.sprintId) {
+            if (!tasksBySprint[task.sprintId]) tasksBySprint[task.sprintId] = [];
+            tasksBySprint[task.sprintId].push(task);
+          }
+        }
+
+        // Fetch subtasks for each task
+        const subtasksMap = {};
+        await Promise.all(tasksData.map(async (task) => {
+          const res = await fetch(`${baseUrl}/todolist/subtask/${task.id}`);
+          if (res.ok) {
+            const subtaskData = await res.json();
+            subtasksMap[task.id] = subtaskData;
+          }
+        }));
+
+        setSprints(sprintsData);
+        setSprintTasks(tasksBySprint);
+        setSprintSubtasks(subtasksMap);
+        setAllUsers(usersData);
+      } catch (err) {
+        console.error("Sprint data error:", err);
+        setSprintError(err.message);
+      } finally {
+        setLoadingSprints(false);
+      }
+    };
+
+    fetchSprintData();
+  }, []);
+
 
   // Fetch user data
   useEffect(() => {
@@ -65,8 +126,12 @@ const Dashboard = () => {
         });
         if (!usersResponse.ok) throw new Error("Failed to fetch users");
         const users = await usersResponse.json();
+        
+        // Filter out managers
+        const nonManagerUsers = users.filter(user => user.role !== "Manager");
+        
         const allTasks = {};
-        const statsPromises = users.map(async (user) => {
+        const statsPromises = nonManagerUsers.map(async (user) => {
           const tasksResponse = await fetch(`${baseUrl}/api/task-assignments/user/${user.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -123,25 +188,29 @@ const Dashboard = () => {
     const allTeamTasks = [];
     teams.forEach(team => {
       team.userIds.forEach(userId => {
+        // Skip if user is a manager
+        const user = userStats.find(u => u.id === userId);
+        if (user && user.role === "Manager") return;
+        
         const userTasksForUser = userTasks[userId] || [];
         const tasksArray = Array.isArray(userTasksForUser) ? userTasksForUser : Object.values(userTasksForUser);
         tasksArray.forEach(assignment => {
           if (assignment.task) {
             allTeamTasks.push({
-              id: assignment.task.id, // <-- add id
+              id: assignment.task.id,
               description: assignment.task.description,
               estimatedHours: assignment.task.estimatedHours || 0,
               realHours: assignment.task.realHours || 0,
               teamName: team.name,
               userId: userId,
-              done: assignment.task.done // <-- add done
+              done: assignment.task.done
             });
           }
         });
       });
     });
     setTeamTasks(allTeamTasks);
-  }, [teams, userTasks]);
+  }, [teams, userTasks, userStats]);
 
   useEffect(() => {
     collectTeamTasks();
@@ -224,12 +293,17 @@ const Dashboard = () => {
             <p>No data to display.</p>
           ) : (
             <div className="individual-kpis">
-              <div className="graph-container">
+              <div className="graph-container" style={{ marginBottom: '40px' }}>
                 <UserHoursGraph 
-                  allUsers={userStats.map(u => ({ id: u.id, username: u.username }))}
-                  userTasks={userTasks}
+                  teamTasks={teamTasks.filter(task => {
+                    const user = userStats.find(u => u.id === task.userId);
+                    return user && user.role !== "Manager";
+                  })}
+                  allUsers={userStats} // Still needed for username lookup
                 />
               </div>
+                            {/* Add this spacer div */}
+              <div style={{ height: '40px' }}></div>
               <TableContainer component={Paper} className="kpi-table">
                 <Table>
                   <TableHead>
@@ -326,8 +400,17 @@ const Dashboard = () => {
           ) : (
             <div className="team-kpis">
               <div className="graph-container">
-                <TeamHoursGraph teamTasks={teamTasks} />
+                <TeamHoursGraph 
+                  teamTasks={teamTasks.filter(task => {
+                    const user = userStats.find(u => u.id === task.userId);
+                    return user && user.role !== "Manager";
+                  })}
+                  allUsers={userStats}
+                />
               </div>
+
+              {/* Add this spacer div */}
+              <div style={{ height: '40px' }}></div>
               <TableContainer component={Paper} className="kpi-table">
                 <Table>
                   <TableHead>
@@ -361,13 +444,18 @@ const Dashboard = () => {
                               </IconButton>
                             </TableCell>
                             <TableCell>{team.name}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                {teamMembers.map(member => (
-                                  <span key={member.id}>{member.username}</span>
-                                ))}
-                              </Box>
-                            </TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                  {teamMembers
+                                    .filter(member => {
+                                      const user = userStats.find(u => u.id === member.id);
+                                      return user && user.role !== "Manager";
+                                    })
+                                    .map(member => (
+                                      <span key={member.id}>{member.username}</span>
+                                    ))}
+                                </Box>
+                              </TableCell>
                             <TableCell>{totalHours.toFixed(2)} h</TableCell>
                             <TableCell>${totalCost.toFixed(2)}</TableCell>
                           </TableRow>
@@ -435,12 +523,18 @@ const Dashboard = () => {
       )}
 
       {/* Sprint KPIs View */}
-      {activeView === 'sprint' && (
-        <div className="kpi-view">
-          <h3>Sprint Metrics</h3>
-          <CurrentSprints />
-        </div>
-      )}
+<div className="kpi-view" style={{ display: activeView === 'sprint' ? 'block' : 'none' }}>
+  <h3>Sprint Metrics</h3>
+  <CurrentSprints
+    sprints={sprints}
+    tasks={sprintTasks}
+    subtasks={sprintSubtasks}
+    users={allUsers}
+    loading={loadingSprints}
+    error={sprintError}
+  />
+</div>
+
     </div>
   );
 };
