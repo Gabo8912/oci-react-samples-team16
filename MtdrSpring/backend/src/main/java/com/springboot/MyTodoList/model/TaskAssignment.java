@@ -1,40 +1,41 @@
 package com.springboot.MyTodoList.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "TASK_ASSIGNMENT2")
 public class TaskAssignment {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;  // Keep as Long
-    
-    @Column(name = "TASK_ID", insertable = false, updatable = false)
-    private Long taskId;  // Keep as Long
-    
-    @Column(name = "USER_ID", insertable = false, updatable = false)
-    private Long userId;  // Keep as Long
-    
-    @ManyToOne
-    @JoinColumn(name = "TASK_ID")
-    private ToDoItem task;  // References ToDoItem with Integer ID
-    
-    @ManyToOne
-    @JoinColumn(name = "USER_ID")
-    private User user;  // References User with Integer ID
+    private Long id;
 
-    // Constructors
+    @Column(name = "TASK_ID", insertable = false, updatable = false)
+    private Long taskId;
+
+    @Column(name = "USER_ID", insertable = false, updatable = false)
+    private Long userId;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "TASK_ID")
+    private ToDoItem task;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "USER_ID")
+    private User user;
+
     public TaskAssignment() {
     }
 
-    // Constructor with objects
     public TaskAssignment(ToDoItem task, User user) {
         this.task = task;
         this.user = user;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
