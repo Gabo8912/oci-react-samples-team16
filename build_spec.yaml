@@ -5,9 +5,15 @@ shell: bash
 
 env:
   variables:
+    # Credenciales de Docker Hub (se configuran como parámetros en el pipeline)
+    DOCKERHUB_USER: ${DOCKERHUB_USER}
+    DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
+
+    # Tus valores actuales
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
+
   exportedVariables:
     - BUILDRUN_HASH
     - IMAGE_TAG
@@ -23,9 +29,16 @@ steps:
       echo "IMAGE_TAG=$IMAGE_TAG"
 
   - type: Command
+    name: Login to Docker Hub
+    command: |
+      echo "${DOCKERHUB_TOKEN}" \
+        | docker login docker.io -u "${DOCKERHUB_USER}" --password-stdin
+
+  - type: Command
     name: Login to OCIR
     command: |
-      echo "${auth_token_ocir}" | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+      echo "${auth_token_ocir}" \
+        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
 
   - type: Command
     name: Build & Push
