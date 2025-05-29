@@ -1,40 +1,40 @@
 version: 0.1
 component: build
-
 timeoutInSeconds: 3600
+shell: bash
 
 env:
   variables:
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
+  exportedVariables:
+    - BUILDRUN_HASH
+    - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Login to OCIR
+    name: Define unique tag
     command: |
-      echo "🔑 Autenticando en OCIR..."
-      echo "${auth_token_ocir}" \
-        | docker login $REGISTRY \
-            -u "${user_ocir}" \
-            --password-stdin
+      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      export IMAGE_TAG=$BUILDRUN_HASH
+      echo "BUILDRUN_HASH=$BUILDRUN_HASH"
+      echo "IMAGE_TAG=$IMAGE_TAG"
 
   - type: Command
-    name: Build & Push multi-stage
+    name: Login to OCIR
     command: |
-      echo "🔨 Construyendo y subiendo imagen multi-stage..."
+      echo "${auth_token_ocir}" | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+
+  - type: Command
+    name: Build & Push
+    command: |
       cd MtdrSpring/backend
-
-      TAG=${image_tag:-latest}
-
-      docker build \
-        -f Dockerfile \
-        -t $REGISTRY/$NAMESPACE/$REPO:$TAG \
-        .
-
-      docker push $REGISTRY/$NAMESPACE/$REPO:$TAG
+      docker build -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
+      docker push $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG
 
 outputArtifacts:
   - name: todolist-image
     type: DOCKER_IMAGE
-    location: ${REGISTRY}/${NAMESPACE}/${REPO}:${image_tag}
+    location: ${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}

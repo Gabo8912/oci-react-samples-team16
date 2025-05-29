@@ -6,8 +6,8 @@ metadata:
     oci.oraclecloud.com/loadbalancer-policy: "IP_HASH"
 spec:
   type: LoadBalancer
+  loadBalancerIP: 160.34.212.189
   externalTrafficPolicy: Local
-
   ports:
     - port: 80
       protocol: TCP
@@ -15,7 +15,6 @@ spec:
   selector:
     app: todolistapp-springboot
 ---
-#this is new stuff for hosting on the load balancer
 apiVersion: v1
 kind: Service
 metadata:
@@ -36,7 +35,7 @@ spec:
   selector:
     matchLabels:
       app: todolistapp-springboot
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -45,43 +44,27 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
+          image: mx-queretaro-1.ocir.io/ax4igplyyag4/oracle-bot-repository-team16:${image_tag}
           imagePullPolicy: Always
           env:
             - name: db_user
               value: "TODOUSER"
             - name: db_url
-              value: "jdbc:oracle:thin:@%TODO_PDB_NAME%_tp?TNS_ADMIN=/mtdrworkshop/creds"
-            - name: todo.table.name
-              value: "todoitem"
-            - name: driver_class_name
-              value: "oracle.jdbc.OracleDriver"
+              value: "jdbc:oracle:thin:@oraclebotdbteam16_medium?TNS_ADMIN=/mtdrworkshop/creds"
             - name: OCI_REGION
-              value: "%OCI_REGION%"
+              value: "mx-queretaro-1"
             - name: dbpassword
-              valueFrom:
-                secretKeyRef:
-                  name: dbuser
-                  key: dbpassword
-                  optional: true
-            - name: ui_username
-              value: "%UI_USERNAME%"
-            - name: ui_password
-              valueFrom:
-                secretKeyRef:
-                  name: frontendadmin
-                  key: password
-                  optional: true
+              value: "VizcaBarca10$"
+          ports:
+            - containerPort: 8080
           volumeMounts:
             - name: creds
               mountPath: /mtdrworkshop/creds
-          ports:
-            - containerPort: 8080
       restartPolicy: Always
       volumes:
         - name: creds
           secret:
-            secretName: db-wallet-secret
+            secretName: ocirsecret
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
