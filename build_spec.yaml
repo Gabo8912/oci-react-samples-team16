@@ -5,7 +5,7 @@ shell: bash
 
 env:
   variables:
-    # Definidas como parámetros seguros en el pipeline (no hardcodear aquí)
+    # YADefinidas como parámetros seguros en el pipeline (no hardcodear aquí)
     DOCKERHUB_USER: ${DOCKERHUB_USER}
     DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
     auth_token_ocir: ${auth_token_ocir}
@@ -29,7 +29,7 @@ steps:
       export IMAGE_TAG=$BUILDRUN_HASH
       echo "BUILDRUN_HASH=$BUILDRUN_HASH"
       echo "IMAGE_TAG=$IMAGE_TAG"
-      
+
   - type: Command
     name: Login to OCIR
     command: |
