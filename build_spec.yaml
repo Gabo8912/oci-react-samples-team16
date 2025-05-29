@@ -29,13 +29,7 @@ steps:
       export IMAGE_TAG=$BUILDRUN_HASH
       echo "BUILDRUN_HASH=$BUILDRUN_HASH"
       echo "IMAGE_TAG=$IMAGE_TAG"
-
-  - type: Command
-    name: Login to Docker Hub
-    command: |
-      echo "${DOCKERHUB_TOKEN}" \
-        | docker login docker.io -u "${DOCKERHUB_USER}" --password-stdin
-
+      
   - type: Command
     name: Login to OCIR
     command: |
