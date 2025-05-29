@@ -1,25 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow,
-  Typography,
-  CircularProgress,
-  Chip,
-  Paper,
-  Collapse,
-  IconButton,
-  Box,
-  TextField,
-  Button,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Typography, CircularProgress, Chip, Paper, Collapse, IconButton, 
+  Box, TextField, Button, Checkbox, FormControl, InputLabel, 
+  Select, MenuItem
 } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -38,18 +22,10 @@ import {
   Legend
 } from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
-// Custom styled components
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',
   color: '#161513',
@@ -65,7 +41,7 @@ const OracleTable = styled(Table)({
   '& .MuiTableCell-root': {
     borderBottom: 'solid 1px #5b5652',
     padding: '0.5rem',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+    fontFamily: 'Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Helvetica Neue, sans-serif'
   },
   '& .MuiTableCell-head': {
     fontWeight: 'bold',
@@ -74,19 +50,19 @@ const OracleTable = styled(Table)({
 });
 
 const StatusChip = styled(Chip)(({ status }) => ({
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  fontFamily: 'Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Helvetica Neue, sans-serif',
   ...(status === "COMPLETED" && {
     backgroundColor: '#5f7d4f',
     color: '#fef9f2'
   }),
   ...(status === "IN_PROGRESS" && {
-    backgroundColor: '#5b5652', 
+    backgroundColor: '#5b5652',
     color: '#fef9f2'
   }),
   ...(status === "PENDING" && {
-    backgroundColor: '#d63b25', 
+    backgroundColor: '#d63b25',
     color: '#fef9f2'
-  }),
+  })
 }));
 
 const ProgressBar = styled('div')({
@@ -178,20 +154,20 @@ const AssignmentsModal = ({ assignments, onClose }) => {
   );
 };
 
-function CurrentSprints() {
+const CurrentSprints = () => {
   const [sprints, setSprints] = useState([]);
   const [tasks, setTasks] = useState({});
   const [subtasks, setSubtasks] = useState({});
-  const [expandedSprints, setExpandedSprints] = useState({});
-  const [expandedTasks, setExpandedTasks] = useState({});
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newSubTaskText, setNewSubTaskText] = useState("");
+  const [expandedSprints, setExpandedSprints] = useState({});
+  const [expandedTasks, setExpandedTasks] = useState({});
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
+  const [newSubTaskText, setNewSubTaskText] = useState("");
   const [selectedTaskAssignments, setSelectedTaskAssignments] = useState(null);
   const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [selectedGraphType, setSelectedGraphType] = useState('totalHours'); // 'totalHours', 'developerHours', 'developerTasks'
+  const [selectedGraphType, setSelectedGraphType] = useState("totalHours");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -216,8 +192,8 @@ function CurrentSprints() {
         // Fetch sprints
         const sprintsResponse = await fetch(`${baseUrl}/api/sprints`);
         if (!sprintsResponse.ok) throw new Error('Failed to fetch sprints');
-        const sprintsData = await sprintsResponse.json();
-        
+        let sprintsData = await sprintsResponse.json();
+          
         // Fetch all tasks
         const tasksResponse = await fetch(`${baseUrl}/todolist`);
         if (!tasksResponse.ok) throw new Error('Failed to fetch tasks');
@@ -243,7 +219,23 @@ function CurrentSprints() {
             subtasksMap[task.id] = subtaskData;
           }
         }
-        
+
+        // Sort sprints by their Roman numeral in sprintName
+        sprintsData = sprintsData.sort((a, b) => {
+          const romanToInt = {
+            'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5,
+            'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10
+          };
+          
+          // Extract the Roman numeral part (assuming format "Sprint X")
+          const getNum = (name) => {
+            const parts = name.split(' ');
+            return romanToInt[parts[parts.length - 1]] || 0;
+          };
+          
+          return getNum(a.sprintName) - getNum(b.sprintName);
+        });
+                
         setSprints(sprintsData);
         setTasks(tasksBySprint);
         setSubtasks(subtasksMap);
@@ -257,7 +249,7 @@ function CurrentSprints() {
 
     fetchData();
   }, []);
-  // Add these helper functions at the top of the component
+
   const calculateSprintHours = (sprintId) => {
     const sprintTasks = tasks[sprintId] || [];
     return sprintTasks.reduce(
@@ -275,6 +267,8 @@ function CurrentSprints() {
 
     sprintTasks.forEach(task => {
       if (task.userId && task.realHours) {
+        const user = users.find(u => u.id === task.userId);
+        if (user && user.role === "Manager") return;
         if (!developerHours[task.userId]) {
           developerHours[task.userId] = 0;
         }
@@ -285,23 +279,63 @@ function CurrentSprints() {
     return developerHours;
   };
 
-  const calculateDeveloperTasks = (sprintId) => {
-    const sprintTasks = tasks[sprintId] || [];
-    const developerTasks = {};
+  const getGraphData = () => {
+    const nonManagerUsers = users.filter(user => user.role !== "Manager");
+    const colors = ["#36a2eb", "#4bc0c0", "#9966ff", "#ff9f40", "#ff6384", "#008080"];
 
-    sprintTasks.forEach(task => {
-      if (task.userId) {
-        if (!developerTasks[task.userId]) {
-          developerTasks[task.userId] = { total: 0, completed: 0 };
-        }
-        developerTasks[task.userId].total++;
-        if (task.done) {
-          developerTasks[task.userId].completed++;
-        }
+    switch (selectedGraphType) {
+      case 'totalHours':
+        return {
+          labels: sprints.map(s => s.sprintName),
+          datasets: [{
+            label: 'Total Hours',
+            data: sprints.map(s => calculateSprintHours(s.sprintId).real),
+            backgroundColor: colors[0]
+          }]
+        };
+      case 'developerHours':
+        return {
+          labels: sprints.map(s => s.sprintName),
+          datasets: nonManagerUsers.map((user, i) => ({
+            label: user.username,
+            data: sprints.map(s => {
+              const t = tasks[s.sprintId] || [];
+              return t.filter(tk => tk.userId === user.id).reduce((a, b) => a + (b.realHours || 0), 0);
+            }),
+            backgroundColor: colors[i % colors.length]
+          }))
+        };
+      case 'developerTasks':
+        return {
+          labels: sprints.map(s => s.sprintName),
+          datasets: nonManagerUsers.map((user, i) => ({
+            label: `${user.username} - Completed`,
+            data: sprints.map(s => {
+              const t = tasks[s.sprintId] || [];
+              return t.filter(tk => tk.userId === user.id && tk.done).length;
+            }),
+            backgroundColor: colors[i % colors.length]
+          }))
+        };
+      default:
+        return null;
+    }
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      title: {
+        display: true,
+        text: selectedGraphType === 'totalHours' ? 'Total Hours per Sprint' :
+              selectedGraphType === 'developerHours' ? 'Hours per Developer per Sprint' :
+              'Completed Tasks per Developer per Sprint',
+        font: { size: 16, weight: 'bold' }
       }
-    });
-
-    return developerTasks;
+    },
+    scales: { y: { beginAtZero: true } }
   };
 
   const toggleSprintExpansion = (sprintId) => {
@@ -330,7 +364,6 @@ function CurrentSprints() {
       [taskId]: !prev[taskId]
     }));
     
-    // Load subtasks if not already loaded
     if (!subtasks[taskId]) {
       fetch(`${baseUrl}/todolist/subtask/${taskId}`)
         .then(response => {
@@ -349,23 +382,18 @@ function CurrentSprints() {
 
   const completeSprint = async (sprintId) => {
     try {
-      // Get all tasks for this sprint
       const sprintTasks = tasks[sprintId] || [];
-      
-      // Verify all tasks are completed
       const allTasksDone = sprintTasks.every(task => task.done);
       if (!allTasksDone) {
         alert("Cannot complete sprint - not all tasks are done!");
         return;
       }
   
-      // Update sprint status to COMPLETED
       const response = await fetch(`${baseUrl}/api/sprints/${sprintId}/complete`, {
         method: 'POST'
       });
   
       if (response.ok) {
-        // Update local state
         setSprints(prev => 
           prev.map(sprint => 
             sprint.sprintId === sprintId 
@@ -425,7 +453,6 @@ function CurrentSprints() {
 
   const toggleTaskDone = async (taskId, description, currentStatus) => {
     try {
-      // Check if all subtasks are completed before marking task as done
       if (!currentStatus && subtasks[taskId] && subtasks[taskId].length > 0 && 
           !subtasks[taskId].every(subTask => subTask.done)) {
         alert("Error: All subtasks must be completed before marking the main task as done.");
@@ -445,7 +472,6 @@ function CurrentSprints() {
 
       if (response.ok) {
         const updatedTask = await response.json();
-        // Update tasks state
         const updatedTasks = { ...tasks };
         for (const sprintId in updatedTasks) {
           updatedTasks[sprintId] = updatedTasks[sprintId].map(task => 
@@ -474,7 +500,6 @@ function CurrentSprints() {
       if (response.ok) {
         const updatedSubtask = await response.json();
         
-        // Update local state
         setSubtasks(prevSubtasks => {
           const updated = {
             ...prevSubtasks,
@@ -485,12 +510,10 @@ function CurrentSprints() {
           return updated;
         });
         
-        // Recalculate progress for the parent task
         const parentTaskResponse = await fetch(`${baseUrl}/todolist/${taskId}`);
         if (parentTaskResponse.ok) {
           const parentTask = await parentTaskResponse.json();
           
-          // Update parent task in state
           setTasks(prevTasks => {
             const updated = {...prevTasks};
             for (const sprintId in updated) {
@@ -527,7 +550,6 @@ function CurrentSprints() {
       
       if (response.ok) {
         const newSubTask = await response.json();
-        // Update local state
         setSubtasks(prev => ({
           ...prev,
           [taskId]: [...(prev[taskId] || []), newSubTask]
@@ -558,119 +580,6 @@ function CurrentSprints() {
       }
     } catch (err) {
       console.error('Error deleting subtask:', err);
-    }
-  };
-
-  const getGraphData = () => {
-    // Professional color palette
-    const colors = {
-      blue: {
-        background: 'rgba(54, 162, 235, 0.6)',
-        border: 'rgb(54, 162, 235)'
-      },
-      green: {
-        background: 'rgba(75, 192, 192, 0.6)',
-        border: 'rgb(75, 192, 192)'
-      },
-      purple: {
-        background: 'rgba(153, 102, 255, 0.6)',
-        border: 'rgb(153, 102, 255)'
-      },
-      orange: {
-        background: 'rgba(255, 159, 64, 0.6)',
-        border: 'rgb(255, 159, 64)'
-      },
-      red: {
-        background: 'rgba(255, 99, 132, 0.6)',
-        border: 'rgb(255, 99, 132)'
-      },
-      teal: {
-        background: 'rgba(0, 128, 128, 0.6)',
-        border: 'rgb(0, 128, 128)'
-      }
-    };
-
-    // Predefined color combinations for developers
-    const developerColors = [
-      colors.blue,
-      colors.green,
-      colors.purple,
-      colors.orange,
-      colors.red,
-      colors.teal
-    ];
-
-    switch (selectedGraphType) {
-      case 'totalHours':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: [{
-            label: 'Total Hours per Sprint',
-            data: sprints.map(sprint => calculateSprintHours(sprint.sprintId).real),
-            backgroundColor: colors.blue.background,
-            borderColor: colors.blue.border,
-            borderWidth: 1
-          }]
-        };
-      
-      case 'developerHours':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: users.map((user, index) => ({
-            label: user.username,
-            data: sprints.map(sprint => {
-              const developerHours = calculateDeveloperHours(sprint.sprintId);
-              return developerHours[user.id] || 0;
-            }),
-            backgroundColor: developerColors[index % developerColors.length].background,
-            borderColor: developerColors[index % developerColors.length].border,
-            borderWidth: 1
-          }))
-        };
-      
-      case 'developerTasks':
-        return {
-          labels: sprints.map(sprint => sprint.sprintName),
-          datasets: users.map((user, index) => ({
-            label: `${user.username} - Completed Tasks`,
-            data: sprints.map(sprint => {
-              const developerTasks = calculateDeveloperTasks(sprint.sprintId);
-              return developerTasks[user.id]?.completed || 0;
-            }),
-            backgroundColor: developerColors[index % developerColors.length].background,
-            borderColor: developerColors[index % developerColors.length].border,
-            borderWidth: 1
-          }))
-        };
-      
-      default:
-        return null;
-    }
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: selectedGraphType === 'totalHours' ? 'Total Hours per Sprint' :
-              selectedGraphType === 'developerHours' ? 'Hours per Developer per Sprint' :
-              'Completed Tasks per Developer per Sprint',
-        font: {
-          size: 16,
-          family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-          weight: 'bold'
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true
-      }
     }
   };
 
@@ -709,36 +618,25 @@ function CurrentSprints() {
 
   return (
     <OraclePaper>
-      <Typography 
-        variant="h4" 
-        style={{ 
-          color: '#161513',
-          margin: '0.5rem 0 1rem 0',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
-        }}
-      >
-        Current sprints hours Breakdown
-      </Typography>
+      <Typography variant="h4" style={{ marginBottom: '1rem' }}>Sprint KPIs</Typography>
       
-      <Box sx={{ mb: 3 }}>
-        <FormControl fullWidth>
-          <InputLabel>Select Graph Type</InputLabel>
-          <Select
-            value={selectedGraphType}
-            onChange={(e) => setSelectedGraphType(e.target.value)}
-            label="Select Graph Type"
-          >
-            <MenuItem value="totalHours">Total Hours per Sprint</MenuItem>
-            <MenuItem value="developerHours">Hours per Developer per Sprint</MenuItem>
-            <MenuItem value="developerTasks">Completed Tasks per Developer per Sprint</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      <FormControl fullWidth style={{ marginBottom: '1rem' }}>
+        <InputLabel>Graph Type</InputLabel>
+        <Select 
+          value={selectedGraphType} 
+          onChange={(e) => setSelectedGraphType(e.target.value)}
+          label="Graph Type"
+        >
+          <MenuItem value="totalHours">Total Hours per Sprint</MenuItem>
+          <MenuItem value="developerHours">Hours per Developer per Sprint</MenuItem>
+          <MenuItem value="developerTasks">Completed Tasks per Developer per Sprint</MenuItem>
+        </Select>
+      </FormControl>
 
-      <Box sx={{ height: '400px', mb: 3 }}>
+      <Box sx={{ height: '400px', marginBottom: 4 }}>
         <Bar data={getGraphData()} options={chartOptions} />
       </Box>
-      
+
       <TableContainer>
         <OracleTable>
           <TableHead>
@@ -771,18 +669,13 @@ function CurrentSprints() {
                       {sprint.sprintId}
                     </TableCell>
                     <TableCell>{sprint.sprintName}</TableCell>
-                    <TableCell>
-                      {sprintHours.estimated.toFixed(1)}
-                    </TableCell>
-                    <TableCell>
-                      {sprintHours.real.toFixed(1)}
-                    </TableCell>
+                    <TableCell>{sprintHours.estimated.toFixed(1)}</TableCell>
+                    <TableCell>{sprintHours.real.toFixed(1)}</TableCell>
                     <TableCell>
                       <StatusChip 
                         label={sprint.status === "IN_PROGRESS" ? "IN PROGRESS" : sprint.status}
                         status={sprint.status}
                       />
-
                     </TableCell>
                     <TableCell>
                       {tasks[sprint.sprintId] ? tasks[sprint.sprintId].length : 0}
@@ -813,42 +706,42 @@ function CurrentSprints() {
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                       <Collapse in={expandedSprints[sprint.sprintId]} timeout="auto" unmountOnExit>
                         <Box margin={1}>
-                        {/* Developer Hours Breakdown Section */}
-                        <Box mb={2}>
-                          <Typography variant="h6" gutterBottom>
-                            Developer Hours Breakdown
-                          </Typography>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Developer</TableCell>
-                                <TableCell>Hours Worked</TableCell>
-                                <TableCell>% of Total</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {Object.entries(developerHours).map(([userId, hours]) => {
-                                const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
-                                const user = users.find(u => u.id === parseInt(userId));
-                                const displayName = user ? user.username : `User ${userId}`;
-                                
-                                return (
-                                  <TableRow key={userId}>
-                                    <TableCell>{displayName}</TableCell>
-                                    <TableCell>{hours.toFixed(1)}</TableCell>
-                                    <TableCell>
-                                      <ProgressBar>
-                                        <div style={{ width: `${percentage}%` }} />
-                                      </ProgressBar>
-                                      {percentage.toFixed(1)}%
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </Box>
-  
+                          {/* Developer Hours Breakdown Section */}
+                          <Box mb={2}>
+                            <Typography variant="h6" gutterBottom>
+                              Developer Hours Breakdown
+                            </Typography>
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Developer</TableCell>
+                                  <TableCell>Hours Worked</TableCell>
+                                  <TableCell>% of Total</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {Object.entries(developerHours).map(([userId, hours]) => {
+                                  const percentage = sprintHours.real > 0 ? (hours / sprintHours.real * 100) : 0;
+                                  const user = users.find(u => u.id === parseInt(userId));
+                                  const displayName = user ? user.username : `User ${userId}`;
+                                  
+                                  return (
+                                    <TableRow key={userId}>
+                                      <TableCell>{displayName}</TableCell>
+                                      <TableCell>{hours.toFixed(1)}</TableCell>
+                                      <TableCell>
+                                        <ProgressBar>
+                                          <div style={{ width: `${percentage}%` }} />
+                                        </ProgressBar>
+                                        {percentage.toFixed(1)}%
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </Box>
+    
                           {/* Tasks Section */}
                           <Typography variant="h6" gutterBottom component="div">
                             Tasks
@@ -1010,6 +903,7 @@ function CurrentSprints() {
           </TableBody>
         </OracleTable>
       </TableContainer>
+
       {showAssignmentsModal && (
         <>
           <div style={{
@@ -1029,7 +923,6 @@ function CurrentSprints() {
       )}
     </OraclePaper>
   );
-  
-}
+};
 
 export default CurrentSprints;

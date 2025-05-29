@@ -1,11 +1,12 @@
-import React from 'react';
-import { Line } from 'react-chartjs-2';
+import React, { useState } from 'react';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -16,32 +17,81 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-const TeamHoursGraph = ({ teamTasks }) => {
-  const labels = teamTasks.map(task => task.description);
-  const estimatedHours = teamTasks.map(task => task.estimatedHours);
-  const realHours = teamTasks.map(task => task.realHours);
+const TeamHoursGraph = ({ teamTasks, allUsers }) => {
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [chartType, setChartType] = useState('line'); // 'line' or 'bar'
 
-  const data = {
-    labels,
+  // Group tasks by team (assuming team structure exists in your data)
+  const teams = {
+    'Team 1': [3, 6],  // Andres and Dilan
+    'Team 2': [8, 7]   // Carlos and Michael
+  };
+
+  // Filter out managers and group by team
+  const teamData = {};
+  Object.entries(teams).forEach(([teamName, memberIds]) => {
+    teamData[teamName] = teamTasks
+      .filter(task => memberIds.includes(task.userId))
+      .map(task => ({
+        ...task,
+        username: allUsers.find(u => u.id === task.userId)?.username || `User ${task.userId}`
+      }));
+  });
+
+  // Get team options for dropdown
+  const teamOptions = Object.keys(teamData).filter(team => teamData[team].length > 0);
+
+  // Set default selected team
+  React.useEffect(() => {
+    if (!selectedTeam && teamOptions.length > 0) {
+      setSelectedTeam(teamOptions[0]);
+    }
+  }, [selectedTeam, teamOptions]);
+
+  // Prepare chart data for selected team
+  const selectedTeamTasks = selectedTeam ? teamData[selectedTeam] : [];
+  
+  const lineData = {
+    //    labels: selectedTeamTasks.map(task => `${task.id} (${task.username})`),
+    labels: selectedTeamTasks.map(task => `${task.id}: ${task.username}`),
     datasets: [
       {
         label: 'Estimated Hours',
-        data: estimatedHours,
+        data: selectedTeamTasks.map(task => task.estimatedHours),
         borderColor: 'rgb(53, 162, 235)',
         backgroundColor: 'rgba(53, 162, 235, 0.5)',
       },
       {
         label: 'Real Hours',
-        data: realHours,
+        data: selectedTeamTasks.map(task => task.realHours),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.5)',
       },
     ],
+  };
+
+  // Additional KPI: Team Efficiency (Bar Chart)
+  const efficiencyData = {
+    labels: teamOptions,
+    datasets: [
+      {
+        label: 'Efficiency Ratio (Real/Estimated)',
+        data: teamOptions.map(team => {
+          const tasks = teamData[team];
+          const totalEstimated = tasks.reduce((sum, task) => sum + task.estimatedHours, 0);
+          const totalReal = tasks.reduce((sum, task) => sum + task.realHours, 0);
+          return totalEstimated > 0 ? (totalReal / totalEstimated) : 0;
+        }),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+      }
+    ]
   };
 
   const options = {
@@ -60,7 +110,7 @@ const TeamHoursGraph = ({ teamTasks }) => {
       },
       title: {
         display: true,
-        text: 'Team Hours Comparison',
+        text: selectedTeam ? `${selectedTeam} Hours Comparison` : 'Team Hours Comparison',
         font: {
           size: 16,
           family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
@@ -80,42 +130,70 @@ const TeamHoursGraph = ({ teamTasks }) => {
             weight: 'bold',
             style: 'italic'
           }
-        },
-        ticks: {
-          font: {
-            size: 12,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif"
-          }
         }
       },
       x: {
-        title: {
-          display: true,
-          text: 'Tasks',
-          font: {
-            size: 14,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-            weight: 'bold',
-            style: 'italic'
-          }
-        },
         ticks: {
           maxRotation: 45,
-          minRotation: 45,
-          font: {
-            size: 12,
-            family: "'Roboto', 'Helvetica', 'Arial', sans-serif"
-          }
+          minRotation: 45
         }
       }
     }
   };
 
   return (
-    <div className="graph-container" style={{ height: '400px', width: '100%' }}>
-      <Line data={data} options={options} />
+    <div className="team-graph-container">
+      <div className="controls" style={{ marginBottom: '20px' }}>
+        <select 
+          value={selectedTeam || ''} 
+          onChange={(e) => setSelectedTeam(e.target.value)}
+          style={{ marginRight: '15px', padding: '8px' }}
+        >
+          {teamOptions.map(team => (
+            <option key={team} value={team}>{team}</option>
+          ))}
+        </select>
+        
+        <select 
+          value={chartType} 
+          onChange={(e) => setChartType(e.target.value)}
+          style={{ padding: '8px' }}
+        >
+          <option value="line">Hours Comparison</option>
+          <option value="bar">Efficiency View</option>
+        </select>
+      </div>
+
+      <div style={{ height: '400px', width: '100%' }}>
+        {chartType === 'line' ? (
+          <Line data={lineData} options={options} />
+        ) : (
+          <Bar 
+            data={efficiencyData} 
+            options={{
+              ...options,
+              plugins: {
+                ...options.plugins,
+                title: {
+                  ...options.plugins.title,
+                  text: 'Team Efficiency Comparison'
+                }
+              },
+              scales: {
+                y: {
+                  ...options.scales.y,
+                  title: {
+                    ...options.scales.y.title,
+                    text: 'Efficiency Ratio'
+                  }
+                }
+              }
+            }} 
+          />
+        )}
+      </div>
     </div>
   );
 };
 
-export default TeamHoursGraph; 
+export default TeamHoursGraph;
