@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "./static/css/main.541676c8.css",
+    "main.js": "./static/js/main.80f2cfa1.js",
+    "static/media/Wallpaper.jpg": "./static/media/Wallpaper.351c735006a1bd2f7ff7.jpg",
+    "static/media/oracleLogo.png": "./static/media/oracleLogo.adc75b305b9d05b2b3ba.png",
+    "index.html": "./index.html",
+    "main.541676c8.css.map": "./static/css/main.541676c8.css.map",
+    "main.80f2cfa1.js.map": "./static/js/main.80f2cfa1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.541676c8.css",
+    "static/js/main.80f2cfa1.js"
+  ]
+}

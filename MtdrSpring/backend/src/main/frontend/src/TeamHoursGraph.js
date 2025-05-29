@@ -76,12 +76,6 @@ const ProgressBar = styled('div')({
 });
 
 const CurrentSprints = ({ sprints, tasks, subtasks, users, loading, error }) => {
-    const [sprints, setSprints] = useState([]);
-    const [tasks, setTasks] = useState({});
-    const [subtasks, setSubtasks] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [users, setUsers] = useState([]);
   const [expandedSprints, setExpandedSprints] = useState({});
   const [expandedTasks, setExpandedTasks] = useState({});
   const [showSubTaskForm, setShowSubTaskForm] = useState({});
@@ -184,7 +178,7 @@ const CurrentSprints = ({ sprints, tasks, subtasks, users, loading, error }) => 
     <OraclePaper>
       <Typography variant="h4" style={{ marginBottom: '1rem' }}>Sprint KPIs</Typography>
       <FormControl fullWidth style={{ marginBottom: '1rem' }}>
-        <InputLabel>{/*Graph Type*/}</InputLabel>
+        <InputLabel>Graph Type</InputLabel>
         <Select value={selectedGraphType} onChange={(e) => setSelectedGraphType(e.target.value)}>
           <MenuItem value="totalHours">Total Hours per Sprint</MenuItem>
           <MenuItem value="developerHours">Hours per Developer per Sprint</MenuItem>
@@ -195,6 +189,7 @@ const CurrentSprints = ({ sprints, tasks, subtasks, users, loading, error }) => 
       <Box sx={{ height: '400px', marginBottom: 4 }}>
         <Bar data={getGraphData()} options={chartOptions} />
       </Box>
+
             <TableContainer>
         <OracleTable>
           <TableHead>
@@ -483,9 +478,6 @@ const CurrentSprints = ({ sprints, tasks, subtasks, users, loading, error }) => 
           />
         </>
       )}
-      
-
-      {/* Sprint Table + Developer Breakdown + Task Details goes here (already handled externally) */}
     </OraclePaper>
   );
 };
