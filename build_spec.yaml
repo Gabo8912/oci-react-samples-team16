@@ -5,11 +5,13 @@ shell: bash
 
 env:
   variables:
-    # Credenciales de Docker Hub (se configuran como parámetros en el pipeline)
+    # Definidas como parámetros seguros en el pipeline (no hardcodear aquí)
     DOCKERHUB_USER: ${DOCKERHUB_USER}
     DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
+    auth_token_ocir: ${auth_token_ocir}
+    user_ocir: ${user_ocir}
 
-    # Tus valores actuales
+    # Variables de destino del contenedor
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
