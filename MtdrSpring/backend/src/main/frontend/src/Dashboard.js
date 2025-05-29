@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import "./Dashboard.css";
 import {
   Button, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Box, IconButton,
-  Collapse, Typography
+  Collapse, Typography, CircularProgress
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import TeamHoursGraph from './components/TeamHoursGraph';
 import UserHoursGraph from './components/UserHoursGraph';
-import CurrentSprints from "./NewSprint";
+//import CurrentSprints from "./NewSprint";
 
+const CurrentSprints = React.lazy(() => import('./NewSprint'));
 const baseUrl = process.env.REACT_APP_BACKEND_URL;
 
 const Dashboard = () => {
@@ -438,7 +439,13 @@ const Dashboard = () => {
       {activeView === 'sprint' && (
         <div className="kpi-view">
           <h3>Sprint Metrics</h3>
-          <CurrentSprints />
+            <Suspense fallback={
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <CircularProgress style={{ color: '#5f7d4f' }} />
+            </div>
+          }>
+            <CurrentSprints />
+          </Suspense>
         </div>
       )}
     </div>
