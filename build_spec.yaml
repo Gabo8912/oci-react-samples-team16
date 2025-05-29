@@ -37,4 +37,5 @@ steps:
 outputArtifacts:
   - name: todolist-image
     type: DOCKER_IMAGE
-    location: ${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}
+    location: mx-queretaro-1.ocir.io/ax4igplyyag4/oracle-bot-repository-team16:${IMAGE_TAG}
+
