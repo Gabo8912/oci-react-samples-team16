@@ -71,7 +71,7 @@ const Login = ({ onLoginSuccess }) => {
 
       {/* Right Side - Form */}
       <div style={styles.rightSide}>
-        <h2>Iniciar Sesión GGS</h2>
+        <h2>Iniciar Sesión</h2>
         <form onSubmit={handleLogin} style={styles.form}>
           {error && <p style={styles.error}>{error}</p>}
           <input
