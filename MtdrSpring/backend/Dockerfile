@@ -5,11 +5,7 @@ RUN mvn clean package spring-boot:repackage
 
 FROM openjdk:11-jre-slim
 WORKDIR /app
-
 COPY --from=build /build/target/MyTodoList-*.jar app.jar
-
-# Copiar el .env desde la etapa build
-COPY --from=build /build/Asrc/main/frontend/.env ./src/main/frontend/.env
-
+COPY .env ./src/main/frontend/.env
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar","app.jar"]
