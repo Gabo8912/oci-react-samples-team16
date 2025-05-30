@@ -5,43 +5,43 @@ shell: bash
 
 env:
   variables:
-    # YADefinidas como parámetros seguros en el pipeline (no hardcodear aquí)
-    DOCKERHUB_USER: ${DOCKERHUB_USER}
-    DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
+    # Variables que se definen como parámetros en OCI DevOps
     auth_token_ocir: ${auth_token_ocir}
     user_ocir: ${user_ocir}
 
-    # Variables de destino del contenedor
+    # Configuración del registry
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
 
   exportedVariables:
-    - BUILDRUN_HASH
     - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Define unique tag
+    name: Set Image Tag
     command: |
-      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      export IMAGE_TAG=$BUILDRUN_HASH
-      echo "BUILDRUN_HASH=$BUILDRUN_HASH"
+      echo "🔧 Definiendo tag de imagen a partir del OCI_BUILD_RUN_ID..."
+      export IMAGE_TAG=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
       echo "IMAGE_TAG=$IMAGE_TAG"
 
   - type: Command
     name: Login to OCIR
     command: |
+      echo "🔑 Autenticando en OCIR..."
       echo "${auth_token_ocir}" \
-        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+        | docker login $REGISTRY \
+            -u "${user_ocir}" \
+            --password-stdin
 
   - type: Command
-    name: Login to OCIR
+    name: Build & Push Docker Image
     command: |
-      echo "${auth_token_ocir}" \
-        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+      echo "🚀 Construyendo imagen y subiéndola a OCIR con tag ${IMAGE_TAG}..."
+      cd MtdrSpring/backend
 
+      docker build -f Dockerfile -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
+      docker push $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG
 
 outputArtifacts:
   - name: todolist-image
