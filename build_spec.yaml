@@ -11,6 +11,7 @@ env:
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
 
+  # esta variable quedará disponible para etapas posteriores
   exportedVariables:
     - IMAGE_TAG
 
@@ -27,16 +28,16 @@ steps:
     name: Login to OCIR
     timeoutInSeconds: 140
     command: |
-      echo "${auth_token_ocir}" | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
+      echo "${auth_token_ocir}" \
+        | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
 
   - type: Command
     name: Build & Push Docker Image
-    timeoutInSeconds: 140
+    timeoutInSeconds: 300
     command: |
       cd MtdrSpring/backend
       docker build -t "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}" .
       docker push "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
-
 
 outputArtifacts:
   - name: todolist-image
