@@ -16,6 +16,14 @@ env:
 
 steps:
   - type: Command
+    name: "DEBUG cat build_spec.yaml"
+    timeoutInSeconds: 60
+    command: |
+      echo "------ mostrando build_spec.yaml que está cargando el runner ------"
+      cat ${OCI_PRIMARY_SOURCE_DIR}/build_spec.yaml
+      echo "---------------------------------------------------------------"
+
+  - type: Command
     name: "Define unique image tag"
     timeoutInSeconds: 140
     command: |
@@ -27,8 +35,8 @@ steps:
     name: "DEBUG print user_ocir"
     timeoutInSeconds: 60
     command: |
-      echo "→ Delimitadores: |${user_ocir}|"
-      echo "→ Length: ${#user_ocir}"
+      echo "|${user_ocir}|"
+      echo "length=${#user_ocir}"
 
   - type: Command
     name: "Login to OCIR"
