@@ -31,7 +31,7 @@ steps:
     name: Build & Push
     command: |
       cd MtdrSpring/backend
-      docker build -t $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH} .
+      docker build --platform linux/amd64 -t $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH} .
       docker push $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH}
 
 outputArtifacts:
