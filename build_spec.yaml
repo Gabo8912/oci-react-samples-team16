@@ -5,11 +5,8 @@ shell: bash
 
 env:
   variables:
-    # Variables que se definen como parámetros en OCI DevOps
     auth_token_ocir: ${auth_token_ocir}
     user_ocir: ${user_ocir}
-
-    # Configuración del registry
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
@@ -30,17 +27,14 @@ steps:
     command: |
       echo "🔑 Autenticando en OCIR..."
       echo "${auth_token_ocir}" \
-        | docker login $REGISTRY \
-            -u "${user_ocir}" \
-            --password-stdin
+        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
 
   - type: Command
     name: Build & Push Docker Image
     command: |
       echo "🚀 Construyendo imagen y subiéndola a OCIR con tag ${IMAGE_TAG}..."
       cd MtdrSpring/backend
-
-      docker build -f Dockerfile -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
+      docker build -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
       docker push $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG
 
 outputArtifacts:
