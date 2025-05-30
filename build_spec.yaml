@@ -8,7 +8,6 @@ env:
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
-    
   exportedVariables:
     - BUILDRUN_HASH
     - IMAGE_TAG
