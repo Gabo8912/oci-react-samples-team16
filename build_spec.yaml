@@ -11,13 +11,12 @@ env:
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
 
-  # esta variable quedará disponible para etapas posteriores
   exportedVariables:
     - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Define unique image tag
+    name: "Define unique image tag"
     timeoutInSeconds: 140
     command: |
       echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
@@ -25,22 +24,21 @@ steps:
       echo "IMAGE_TAG=${IMAGE_TAG}"
 
   - type: Command
-    name: DEBUG: print user_ocir
+    name: "DEBUG print user_ocir"
     timeoutInSeconds: 60
     command: |
       echo "→ Delimitadores: |${user_ocir}|"
       echo "→ Length: ${#user_ocir}"
 
-
   - type: Command
-    name: Login to OCIR
+    name: "Login to OCIR"
     timeoutInSeconds: 140
     command: |
       echo "${auth_token_ocir}" \
         | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build & Push Docker Image
+    name: "Build & Push Docker Image"
     timeoutInSeconds: 300
     command: |
       cd MtdrSpring/backend
