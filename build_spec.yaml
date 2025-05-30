@@ -37,6 +37,7 @@ steps:
       docker build -t "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}" .
       docker push "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
 
+
 outputArtifacts:
   - name: todolist-image
     type: DOCKER_IMAGE
