@@ -5,39 +5,41 @@ shell: bash
 
 env:
   variables:
-    auth_token_ocir: ${auth_token_ocir}
-    user_ocir: ${user_ocir}
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
+  secrets:
+    user_ocir: ocid1.vaultsecret.oc1.mx-queretaro-<tu-secret-user-ocid>
+    auth_token_ocir: ocid1.vaultsecret.oc1.mx-queretaro-<tu-secret-token-ocid>
 
   exportedVariables:
     - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Set Image Tag
+    name: Define image tag
+    timeoutInSeconds: 300
     command: |
-      echo "🔧 Definiendo tag de imagen a partir del OCI_BUILD_RUN_ID..."
+      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
       export IMAGE_TAG=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      echo "IMAGE_TAG=$IMAGE_TAG"
+      echo "IMAGE_TAG=${IMAGE_TAG}"
 
   - type: Command
     name: Login to OCIR
+    timeoutInSeconds: 300
     command: |
-      echo "🔑 Autenticando en OCIR..."
-      echo "${auth_token_ocir}" \
-        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+      echo "Authenticating to OCIR"
+      echo "${auth_token_ocir}" | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build & Push Docker Image
+    name: Build and push Docker image
+    timeoutInSeconds: 1800
     command: |
-      echo "🚀 Construyendo imagen y subiéndola a OCIR con tag ${IMAGE_TAG}..."
       cd MtdrSpring/backend
-      docker build -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
-      docker push $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG
+      docker build -t "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}" .
+      docker push "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
 
 outputArtifacts:
   - name: todolist-image
     type: DOCKER_IMAGE
-    location: ${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}
+    location: "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
