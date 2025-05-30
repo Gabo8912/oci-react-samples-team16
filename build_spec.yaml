@@ -21,7 +21,7 @@ steps:
     command: |
       echo "------ mostrando build_spec.yaml que está cargando el runner ------"
       cat ${OCI_PRIMARY_SOURCE_DIR}/build_spec.yaml
-      echo "---------------------------------------------------------------"
+      echo "-------------------------------------------------------------"
 
   - type: Command
     name: "Define unique image tag"
