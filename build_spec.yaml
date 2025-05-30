@@ -37,11 +37,11 @@ steps:
         | docker login $REGISTRY -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build & Push
+    name: Login to OCIR
     command: |
-      cd MtdrSpring/backend
-      docker build -t $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG .
-      docker push $REGISTRY/$NAMESPACE/$REPO:$IMAGE_TAG
+      echo "${auth_token_ocir}" \
+        | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+
 
 outputArtifacts:
   - name: todolist-image
