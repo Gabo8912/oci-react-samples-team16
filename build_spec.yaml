@@ -5,44 +5,36 @@ shell: bash
 
 env:
   variables:
-    # Tus parámetros configurados en la UI del Build Pipeline
-    user_ocir: ${user_ocir}
-    auth_token_ocir: ${auth_token_ocir}
-
-    # Valores fijos de tu OCIR
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
-
-    # Si alguna vez quieres forzar un tag distinto al automático,
-    # puedes pasar image_tag como parámetro. Si no, lo generamos abajo:
-    IMAGE_TAG: ${image_tag}
+  exportedVariables:
+    - BUILDRUN_HASH
+    - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Define unique image tag
+    name: Define unique tag
     command: |
-      # Si no vienen image_tag como parámetro, lo creamos a partir del build run ID
-      if [ -z "$IMAGE_TAG" ]; then
-        export IMAGE_TAG=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      fi
-      echo "Using IMAGE_TAG=$IMAGE_TAG"
+      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      export IMAGE_TAG=$BUILDRUN_HASH
+      echo "BUILDRUN_HASH=$BUILDRUN_HASH" >> $OCI_OUTPUT_DIR/build_vars
       echo "IMAGE_TAG=$IMAGE_TAG" >> $OCI_OUTPUT_DIR/build_vars
 
   - type: Command
     name: Login to OCIR
     command: |
-      echo "${auth_token_ocir}" \
-        | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
+      echo "${auth_token_ocir}" | docker login $REGISTRY -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build & Push Docker Image
+    name: Build & Push
     command: |
       cd MtdrSpring/backend
-      docker build -t "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}" .
-      docker push "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
+      docker build -t $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH} .
+      docker push $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH}
 
 outputArtifacts:
   - name: todolist-image
     type: DOCKER_IMAGE
-    location: "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}"
+    location: ${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}
