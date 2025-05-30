@@ -16,7 +16,7 @@ WORKDIR /app
 # Expone el puerto
 EXPOSE 8080
 
-# Copia el JAR generado
+# Copia el JAR generado buenop
 COPY --from=maven_build /build/target/MyTodoList-*.jar app.jar
 
 # Arranque
