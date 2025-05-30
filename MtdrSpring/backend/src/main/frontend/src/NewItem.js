@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import config from "./config";
 
 const LONG_TASK_THRESHOLD = 4;
 const DEFAULT_SPRINT_ID = 2;
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
+const baseUrl = config.backendUrl;
 
 
 

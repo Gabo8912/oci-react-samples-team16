@@ -10,8 +10,9 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import TeamHoursGraph from './components/TeamHoursGraph';
 import UserHoursGraph from './components/UserHoursGraph';
 import CurrentSprints from "./NewSprint";
+import config from "./config";
 
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
+const baseUrl = config.backendUrl;
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);

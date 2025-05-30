@@ -14,6 +14,8 @@
  * @author  jean.de.lavarene@oracle.com
  */
 // Use the environment variable for the API base URL
-const API_URL = `${process.env.REACT_APP_BACKEND_URL}`;
+import config from "./config";
+
+const API_URL = config.backendUrl;
 
 export default API_URL;

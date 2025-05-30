@@ -51,11 +51,15 @@ Ubicación:
 Este archivo define la URL base con la que React se comunica con el backend.
 ### ✅ Para correr localmente:
 ```
-REACT_APP_BACKEND_URL=http://localhost:8081
-#REACT_APP_BACKEND_URL=http://160.34.212.189
+const config = {
+  backendUrl: "http://localhost:8081"
+};
+export default config;
+
 ```
 ### 🚀 Para despliegue:
 ```
-#REACT_APP_BACKEND_URL=http://localhost:8081
-REACT_APP_BACKEND_URL=http://160.34.212.189
-```
+const config = {
+  backendUrl: "http://160.34.212.189"
+};
+export default config;

@@ -11,6 +11,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
+import config from "./config";
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -24,7 +25,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
+const baseUrl = config.backendUrl;
 
 const OraclePaper = styled(Paper)(({ theme }) => ({
   background: '#fef9f2',

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import loginImage from "./Wallpaper.jpg"; 
+import config from "./config";
 
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
+const baseUrl = config.backendUrl;
 
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");

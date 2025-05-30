@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import './Login.css';
 import Captcha from './Captcha';
+import config from './config';
 
 
-const baseUrl = process.env.REACT_APP_BACKEND_URL;
+const baseUrl = config.backendUrl;
 
 const Login = () => {
   const [username, setUsername] = useState('');
