@@ -237,7 +237,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h2>Welcome to Your Dashboard</h2>
+        <h2>Bienvenido a to Your Dashboard</h2>
       </div>
 
       {/* Always visible user profile */}
