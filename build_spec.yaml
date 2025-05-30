@@ -16,10 +16,8 @@ steps:
   - type: Command
     name: Define unique tag
     command: |
-      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c1-7)
       export IMAGE_TAG=$BUILDRUN_HASH
-      echo "BUILDRUN_HASH=$BUILDRUN_HASH" >> $OCI_OUTPUT_DIR/build_vars
       echo "IMAGE_TAG=$IMAGE_TAG" >> $OCI_OUTPUT_DIR/build_vars
 
   - type: Command
@@ -28,10 +26,11 @@ steps:
       echo "${auth_token_ocir}" | docker login $REGISTRY -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build & Push
+    name: Build & Push Docker Image
     command: |
       cd MtdrSpring/backend
-      docker build --platform linux/amd64 -t $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH} .
+      docker build --platform=linux/amd64 \
+        -t $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH} .
       docker push $REGISTRY/$NAMESPACE/$REPO:${BUILDRUN_HASH}
 
 outputArtifacts:

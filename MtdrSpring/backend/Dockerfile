@@ -1,26 +1,23 @@
-# Maven build container
-FROM maven:3.8.5-openjdk-11 AS maven_build
+# Etapa de build (forzamos linux/amd64)
+FROM --platform=linux/amd64 maven:3.8.5-openjdk-11 AS maven_build
+WORKDIR /build
 
-# Copia tu pom.xml y código fuente
-COPY pom.xml /tmp/
-COPY src /tmp/src/
+# Copiamos pom y fuentes
+COPY pom.xml .
+COPY src ./src
 
-# Directorio de trabajo
-WORKDIR /tmp/
+# Build sin usar --mount
+RUN mvn clean package spring-boot:repackage -DskipTests
 
-# Usa cache de dependencias para no descargarlas siempre
-RUN --mount=type=cache,target=/root/.m2 mvn package
+# Etapa de runtime (también on amd64)
+FROM --platform=linux/amd64 openjdk:11-jre-slim
+WORKDIR /app
 
-# Imagen de ejecución
-FROM openjdk:11-jre-slim
-
-# Expone el puerto del backend
+# Expone el puerto
 EXPOSE 8080
 
-# Copia el JAR desde la etapa de build
-COPY --from=maven_build /tmp/target/MyTodoList-*.jar /app/app.jar
+# Copia el JAR generado
+COPY --from=maven_build /build/target/MyTodoList-*.jar app.jar
 
-# Comando de inicio
-CMD ["java", "-jar", "/app/app.jar"]
-
-
+# Arranque
+ENTRYPOINT ["java","-jar","app.jar"]
