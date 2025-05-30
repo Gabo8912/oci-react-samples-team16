@@ -9,7 +9,7 @@ WORKDIR /app
 COPY --from=build /build/target/MyTodoList-*.jar app.jar
 
 ##Copiar el .env desde la etapa build
-COPY src/main/frontend/.env src/main/frontend/.env
+#COPY src/main/frontend/.env src/main/frontend/.env
 
 
 EXPOSE 8080
