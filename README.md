@@ -29,7 +29,7 @@ Para ejecutar correctamente los scripts del laboratorio necesitas:
 ---
 
 ## 🖥️ Correr la aplicación localmente
-
+######
 ### 1. 🔧 Configurar `application.properties` del backend
 
 Ubicación:  
