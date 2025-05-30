@@ -25,6 +25,14 @@ steps:
       echo "IMAGE_TAG=${IMAGE_TAG}"
 
   - type: Command
+    name: DEBUG: print user_ocir
+    timeoutInSeconds: 60
+    command: |
+      echo "→ Delimitadores: |${user_ocir}|"
+      echo "→ Length: ${#user_ocir}"
+
+
+  - type: Command
     name: Login to OCIR
     timeoutInSeconds: 140
     command: |
