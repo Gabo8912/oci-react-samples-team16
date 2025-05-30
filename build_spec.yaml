@@ -8,6 +8,10 @@ env:
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
+    user_ocir: ${user_ocir}
+    auth_token_ocir: ${auth_token_ocir}
+    docker_user: ${docker_user}
+    docker_token: ${docker_token}
   exportedVariables:
     - BUILDRUN_HASH
     - IMAGE_TAG
@@ -26,6 +30,11 @@ steps:
     name: Login to OCIR
     command: |
       echo "${auth_token_ocir}" | docker login $REGISTRY -u "${user_ocir}" --password-stdin
+
+  - type: Command
+    name: Login to Docker Hub
+    command: |
+      echo "${docker_token}" | docker login -u "${docker_user}" --password-stdin
 
   - type: Command
     name: Build & Push
