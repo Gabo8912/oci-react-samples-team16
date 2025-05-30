@@ -5,8 +5,8 @@ shell: bash
 
 env:
   variables:
-    user_ocir: ${user_ocir}
-    auth_token_ocir: ${auth_token_ocir}
+    user_ocir: ${build_pipeline_param_user_ocir}
+    auth_token_ocir: ${build_pipeline_param_auth_token_ocir}
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
