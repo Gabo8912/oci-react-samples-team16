@@ -5,20 +5,19 @@ shell: bash
 
 env:
   variables:
+    user_ocir: ${user_ocir}
+    auth_token_ocir: ${auth_token_ocir}
     REGISTRY: mx-queretaro-1.ocir.io
     NAMESPACE: ax4igplyyag4
     REPO: oracle-bot-repository-team16
-  secrets:
-    user_ocir: ocid1.vaultsecret.oc1.mx-queretaro-<tu-secret-user-ocid>
-    auth_token_ocir: ocid1.vaultsecret.oc1.mx-queretaro-<tu-secret-token-ocid>
 
   exportedVariables:
     - IMAGE_TAG
 
 steps:
   - type: Command
-    name: Define image tag
-    timeoutInSeconds: 300
+    name: Define unique image tag
+    timeoutInSeconds: 140
     command: |
       echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
       export IMAGE_TAG=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
@@ -26,14 +25,13 @@ steps:
 
   - type: Command
     name: Login to OCIR
-    timeoutInSeconds: 300
+    timeoutInSeconds: 140
     command: |
-      echo "Authenticating to OCIR"
       echo "${auth_token_ocir}" | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
 
   - type: Command
-    name: Build and push Docker image
-    timeoutInSeconds: 1800
+    name: Build & Push Docker Image
+    timeoutInSeconds: 140
     command: |
       cd MtdrSpring/backend
       docker build -t "${REGISTRY}/${NAMESPACE}/${REPO}:${IMAGE_TAG}" .
