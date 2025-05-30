@@ -16,34 +16,25 @@ env:
 
 steps:
   - type: Command
-    name: "DEBUG cat build_spec.yaml"
-    timeoutInSeconds: 60
-    command: |
-      echo "------ mostrando build_spec.yaml que está cargando el runner ------"
-      cat ${OCI_PRIMARY_SOURCE_DIR}/build_spec.yaml
-      echo "-------------------------------------------------------------"
-
-  - type: Command
     name: "Define unique image tag"
     timeoutInSeconds: 140
     command: |
-      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
       export IMAGE_TAG=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
       echo "IMAGE_TAG=${IMAGE_TAG}"
 
   - type: Command
-    name: "DEBUG print user_ocir"
+    name: "DEBUG env dump"
     timeoutInSeconds: 60
     command: |
-      echo "|${user_ocir}|"
-      echo "length=${#user_ocir}"
+      echo "----- ENVIRONMENT VARIABLES -----"
+      env
+      echo "---------------------------------"
 
   - type: Command
     name: "Login to OCIR"
     timeoutInSeconds: 140
     command: |
-      echo "${auth_token_ocir}" \
-        | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
+      echo "${auth_token_ocir}" | docker login "${REGISTRY}" -u "${user_ocir}" --password-stdin
 
   - type: Command
     name: "Build & Push Docker Image"
