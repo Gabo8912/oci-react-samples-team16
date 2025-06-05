@@ -8,8 +8,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import NewItem from "./NewItem";
 import API_URL from "./API";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, TableBody, CircularProgress, Paper, Typography } from "@mui/material";
-import { styled } from '@mui/material/styles';
+import CheckIcon from "@mui/icons-material/Check";
+import IconButton from "@mui/material/IconButton";
+import AddIcon from "@mui/icons-material/Add";
+import {
+  Button,
+  TableBody,
+  CircularProgress,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import Moment from "react-moment";
 import NewSprint from "./NewSprint";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -18,31 +27,31 @@ import HoursDialog from "./HoursDialog";
 
 const COMPLETED_TASKS_TO_SHOW = 5;
 const LONG_TASK_DURATION = 4;
-const COMPLETED_TASKS_PANEL_WIDTH = '350px';
-const COMPLETED_TASKS_PANEL_POSITION = { top: '100px', right: '20px' };
+const COMPLETED_TASKS_PANEL_WIDTH = "350px";
+const COMPLETED_TASKS_PANEL_POSITION = { top: "100px", right: "20px" };
 
 const CompletedTasksContainer = styled(Paper)(() => ({
-  background: '#f8f8f8',
-  padding: '1.5rem',
+  background: "#f8f8f8",
+  padding: "1.5rem",
   marginTop: 0,
   width: COMPLETED_TASKS_PANEL_WIDTH,
-  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-  borderRadius: '0.5rem',
-  position: 'fixed',
+  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+  borderRadius: "0.5rem",
+  position: "fixed",
   top: COMPLETED_TASKS_PANEL_POSITION.top,
   right: COMPLETED_TASKS_PANEL_POSITION.right,
   zIndex: 10,
-  borderLeft: '3px solid #5f7d4f',
+  borderLeft: "3px solid #5f7d4f",
 }));
 
-const CompletedTasksHeader = styled('h2')({
-  fontSize: '1.2rem',
-  color: '#5f7d4f',
-  marginBottom: '1.5rem',
-  textAlign: 'center',
-  fontWeight: 'bold',
-  paddingBottom: '0.5rem',
-  borderBottom: '1px solid #ddd',
+const CompletedTasksHeader = styled("h2")({
+  fontSize: "1.2rem",
+  color: "#5f7d4f",
+  marginBottom: "1.5rem",
+  textAlign: "center",
+  fontWeight: "bold",
+  paddingBottom: "0.5rem",
+  borderBottom: "1px solid #ddd",
 });
 
 function App() {
@@ -58,8 +67,10 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showHoursDialog, setShowHoursDialog] = useState(false);
   const [currentTaskToClose, setCurrentTaskToClose] = useState(null);
-  const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);  
-  const [username, setUsername] = useState(localStorage.getItem("username") || null);
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || 2);
+  const [username, setUsername] = useState(
+    localStorage.getItem("username") || null
+  );
   const [role, setRole] = useState(localStorage.getItem("role") || null);
 
   const handleLogout = useCallback(() => {
@@ -73,36 +84,41 @@ function App() {
     setItems([]);
   }, [setUserId, setUsername, setRole, setItems]);
 
-  const loadUserTasks = useCallback((userId) => {
-    const token = localStorage.getItem("token");
+  const loadUserTasks = useCallback(
+    (userId) => {
+      const token = localStorage.getItem("token");
 
-    setLoading(true);
-    fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (res.status === 401) {
-          handleLogout();
-          throw new Error("Session expired");
-        }
-        if (!res.ok) throw new Error("Failed to load tasks");
-        return res.json();
+      setLoading(true);
+      fetch(`${API_URL}/api/task-assignments/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((data) => {
-        const tasks = data.map((assignment) => assignment.task);
-        setItems(tasks.filter((task) => task));
-        tasks.forEach((task) => task && loadSubTasks(task.id));
-      })
-      .catch((err) => {
-        setError(err);
-        if (err.message === "Session expired") {
-          setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [handleLogout]);
+        .then((res) => {
+          if (res.status === 401) {
+            handleLogout();
+            throw new Error("Session expired");
+          }
+          if (!res.ok) throw new Error("Failed to load tasks");
+          return res.json();
+        })
+        .then((data) => {
+          const tasks = data.map((assignment) => assignment.task);
+          setItems(tasks.filter((task) => task));
+          tasks.forEach((task) => task && loadSubTasks(task.id));
+        })
+        .catch((err) => {
+          setError(err);
+          if (err.message === "Session expired") {
+            setError(
+              "Tu sesión ha expirado. Por favor inicia sesión nuevamente."
+            );
+          }
+        })
+        .finally(() => setLoading(false));
+    },
+    [handleLogout]
+  );
 
   const loadSubTasks = (taskId) => {
     fetch(`${API_URL}/todolist/subtask/${taskId}`)
@@ -118,27 +134,27 @@ function App() {
 
   function calculateProgress(list) {
     if (!list?.length) return 0;
-    const doneCount = list.filter(st => st.done).length;
+    const doneCount = list.filter((st) => st.done).length;
     return (doneCount / list.length) * 100;
   }
 
   function deleteSubTask(subId) {
     fetch(`${API_URL}/todolist/subtask/${subId}`, {
-      method: "DELETE"
+      method: "DELETE",
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Delete subtask failed");
-        const taskId = Object.keys(subTasks).find(key => 
-          subTasks[key].some(st => st.id === subId)
+        const taskId = Object.keys(subTasks).find((key) =>
+          subTasks[key].some((st) => st.id === subId)
         );
         if (taskId) {
-          setSubTasks(prev => ({
+          setSubTasks((prev) => ({
             ...prev,
-            [taskId]: prev[taskId].filter(st => st.id !== subId)
+            [taskId]: prev[taskId].filter((st) => st.id !== subId),
           }));
         }
       })
-      .catch(err => setError(err));
+      .catch((err) => setError(err));
   }
 
   function addItem(text, estimatedHours, realHours, subArray, sprintId) {
@@ -146,82 +162,90 @@ function App() {
     fetch(`${API_URL}/api/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        description: text, 
-        estimatedHours, 
-        realHours, 
+      body: JSON.stringify({
+        description: text,
+        estimatedHours,
+        realHours,
         sprintId,
-        done: false 
-      })
+        done: false,
+      }),
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Add item failed");
         return res.json();
       })
-      .then(newTask => {
+      .then((newTask) => {
         return fetch(`${API_URL}/api/task-assignments`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId,
-            taskId: newTask.id
-          })
+            taskId: newTask.id,
+          }),
         }).then(() => newTask);
       })
-      .then(newTask => {
-        setItems(prev => [newTask, ...prev]);
+      .then((newTask) => {
+        setItems((prev) => [newTask, ...prev]);
         if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
-          return Promise.all(subArray.map(desc =>
-            fetch(`${API_URL}/api/subtask/${newTask.id}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ description: desc, done: false })
-            }).then(r => r.json())
-          ));
+          return Promise.all(
+            subArray.map((desc) =>
+              fetch(`${API_URL}/api/subtask/${newTask.id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description: desc, done: false }),
+              }).then((r) => r.json())
+            )
+          );
         }
         return [];
       })
-      .then(subs => {
+      .then((subs) => {
         if (subs.length) {
-          setSubTasks(prev => ({ ...prev, [subs[0].parentTask.id]: subs }));
+          setSubTasks((prev) => ({ ...prev, [subs[0].parentTask.id]: subs }));
         }
         loadUserTasks(userId);
       })
-      .catch(err => setError(err))
+      .catch((err) => setError(err))
       .finally(() => setInserting(false));
   }
 
   function modifyItem(id, description, done, realHours = null) {
-    const data = realHours != null ? { description, done, realHours } : { description, done };
+    const data =
+      realHours != null
+        ? { description, done, realHours }
+        : { description, done };
     return fetch(`${API_URL}/api/tasks/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Modify failed");
-        return res.json();
-      });
+      body: JSON.stringify(data),
+    }).then((res) => {
+      if (!res.ok) throw new Error("Modify failed");
+      return res.json();
+    });
   }
 
   function reloadOneItem(id) {
     fetch(`${API_URL}/api/tasks/${id}`)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Reload failed");
         return res.json();
       })
-      .then(updated => {
-        setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it));
+      .then((updated) => {
+        setItems((prev) =>
+          prev.map((it) => (it.id === id ? { ...it, ...updated } : it))
+        );
         loadUserTasks(userId);
       })
-      .catch(err => setError(err));
+      .catch((err) => setError(err));
   }
 
   function toggleDone(e, item) {
     e.preventDefault();
     const nextDone = !item.done;
-    if (nextDone && subTasks[item.id]?.some(st => !st.done)) {
-      return alert("Error: all subtasks must be completed before marking this task done.");
+    if (nextDone && subTasks[item.id]?.some((st) => !st.done)) {
+      return alert(
+        "Error: all subtasks must be completed before marking this task done."
+      );
     }
     if (nextDone) {
       setCurrentTaskToClose(item);
@@ -229,55 +253,55 @@ function App() {
     } else {
       modifyItem(item.id, item.description, false)
         .then(() => reloadOneItem(item.id))
-        .catch(err => setError(err));
+        .catch((err) => setError(err));
     }
   }
 
   function toggleSubTaskDone(e, subId) {
     fetch(`${API_URL}/todolist/subtask/${subId}/toggle`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Toggle subtask failed");
         return res.json();
       })
-      .then(result => {
+      .then((result) => {
         const pid = result.parentTask.id;
-        setSubTasks(prev => ({
+        setSubTasks((prev) => ({
           ...prev,
-          [pid]: prev[pid].map(st => st.id === subId ? result : st)
+          [pid]: prev[pid].map((st) => (st.id === subId ? result : st)),
         }));
       })
-      .catch(err => setError(err));
+      .catch((err) => setError(err));
   }
 
   function addSubTask(taskId, text) {
     if (!text.trim()) return alert("Subtask cannot be empty");
-    
+
     const subTaskData = {
       description: text,
-      done: false
+      done: false,
     };
-  
+
     fetch(`${API_URL}/todolist/subtask/${taskId}/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(subTaskData)
+      body: JSON.stringify(subTaskData),
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Add subtask failed");
         return res.json();
       })
-      .then(sub => {
-        setSubTasks(prev => ({ 
-          ...prev, 
-          [taskId]: [...(prev[taskId] || []), sub] 
+      .then((sub) => {
+        setSubTasks((prev) => ({
+          ...prev,
+          [taskId]: [...(prev[taskId] || []), sub],
         }));
         setNewSubTaskText("");
-        setShowSubTaskForm(prev => ({ ...prev, [taskId]: false }));
+        setShowSubTaskForm((prev) => ({ ...prev, [taskId]: false }));
       })
-      .catch(err => setError(err));
+      .catch((err) => setError(err));
   }
 
   function addSprint(sprintData) {
@@ -285,21 +309,21 @@ function App() {
     fetch(`${API_URL}/api/sprints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(sprintData)
+      body: JSON.stringify(sprintData),
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Sprint creation failed");
         return res.json();
       })
       .then(() => setIsCreatingSprint(false))
-      .catch(err => {
+      .catch((err) => {
         setError(err);
         setIsCreatingSprint(false);
       });
   }
 
   function toggleHistory() {
-    setShowHistory(h => !h);
+    setShowHistory((h) => !h);
   }
 
   useEffect(() => {
@@ -315,125 +339,365 @@ function App() {
   }, [loadUserTasks, setRole, setUsername]);
 
   return (
-    <div className="App">
+    <div
+      className="App"
+      style={{
+        background: "transparent",
+        boxShadow: "none",
+        borderRadius: "0px", // opcional
+        padding: "0",
+        marginTop: "60px", // opcional
+      }}
+    >
+      <>
+        <style>
+          {`
+      @keyframes progressAnim {
+        0% { background-position: 0 0; }
+        100% { background-position: 40px 0; }
+      }
+    `}
+        </style>
+
+        {/* ...tu JSX de renderizado */}
+      </>
+
       {showHistory ? (
-        <CompletedTasksHistory onBack={toggleHistory} items={items.filter(i => i.done)} limit={COMPLETED_TASKS_TO_SHOW}/>
+        <CompletedTasksHistory
+          onBack={toggleHistory}
+          items={items.filter((i) => i.done)}
+          limit={COMPLETED_TASKS_TO_SHOW}
+        />
       ) : (
         <>
-          <h1>MY TODO LIST</h1>
-          <Typography variant="h6" gutterBottom>
-            User ID: {userId}
-          </Typography>
-                    
-          <NewItem addItem={addItem} isInserting={isInserting} />
-
-          <Button
-            variant="outlined"
-            startIcon={<ExpandMoreIcon />}
-            onClick={toggleHistory}
-            style={{ margin: '1rem 0' }}
+          <div
+            style={{
+              maxWidth: "800px",
+              margin: "40px auto 24px",
+              paddingLeft: "12px", // ← mismo margen que usan tus inputs
+              paddingRight: "12px",
+              textAlign: "left",
+            }}
           >
-            View Full History
-          </Button>
+            <div style={{ paddingLeft: "17px" }}>
+              <h1 style={{ fontSize: "2rem", marginBottom: "4px" }}>
+                Add Task
+              </h1>
+              <p style={{ fontSize: "0.95rem", color: "#666", margin: 0 }}>
+                Organize your tasks and track progress efficiently.
+              </p>
+            </div>
 
-          {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
-          {isLoading && <CircularProgress />}
+            <div style={{ marginTop: "20px" }}>
+              <NewItem addItem={addItem} isInserting={isInserting} />
+            </div>
+            <div
+              style={{
+                maxWidth: "800px",
+                margin: "46px auto 12px",
+                paddingLeft: "16px", // igual que el título "Add Task"
+                paddingRight: "16px",
+                textAlign: "left",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "1.2rem",
+                  fontWeight: "500",
+                  marginBottom: "22px",
+                  color: "#333",
+                }}
+              >
+                Pending Tasks
+              </h2>
+              {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+              {isLoading && <CircularProgress />}
 
-          {!isLoading && (
-            <div style={{ maxWidth: 800, margin: '0 auto' }}>
-              <table className="itemlist">
-                <TableBody>
-                  {items.filter(item => !item.done).map(item => (
-                    <React.Fragment key={item.id}>
-                      <tr>
-                        <td className="description">
-                          {item.description}
-                          <Button onClick={() => {
-                            setExpandedTasks(prev => ({ ...prev, [item.id]: !prev[item.id] }));
-                          }}>
-                            {expandedTasks[item.id] ? '▼' : '►'}
-                          </Button>
-                          <div className="progress">
-                            <div
-                              className="progress-bar"
-                              style={{ width: `${calculateProgress(subTasks[item.id])}%` }}
-                            />
+              {!isLoading && (
+                <div
+                  style={{
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {items
+                    .filter((item) => !item.done)
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          background: "#fff",
+                          borderRadius: "22px",
+                          padding: "20px",
+                          boxShadow:
+                            "0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "12px",
+                          position: "relative",
+                          border: "1px solid rgba(0, 0, 0, 0.05)",
+                          marginBottom: "16px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              flex: 1,
+                            }}
+                          >
+                            <strong style={{ fontSize: "1.1rem" }}>
+                              {item.description}
+                            </strong>
+
+                            <Button
+                              onClick={() =>
+                                setExpandedTasks((prev) => ({
+                                  ...prev,
+                                  [item.id]: !prev[item.id],
+                                }))
+                              }
+                              style={{
+                                minWidth: "28px",
+                                height: "28px",
+                                backgroundColor: "transparent",
+                                borderRadius: "6px",
+                                transition: "background 0.2s ease",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "0",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                  "rgba(0, 0, 0, 0.06)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                  "transparent";
+                              }}
+                            >
+                              <ExpandMoreIcon
+                                style={{
+                                  transform: expandedTasks[item.id]
+                                    ? "rotate(0deg)"
+                                    : "rotate(-90deg)",
+                                  transition: "transform 0.2s ease",
+                                  color: "#1976d2",
+                                }}
+                              />
+                            </Button>
                           </div>
-                        </td>
-                        <td className="date">
-                          <Moment format="MMM Do hh:mm:ss">
+
+                          <Moment
+                            format="MMM Do hh:mm:ss"
+                            style={{
+                              fontSize: "0.8rem",
+                              color: "#888",
+                              fontWeight: "normal",
+                              marginRight: "10px",
+                            }}
+                          >
                             {item.createdAt}
                           </Moment>
-                        </td>
-                        <td>
+
                           <Button
-                            variant="contained"
-                            size="small"
-                            onClick={e => toggleDone(e, item)}
+                            onClick={(e) => toggleDone(e, item)}
+                            style={{
+                              minWidth: "36px",
+                              height: "36px",
+                              background:
+                                "linear-gradient(to right, #b00000, #e53935)",
+                              color: "#fff",
+                              borderRadius: "50%",
+                              padding: "0",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                              transition:
+                                "transform 0.2s ease, box-shadow 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "scale(1.1)";
+                              e.currentTarget.style.boxShadow =
+                                "0 4px 10px rgba(0,0,0,0.3)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "scale(1)";
+                              e.currentTarget.style.boxShadow =
+                                "0 2px 6px rgba(0,0,0,0.2)";
+                            }}
                           >
-                            Done
+                            <CheckIcon fontSize="small" />
                           </Button>
-                        </td>
-                      </tr>
+                        </div>
 
-                      {expandedTasks[item.id] && subTasks[item.id]?.map(sub => (
-  <tr key={sub.id}>
-    <td className="subtask-description">
-      <input
-        type="checkbox"
-        checked={sub.done}
-        onChange={e => toggleSubTaskDone(e, sub.id)}
-      />
-      {sub.description}
-    </td>
-    <td className="date">
-      <Moment format="MMM Do hh:mm:ss">
-        {sub.creationDate || new Date()}
-      </Moment>
-    </td>
-    <td>
-      <Button
-        size="small"
-        startIcon={<DeleteIcon />}
-        onClick={() => deleteSubTask(sub.id)}
-      >
-        Delete
-      </Button>
-    </td>
-  </tr>
-))}
+                        {expandedTasks[item.id] &&
+                          subTasks[item.id]?.map((sub) => (
+                            <div
+                              key={sub.id}
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                fontSize: "0.9rem",
+                                padding: "0px 16px",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={sub.done}
+                                  onChange={(e) => toggleSubTaskDone(e, sub.id)}
+                                  style={{
+                                    width: "16px",
+                                    height: "16px",
+                                    accentColor: "#b00000",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                                <span>{sub.description}</span>
+                              </div>
 
-                      {expandedTasks[item.id] && (
-                        <tr>
-                          <td colSpan={3}>
-                            <Button onClick={() => {
-                              setShowSubTaskForm(prev => ({ ...prev, [item.id]: !prev[item.id] }));
-                            }}>
-                              {showSubTaskForm[item.id] ? 'Hide Subtask Form' : 'Add Subtask'}
+                              <IconButton
+                                onClick={() => deleteSubTask(sub.id)}
+                                size="small"
+                                style={{ color: "#888" }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </div>
+                          ))}
+
+                        {expandedTasks[item.id] && (
+                          <div>
+                            <Button
+                              onClick={() =>
+                                setShowSubTaskForm((prev) => ({
+                                  ...prev,
+                                  [item.id]: !prev[item.id],
+                                }))
+                              }
+                            >
+                              {showSubTaskForm[item.id]
+                                ? "Hide Subtask Form"
+                                : "Add Subtask"}
                             </Button>
+
                             {showSubTaskForm[item.id] && (
-                              <div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  marginTop: "8px",
+                                  marginBottom: "15px",
+                                }}
+                              >
                                 <input
                                   type="text"
                                   value={newSubTaskText}
-                                  onChange={e => setNewSubTaskText(e.target.value)}
-                                  placeholder="Description"
+                                  onChange={(e) =>
+                                    setNewSubTaskText(e.target.value)
+                                  }
+                                  placeholder="New Subtask"
+                                  style={{
+                                    flex: 1,
+                                    height: "35px",
+                                    fontSize: "13px",
+                                    padding: "0px 11px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "9px",
+                                    outline: "none",
+                                    fontFamily: "'Poppins', sans-serif",
+                                  }}
                                 />
-                                <Button onClick={() => addSubTask(item.id, newSubTaskText)}>
-                                  Add subtask
+
+                                <Button
+                                  onClick={() =>
+                                    addSubTask(item.id, newSubTaskText)
+                                  }
+                                  style={{
+                                    width: "35px",
+                                    height: "35px",
+                                    minWidth: "35px",
+                                    minHeight: "35px",
+                                    padding: "0",
+                                    borderRadius: "50%",
+                                    background:
+                                      "linear-gradient(to right, #b31217, #e52d27)",
+                                    color: "white",
+                                    fontFamily: "'Poppins', sans-serif",
+                                    boxShadow: "none",
+                                    transition: "box-shadow 0.3s ease",
+                                    border: "none",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <AddIcon />
                                 </Button>
                               </div>
                             )}
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </TableBody>
-              </table>
+                          </div>
+                        )}
 
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "-9px",
+                            left: "0",
+                            height: "50px",
+                            width: "100%",
+                            background: "#e0e0e0",
+                            borderBottomLeftRadius: "22px",
+                            borderBottomRightRadius: "22px",
+                            borderTopRightRadius: "0px",
+                            borderTopLeftRadius: "0px",
+                            zIndex: -2,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${calculateProgress(subTasks[item.id])}%`,
+                              height: "100%",
+                              background:
+                                "linear-gradient(135deg, rgba(255, 80, 80, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 80, 80, 0.3) 50%, rgba(255, 80, 80, 0.3) 75%, transparent 75%, transparent)",
+                              backgroundSize: "40px 40px",
+                              animation: "progressAnim 1.5s linear infinite",
+                              backgroundColor: "#d32f2f",
+                              position: "relative",
+                              zIndex: -1,
+                              overflow: "hidden",
+                              borderRadius: "22px",
+                              borderBottomLeftRadius: "22px",
+                              borderTopRightRadius: "0px",
+                              borderTopLeftRadius: "0px",
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <CompletedTasksContainer>
             <CompletedTasksHeader>
@@ -442,7 +706,7 @@ function App() {
                 variant="contained"
                 size="small"
                 onClick={toggleHistory}
-                style={{ marginLeft: '1rem' }}
+                style={{ marginLeft: "1rem" }}
               >
                 View Full History
               </Button>
@@ -452,13 +716,18 @@ function App() {
           <HoursDialog
             open={showHoursDialog}
             onClose={() => setShowHoursDialog(false)}
-            onConfirm={realHours => {
-              modifyItem(currentTaskToClose.id, currentTaskToClose.description, true, realHours)
+            onConfirm={(realHours) => {
+              modifyItem(
+                currentTaskToClose.id,
+                currentTaskToClose.description,
+                true,
+                realHours
+              )
                 .then(() => {
                   reloadOneItem(currentTaskToClose.id);
                   setShowHoursDialog(false);
                 })
-                .catch(err => setError(err));
+                .catch((err) => setError(err));
             }}
           />
         </>
