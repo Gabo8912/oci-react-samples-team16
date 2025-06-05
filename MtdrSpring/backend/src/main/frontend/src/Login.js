@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import loginImage from "./Wallpaper.jpg"; 
+import loginImage from "./Wallpaper.jpg";
 import config from "./config";
 
 const baseUrl = config.backendUrl;
@@ -16,7 +16,6 @@ const Login = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      // 1. First authenticate
       const loginResponse = await fetch(`${baseUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -28,17 +27,14 @@ const Login = ({ onLoginSuccess }) => {
       }
 
       const authData = await loginResponse.json();
-      
-      // 2. Store auth data
       localStorage.setItem("token", authData.token);
       localStorage.setItem("role", authData.role);
       localStorage.setItem("username", username);
 
-      // 3. Fetch user details to get ID
       const userResponse = await fetch(`${baseUrl}/auth/user/${username}`, {
         headers: {
-          "Authorization": `Bearer ${authData.token}`
-        }
+          Authorization: `Bearer ${authData.token}`,
+        },
       });
 
       if (!userResponse.ok) {
@@ -48,12 +44,9 @@ const Login = ({ onLoginSuccess }) => {
       const userData = await userResponse.json();
       localStorage.setItem("userId", userData.id);
 
-      // 4. Complete login
       onLoginSuccess();
-      
     } catch (err) {
       setError(err.message);
-      // Clear any partial auth data
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("username");
@@ -65,46 +58,41 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div style={styles.pageContainer}>
-      {/* Left Side - Image */}
       <div style={styles.leftSide}>
         <img src={loginImage} alt="Login" style={styles.image} />
       </div>
 
-      {/* Right Side - Form */}
       <div style={styles.rightSide}>
-        <h2>Iniciar Sesión</h2>
         <form onSubmit={handleLogin} style={styles.form}>
-          {error && <p style={styles.error}>{error}</p>}
-          <input
-            type="text"
-            placeholder="Usuario"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <button 
-            type="submit" 
-            style={styles.button}
-            disabled={isLoading}
-          >
-            {isLoading ? "Cargando..." : "Iniciar Sesión"}
-          </button>
+          <h2 style={styles.title}>Sign In!</h2>
+          <div style={styles.formContent}>
+            {error && <p style={styles.error}>{error}</p>}
+            <input
+              type="text"
+              placeholder="User"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={styles.input}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={styles.input}
+            />
+            <button type="submit" style={styles.button} disabled={isLoading}>
+              {isLoading ? "Loading..." : "Login"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 };
 
-// ✅ Estilos en JS
 const styles = {
   pageContainer: {
     position: "absolute",
@@ -139,31 +127,57 @@ const styles = {
   form: {
     display: "flex",
     flexDirection: "column",
-    width: "80%",
-    maxWidth: "350px",
+    backgroundColor: "#ffffff",
+    padding: "30px 40px 40px",
+    width: "100%",
+    maxWidth: "400px",
+    minHeight: "400px",
+    borderRadius: "20px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
+    position: "relative",
+    paddingTop: "80px", // más espacio arriba para el título
+  },
+  title: {
+    position: "absolute",
+    top: "45px",
+    left: "0",
+    right: "0",
+    textAlign: "center",
+    fontSize: "36px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  formContent: {
+    marginTop: "40px", // espacio entre título y contenido
+    display: "flex",
+    flexDirection: "column",
   },
   input: {
-    margin: "10px 0",
-    padding: "12px",
+    marginTop: "14px",
+    marginBottom: "14px",
+    padding: "14px",
     fontSize: "16px",
-    borderRadius: "5px",
+    borderRadius: "8px",
     border: "1px solid #ccc",
     width: "100%",
-    backgroundColor: "E6D7C3",
-  },
-  button: {
-    padding: "12px",
-    fontSize: "18px",
-    backgroundColor: "#FE141C",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginTop: "10px",
+    backgroundColor: "white",
   },
   error: {
     color: "red",
     fontSize: "14px",
+    marginBottom: "10px",
+    textAlign: "center",
+    marginTop: "30px", // se baja un poco por el título fijo
+  },
+  button: {
+    marginTop: "50px",
+    padding: "14px",
+    fontSize: "18px",
+    background: "linear-gradient(to right, #b31217, #e52d27)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
   },
 };
 

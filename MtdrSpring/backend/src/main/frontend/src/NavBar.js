@@ -1,75 +1,64 @@
-import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
+import LogoutIcon from "@mui/icons-material/Logout";
 import oracleLogo from "./oracleLogo.png";
+import "./NavBar.css";
 
 const NavBar = ({ onLogout }) => {
   const history = useHistory();
+  const location = useLocation();
+
+  const linksRef = useRef({});
+  const lineRef = useRef(null);
+  const [activePath, setActivePath] = useState(location.pathname);
+
+  useEffect(() => {
+    const activeLink = linksRef.current[activePath];
+    const line = lineRef.current;
+
+    if (activeLink && line) {
+      const rect = activeLink.getBoundingClientRect();
+      const parentRect = activeLink.parentElement.getBoundingClientRect();
+      line.style.left = `${rect.left - parentRect.left}px`;
+      line.style.width = `${rect.width}px`;
+    }
+  }, [activePath, location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Eliminar token
-    localStorage.removeItem("role"); // Eliminar rol
-    onLogout(); // Notificar a la app que el usuario cerró sesión
-    history.push("/login"); // Redirigir a login
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    onLogout();
+    history.push("/login");
   };
 
+  const navLinks = [
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/todos", label: "MyToDos" },
+  ];
+
   return (
-    <nav style={styles.navbar}>
-      <img src={oracleLogo} alt="Logo" style={styles.logo} />
-      <div style={styles.links}>
-        <Link to="/dashboard" style={styles.link}>
-          Dashboard
-        </Link>
-        <Link to="/todos" style={styles.link}>
-          MyToDos
-        </Link>
-        <button style={styles.logoutButton} onClick={handleLogout}>
-          Logout
+    <nav className="navbar">
+      <img src={oracleLogo} alt="Logo" className="logo" />
+      <div className="links-container">
+        {navLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="nav-link"
+            ref={(el) => (linksRef.current[link.to] = el)}
+            onClick={() => setActivePath(link.to)}
+          >
+            {link.label}
+          </Link>
+        ))}
+        <span className="active-line" ref={lineRef}></span>
+        <button className="logout-button" onClick={handleLogout}>
+          <LogoutIcon className="logout-icon" />
+          <span className="logout-text">LogOut</span>
         </button>
       </div>
     </nav>
   );
-};
-
-const styles = {
-  navbar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "10px 20px",
-    backgroundColor: "#333",
-    color: "white",
-    width: "100%",
-    position: "fixed",
-    top: "0",
-    left: "0",
-    height: "60px",
-    zIndex: "1000",
-  },
-  logo: {
-    width: "125px",
-    height: "125px",
-    objectFit: "contain",
-    userSelect: "none",
-  },
-  links: {
-    alignItems: "center",
-    display: "flex",
-    gap: "25px",
-  },
-  link: {
-    color: "white",
-    textDecoration: "none",
-    fontSize: "16px",
-    userSelect: "none",
-  },
-  logoutButton: {
-    backgroundColor: "#FE141C",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    padding: "8px 12px",
-    cursor: "pointer",
-  },
 };
 
 export default NavBar;
