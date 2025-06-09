@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import loginImage from "./Wallpaper.jpg";
+import logo from "./oracleLogo.png";
 import config from "./config";
+import { Select } from "@mui/material";
 
 const baseUrl = config.backendUrl;
 
@@ -63,8 +65,14 @@ const Login = ({ onLoginSuccess }) => {
       </div>
 
       <div style={styles.rightSide}>
+        <div style={styles.logoContainer}>
+          <img src={logo} alt="Logo" style={styles.logo} />
+        </div>
         <form onSubmit={handleLogin} style={styles.form}>
-          <h2 style={styles.title}>Sign In!</h2>
+          <h2 style={styles.title}>Welcome Back!</h2>
+          <h4 style={styles.description}>
+            Enter your username and password to continue.
+          </h4>
           <div style={styles.formContent}>
             {error && <p style={styles.error}>{error}</p>}
             <input
@@ -102,8 +110,13 @@ const styles = {
     width: "100vw",
     height: "100vh",
   },
+  logo: {
+    width: "150px",
+    userSelect: "none",
+    pointerEvents: "none",
+  },
   leftSide: {
-    width: "50%",
+    width: "75%",
     height: "100vh",
     display: "flex",
     justifyContent: "center",
@@ -120,22 +133,25 @@ const styles = {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
     alignItems: "center",
-    padding: "20px",
+    backgroundColor: "white",
+    boxShadow: "0 0 35px rgba(0, 0, 0, 0.4)",
+    paddingTop: "60px", // espacio superior
   },
+  logoContainer: {
+    marginBottom: "30px", // espacio entre logo y form
+  },
+
   form: {
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "#ffffff",
     padding: "30px 40px 40px",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "500px",
     minHeight: "400px",
     borderRadius: "20px",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
     position: "relative",
-    paddingTop: "80px", // más espacio arriba para el título
+    paddingTop: "80px",
   },
   title: {
     position: "absolute",
@@ -144,8 +160,16 @@ const styles = {
     right: "0",
     textAlign: "center",
     fontSize: "36px",
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "#333",
+  },
+  description: {
+    fontSize: "16px",
+    fontWeight: "200",
+    textAlign: "center",
+    marginTop: "20px",
+    fontFamily: "'Poppins', sans-serif",
+    color: "#666",
   },
   formContent: {
     marginTop: "40px", // espacio entre título y contenido
@@ -178,6 +202,8 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "550",
+    fontFamily: "'Poppins', sans-serif",
   },
 };
 

@@ -345,7 +345,7 @@ function App() {
         background: "transparent",
         boxShadow: "none",
         borderRadius: "0px", // opcional
-        padding: "0",
+        padding: "0px",
         marginTop: "60px", // opcional
       }}
     >
@@ -377,6 +377,10 @@ function App() {
               paddingLeft: "12px", // ← mismo margen que usan tus inputs
               paddingRight: "12px",
               textAlign: "left",
+              background: "white",
+              borderRadius: "15px",
+              padding: "19px",
+              boxShadow: "18px 18px 35px #d4d4d4, -18px -18px 35px #ffffff",
             }}
           >
             <div style={{ paddingLeft: "17px" }}>
