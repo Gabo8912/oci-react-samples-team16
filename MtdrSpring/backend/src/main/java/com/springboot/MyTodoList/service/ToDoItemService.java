@@ -3,12 +3,14 @@ package com.springboot.MyTodoList.service;
 import com.springboot.MyTodoList.model.SubToDoItem;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.repository.ToDoItemRepository;
+import com.springboot.MyTodoList.repository.SubToDoItemRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.springboot.MyTodoList.repository.SubToDoItemRepository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +23,7 @@ public class ToDoItemService {
 
     @Autowired
     public ToDoItemService(ToDoItemRepository toDoItemRepository,
-            SubToDoItemRepository subToDoItemRepository) {
+                           SubToDoItemRepository subToDoItemRepository) {
         this.toDoItemRepository = toDoItemRepository;
         this.subToDoItemRepository = subToDoItemRepository;
     }
@@ -35,7 +37,7 @@ public class ToDoItemService {
             return ResponseEntity.badRequest().build();
         }
         return toDoItemRepository.findById(id)
-                .map(item -> ResponseEntity.ok(item))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -49,20 +51,24 @@ public class ToDoItemService {
         if (toDoItem.getUserId() == null) {
             throw new IllegalArgumentException("userId is required when creating a task.");
         }
+
+        // Asignar fecha de creación si no viene
+        if (toDoItem.getCreationTs() == null) {
+            toDoItem.setCreationTs(OffsetDateTime.now());
+        }
+
         // Set default estimated hours if null
         if (toDoItem.getEstimatedHours() == null) {
             toDoItem.setEstimatedHours(0.0);
         }
+
         return toDoItemRepository.save(toDoItem);
     }
 
     public boolean deleteToDoItem(int id) {
-        if (id <= 0) {
-            return false;
-        }
-        if (!toDoItemRepository.existsById(id)) {
-            return false;
-        }
+        if (id <= 0) return false;
+        if (!toDoItemRepository.existsById(id)) return false;
+
         subToDoItemRepository.deleteByTodoItemId(id);
         toDoItemRepository.deleteById(id);
         return true;
@@ -73,17 +79,19 @@ public class ToDoItemService {
             .map(existingItem -> {
                 existingItem.setDescription(td.getDescription());
                 existingItem.setDone(td.isDone());
+
                 if (td.getRealHours() != null) {
                     existingItem.setRealHours(td.getRealHours());
                 }
                 if (td.getEstimatedHours() != null) {
                     existingItem.setEstimatedHours(td.getEstimatedHours());
                 }
+
                 return toDoItemRepository.save(existingItem);
             })
             .orElse(null);
     }
-    
+
     public double getTaskProgress(int todoitemId) {
         if (todoitemId <= 0) {
             throw new IllegalArgumentException("ID must be positive");
