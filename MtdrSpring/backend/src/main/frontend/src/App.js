@@ -104,6 +104,7 @@ function App() {
         })
         .then((data) => {
           const tasks = data.map((assignment) => assignment.task);
+          console.log("🚀 TAREAS CARGADAS:", tasks);
           setItems(tasks.filter((task) => task));
           tasks.forEach((task) => task && loadSubTasks(task.id));
         })
@@ -157,9 +158,17 @@ function App() {
       .catch((err) => setError(err));
   }
 
-  function addItem(text, estimatedHours, realHours, subArray, sprintId) {
+  function addItem(
+    text,
+    estimatedHours,
+    realHours,
+    subArray,
+    sprintId,
+    assignedUserId
+  ) {
     setInserting(true);
-    fetch(`${API_URL}/api/tasks`, {
+
+    fetch(`${API_URL}/todolist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -167,43 +176,37 @@ function App() {
         estimatedHours,
         realHours,
         sprintId,
+        userId: Number(assignedUserId),
         done: false,
       }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Add item failed");
-        return res.json();
+        return res.headers.get("location");
       })
-      .then((newTask) => {
-        return fetch(`${API_URL}/api/task-assignments`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            taskId: newTask.id,
-          }),
-        }).then(() => newTask);
+      .then((location) => {
+        const newId = location?.split("/").pop();
+        if (!newId) throw new Error("No se pudo obtener el ID de la tarea");
+
+        return fetch(
+          `${API_URL}/api/task-assignments?taskId=${newId}&userId=${assignedUserId}`,
+          {
+            method: "POST",
+          }
+        ).then(() => newId);
       })
-      .then((newTask) => {
+      .then((newId) => {
+        const newTask = {
+          id: Number(newId),
+          description: text,
+          estimatedHours,
+          realHours,
+          sprintId,
+          userId: Number(assignedUserId),
+          done: false,
+          creationTs: new Date().toISOString(),
+        };
         setItems((prev) => [newTask, ...prev]);
-        if (estimatedHours > LONG_TASK_DURATION && subArray?.length) {
-          return Promise.all(
-            subArray.map((desc) =>
-              fetch(`${API_URL}/api/subtask/${newTask.id}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ description: desc, done: false }),
-              }).then((r) => r.json())
-            )
-          );
-        }
-        return [];
-      })
-      .then((subs) => {
-        if (subs.length) {
-          setSubTasks((prev) => ({ ...prev, [subs[0].parentTask.id]: subs }));
-        }
-        loadUserTasks(userId);
       })
       .catch((err) => setError(err))
       .finally(() => setInserting(false));
@@ -214,7 +217,7 @@ function App() {
       realHours != null
         ? { description, done, realHours }
         : { description, done };
-    return fetch(`${API_URL}/api/tasks/${id}`, {
+    return fetch(`${API_URL}/todolist/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -225,7 +228,7 @@ function App() {
   }
 
   function reloadOneItem(id) {
-    fetch(`${API_URL}/api/tasks/${id}`)
+    fetch(`${API_URL}/todolist/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Reload failed");
         return res.json();
@@ -338,34 +341,33 @@ function App() {
     }
   }, [loadUserTasks, setRole, setUsername]);
 
+  const incompleteTasks = items.filter((item) => !item.done);
+  const completedTasks = items.filter((item) => item.done);
+
   return (
     <div
       className="App"
       style={{
         background: "transparent",
         boxShadow: "none",
-        borderRadius: "0px", // opcional
-        padding: "0px",
-        marginTop: "60px", // opcional
+        borderRadius: "0px",
+        padding: "0",
+        marginTop: "60px",
       }}
     >
-      <>
-        <style>
-          {`
-      @keyframes progressAnim {
-        0% { background-position: 0 0; }
-        100% { background-position: 40px 0; }
-      }
-    `}
-        </style>
-
-        {/* ...tu JSX de renderizado */}
-      </>
+      <style>
+        {`
+          @keyframes progressAnim {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 0; }
+          }
+        `}
+      </style>
 
       {showHistory ? (
         <CompletedTasksHistory
           onBack={toggleHistory}
-          items={items.filter((i) => i.done)}
+          items={completedTasks}
           limit={COMPLETED_TASKS_TO_SHOW}
         />
       ) : (
@@ -374,7 +376,7 @@ function App() {
             style={{
               maxWidth: "800px",
               margin: "40px auto 24px",
-              paddingLeft: "12px", // ← mismo margen que usan tus inputs
+              paddingLeft: "12px",
               paddingRight: "12px",
               textAlign: "left",
               background: "white",
@@ -399,7 +401,7 @@ function App() {
               style={{
                 maxWidth: "800px",
                 margin: "46px auto 12px",
-                paddingLeft: "16px", // igual que el título "Add Task"
+                paddingLeft: "16px",
                 paddingRight: "16px",
                 textAlign: "left",
               }}
@@ -423,281 +425,279 @@ function App() {
                     boxSizing: "border-box",
                   }}
                 >
-                  {items
-                    .filter((item) => !item.done)
-                    .map((item) => (
+                  {incompleteTasks.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        background: "#fff",
+                        borderRadius: "22px",
+                        padding: "20px",
+                        boxShadow:
+                          "0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        position: "relative",
+                        border: "1px solid rgba(0, 0, 0, 0.05)",
+                        marginBottom: "16px",
+                      }}
+                    >
                       <div
-                        key={item.id}
                         style={{
-                          width: "100%",
-                          boxSizing: "border-box",
-                          background: "#fff",
-                          borderRadius: "22px",
-                          padding: "20px",
-                          boxShadow:
-                            "0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)",
                           display: "flex",
-                          flexDirection: "column",
-                          gap: "12px",
-                          position: "relative",
-                          border: "1px solid rgba(0, 0, 0, 0.05)",
-                          marginBottom: "16px",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
                         }}
                       >
                         <div
                           style={{
                             display: "flex",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            flexWrap: "wrap",
+                            gap: "8px",
+                            flex: 1,
                           }}
                         >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              flex: 1,
-                            }}
-                          >
-                            <strong style={{ fontSize: "1.1rem" }}>
-                              {item.description}
-                            </strong>
-
-                            <Button
-                              onClick={() =>
-                                setExpandedTasks((prev) => ({
-                                  ...prev,
-                                  [item.id]: !prev[item.id],
-                                }))
-                              }
-                              style={{
-                                minWidth: "28px",
-                                height: "28px",
-                                backgroundColor: "transparent",
-                                borderRadius: "6px",
-                                transition: "background 0.2s ease",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                padding: "0",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  "rgba(0, 0, 0, 0.06)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  "transparent";
-                              }}
-                            >
-                              <ExpandMoreIcon
-                                style={{
-                                  transform: expandedTasks[item.id]
-                                    ? "rotate(0deg)"
-                                    : "rotate(-90deg)",
-                                  transition: "transform 0.2s ease",
-                                  color: "#1976d2",
-                                }}
-                              />
-                            </Button>
-                          </div>
-
-                          <Moment
-                            format="MMM Do hh:mm:ss"
-                            style={{
-                              fontSize: "0.8rem",
-                              color: "#888",
-                              fontWeight: "normal",
-                              marginRight: "10px",
-                            }}
-                          >
-                            {item.createdAt}
-                          </Moment>
+                          <strong style={{ fontSize: "1.1rem" }}>
+                            {item.description}
+                          </strong>
 
                           <Button
-                            onClick={(e) => toggleDone(e, item)}
+                            onClick={() =>
+                              setExpandedTasks((prev) => ({
+                                ...prev,
+                                [item.id]: !prev[item.id],
+                              }))
+                            }
                             style={{
-                              minWidth: "36px",
-                              height: "36px",
-                              background:
-                                "linear-gradient(to right, #b00000, #e53935)",
-                              color: "#fff",
-                              borderRadius: "50%",
+                              minWidth: "28px",
+                              height: "28px",
+                              backgroundColor: "transparent",
+                              borderRadius: "6px",
+                              transition: "background 0.2s ease",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                               padding: "0",
-                              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                              transition:
-                                "transform 0.2s ease, box-shadow 0.2s ease",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 4px 10px rgba(0,0,0,0.3)";
+                              e.currentTarget.style.backgroundColor =
+                                "rgba(0, 0, 0, 0.06)";
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 2px 6px rgba(0,0,0,0.2)";
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
                             }}
                           >
-                            <CheckIcon fontSize="small" />
+                            <ExpandMoreIcon
+                              style={{
+                                transform: expandedTasks[item.id]
+                                  ? "rotate(0deg)"
+                                  : "rotate(-90deg)",
+                                transition: "transform 0.2s ease",
+                                color: "#1976d2",
+                              }}
+                            />
                           </Button>
                         </div>
 
-                        {expandedTasks[item.id] &&
-                          subTasks[item.id]?.map((sub) => (
-                            <div
-                              key={sub.id}
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                fontSize: "0.9rem",
-                                padding: "0px 16px",
-                                borderRadius: "8px",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "10px",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={sub.done}
-                                  onChange={(e) => toggleSubTaskDone(e, sub.id)}
-                                  style={{
-                                    width: "16px",
-                                    height: "16px",
-                                    accentColor: "#b00000",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                                <span>{sub.description}</span>
-                              </div>
-
-                              <IconButton
-                                onClick={() => deleteSubTask(sub.id)}
-                                size="small"
-                                style={{ color: "#888" }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </div>
-                          ))}
-
-                        {expandedTasks[item.id] && (
-                          <div>
-                            <Button
-                              onClick={() =>
-                                setShowSubTaskForm((prev) => ({
-                                  ...prev,
-                                  [item.id]: !prev[item.id],
-                                }))
-                              }
-                            >
-                              {showSubTaskForm[item.id]
-                                ? "Hide Subtask Form"
-                                : "Add Subtask"}
-                            </Button>
-
-                            {showSubTaskForm[item.id] && (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "12px",
-                                  marginTop: "8px",
-                                  marginBottom: "15px",
-                                }}
-                              >
-                                <input
-                                  type="text"
-                                  value={newSubTaskText}
-                                  onChange={(e) =>
-                                    setNewSubTaskText(e.target.value)
-                                  }
-                                  placeholder="New Subtask"
-                                  style={{
-                                    flex: 1,
-                                    height: "35px",
-                                    fontSize: "13px",
-                                    padding: "0px 11px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "9px",
-                                    outline: "none",
-                                    fontFamily: "'Poppins', sans-serif",
-                                  }}
-                                />
-
-                                <Button
-                                  onClick={() =>
-                                    addSubTask(item.id, newSubTaskText)
-                                  }
-                                  style={{
-                                    width: "35px",
-                                    height: "35px",
-                                    minWidth: "35px",
-                                    minHeight: "35px",
-                                    padding: "0",
-                                    borderRadius: "50%",
-                                    background:
-                                      "linear-gradient(to right, #b31217, #e52d27)",
-                                    color: "white",
-                                    fontFamily: "'Poppins', sans-serif",
-                                    boxShadow: "none",
-                                    transition: "box-shadow 0.3s ease",
-                                    border: "none",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <AddIcon />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div
+                        <Moment
+                          format="MMM Do hh:mm:ss"
                           style={{
-                            position: "absolute",
-                            bottom: "-9px",
-                            left: "0",
-                            height: "50px",
-                            width: "100%",
-                            background: "#e0e0e0",
-                            borderBottomLeftRadius: "22px",
-                            borderBottomRightRadius: "22px",
-                            borderTopRightRadius: "0px",
-                            borderTopLeftRadius: "0px",
-                            zIndex: -2,
+                            fontSize: "0.8rem",
+                            color: "#888",
+                            fontWeight: "normal",
+                            marginRight: "10px",
                           }}
                         >
-                          <div
-                            style={{
-                              width: `${calculateProgress(subTasks[item.id])}%`,
-                              height: "100%",
-                              background:
-                                "linear-gradient(135deg, rgba(255, 80, 80, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 80, 80, 0.3) 50%, rgba(255, 80, 80, 0.3) 75%, transparent 75%, transparent)",
-                              backgroundSize: "40px 40px",
-                              animation: "progressAnim 1.5s linear infinite",
-                              backgroundColor: "#d32f2f",
-                              position: "relative",
-                              zIndex: -1,
-                              overflow: "hidden",
-                              borderRadius: "22px",
-                              borderBottomLeftRadius: "22px",
-                              borderTopRightRadius: "0px",
-                              borderTopLeftRadius: "0px",
-                            }}
-                          ></div>
-                        </div>
+                          {item.creationTs}
+                        </Moment>
+
+                        <Button
+                          onClick={(e) => toggleDone(e, item)}
+                          style={{
+                            minWidth: "36px",
+                            height: "36px",
+                            background:
+                              "linear-gradient(to right, #b00000, #e53935)",
+                            color: "#fff",
+                            borderRadius: "50%",
+                            padding: "0",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                            transition:
+                              "transform 0.2s ease, box-shadow 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "scale(1.1)";
+                            e.currentTarget.style.boxShadow =
+                              "0 4px 10px rgba(0,0,0,0.3)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "scale(1)";
+                            e.currentTarget.style.boxShadow =
+                              "0 2px 6px rgba(0,0,0,0.2)";
+                          }}
+                        >
+                          <CheckIcon fontSize="small" />
+                        </Button>
                       </div>
-                    ))}
+
+                      {expandedTasks[item.id] &&
+                        subTasks[item.id]?.map((sub) => (
+                          <div
+                            key={sub.id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              fontSize: "0.9rem",
+                              padding: "0px 16px",
+                              borderRadius: "8px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={sub.done}
+                                onChange={(e) => toggleSubTaskDone(e, sub.id)}
+                                style={{
+                                  width: "16px",
+                                  height: "16px",
+                                  accentColor: "#b00000",
+                                  cursor: "pointer",
+                                }}
+                              />
+                              <span>{sub.description}</span>
+                            </div>
+
+                            <IconButton
+                              onClick={() => deleteSubTask(sub.id)}
+                              size="small"
+                              style={{ color: "#888" }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ))}
+
+                      {expandedTasks[item.id] && (
+                        <div>
+                          <Button
+                            onClick={() =>
+                              setShowSubTaskForm((prev) => ({
+                                ...prev,
+                                [item.id]: !prev[item.id],
+                              }))
+                            }
+                          >
+                            {showSubTaskForm[item.id]
+                              ? "Hide Subtask Form"
+                              : "Add Subtask"}
+                          </Button>
+
+                          {showSubTaskForm[item.id] && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
+                                marginTop: "8px",
+                                marginBottom: "15px",
+                              }}
+                            >
+                              <input
+                                type="text"
+                                value={newSubTaskText}
+                                onChange={(e) =>
+                                  setNewSubTaskText(e.target.value)
+                                }
+                                placeholder="New Subtask"
+                                style={{
+                                  flex: 1,
+                                  height: "35px",
+                                  fontSize: "13px",
+                                  padding: "0px 11px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "9px",
+                                  outline: "none",
+                                  fontFamily: "'Poppins', sans-serif",
+                                }}
+                              />
+
+                              <Button
+                                onClick={() =>
+                                  addSubTask(item.id, newSubTaskText)
+                                }
+                                style={{
+                                  width: "35px",
+                                  height: "35px",
+                                  minWidth: "35px",
+                                  minHeight: "35px",
+                                  padding: "0",
+                                  borderRadius: "50%",
+                                  background:
+                                    "linear-gradient(to right, #b31217, #e52d27)",
+                                  color: "white",
+                                  fontFamily: "'Poppins', sans-serif",
+                                  boxShadow: "none",
+                                  transition: "box-shadow 0.3s ease",
+                                  border: "none",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <AddIcon />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "-9px",
+                          left: "0",
+                          height: "50px",
+                          width: "100%",
+                          background: "#e0e0e0",
+                          borderBottomLeftRadius: "22px",
+                          borderBottomRightRadius: "22px",
+                          borderTopRightRadius: "0px",
+                          borderTopLeftRadius: "0px",
+                          zIndex: -2,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${calculateProgress(subTasks[item.id])}%`,
+                            height: "100%",
+                            background:
+                              "linear-gradient(135deg, rgba(255, 80, 80, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 80, 80, 0.3) 50%, rgba(255, 80, 80, 0.3) 75%, transparent 75%, transparent)",
+                            backgroundSize: "40px 40px",
+                            animation: "progressAnim 1.5s linear infinite",
+                            backgroundColor: "#d32f2f",
+                            position: "relative",
+                            zIndex: -1,
+                            overflow: "hidden",
+                            borderRadius: "22px",
+                            borderBottomLeftRadius: "22px",
+                            borderTopRightRadius: "0px",
+                            borderTopLeftRadius: "0px",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
