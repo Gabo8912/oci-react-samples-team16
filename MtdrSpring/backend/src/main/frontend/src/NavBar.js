@@ -52,11 +52,13 @@ const NavBar = ({ onLogout }) => {
           </Link>
         ))}
         <span className="active-line" ref={lineRef}></span>
-        <button className="logout-button" onClick={handleLogout}>
-          <LogoutIcon className="logout-icon" />
-          <span className="logout-text">LogOut</span>
-        </button>
       </div>
+
+      <button className="logout-button" onClick={handleLogout}>
+        <LogoutIcon sx={{ fontSize: 20, color: "#b31217" }} />
+
+        <span className="logout-text">LogOut</span>
+      </button>
     </nav>
   );
 };
