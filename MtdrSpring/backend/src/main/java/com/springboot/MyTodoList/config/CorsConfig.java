@@ -20,6 +20,7 @@ public class CorsConfig {
 
         // ✅ Solo define una vez los orígenes permitidos
         config.setAllowedOrigins(List.of(
+            "http://localhost:8080",
             "http://localhost:3000",
             "https://objectstorage.us-phoenix-1.oraclecloud.com",
             "https://petstore.swagger.io"

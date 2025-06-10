@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
+import HistoryIcon from "@mui/icons-material/History";
 import {
   Button,
   TableBody,
@@ -195,7 +196,7 @@ function App() {
           }
         ).then(() => newId);
       })
-      .then((newId) => {
+      .then(async (newId) => {
         const newTask = {
           id: Number(newId),
           description: text,
@@ -206,7 +207,24 @@ function App() {
           done: false,
           creationTs: new Date().toISOString(),
         };
+
+        // ✅ Agregar subtareas si existen
+        if (subArray.length > 0) {
+          for (const sub of subArray) {
+            await fetch(`${API_URL}/todolist/subtask/${newId}/add`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                description: sub,
+                done: false,
+              }),
+            });
+          }
+        }
+
+        // 🔄 Actualizar estado
         setItems((prev) => [newTask, ...prev]);
+        loadSubTasks(newTask.id);
       })
       .catch((err) => setError(err))
       .finally(() => setInserting(false));
@@ -344,6 +362,21 @@ function App() {
   const incompleteTasks = items.filter((item) => !item.done);
   const completedTasks = items.filter((item) => item.done);
 
+  const historyPanelStyle = {
+    position: "fixed",
+    top: "80px",
+    right: "20px",
+    width: "360px",
+    height: "calc(100% - 160px)",
+    background: "#ffffff",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+    borderRadius: "12px",
+    overflowY: "auto",
+    zIndex: 2000,
+    padding: "16px",
+    display: showHistory ? "block" : "none",
+  };
+
   return (
     <div
       className="App"
@@ -352,84 +385,96 @@ function App() {
         boxShadow: "none",
         borderRadius: "0px",
         padding: "0",
-        marginTop: "60px",
+        marginTop: "100px",
       }}
     >
       <style>
         {`
-          @keyframes progressAnim {
-            0% { background-position: 0 0; }
-            100% { background-position: 40px 0; }
-          }
+          @keyframes progressStripe {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+@keyframes glowShift {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+
+
         `}
       </style>
+      <>
+        <div
+          style={{
+            maxWidth: "800px",
+            margin: "40px auto 24px",
+            textAlign: "left",
+            background: "white",
+            borderRadius: "15px",
+            padding: "25px",
+            boxShadow: "18px 18px 35px #d4d4d4, -18px -18px 35px #ffffff",
+          }}
+        >
+          <div style={{ paddingLeft: "17px" }}>
+            <h1 style={{ fontSize: "2rem", marginBottom: "4px" }}>Add Task</h1>
+            <p style={{ fontSize: "0.95rem", color: "#666", margin: 0 }}>
+              Organize your tasks and track progress efficiently.
+            </p>
+          </div>
 
-      {showHistory ? (
-        <CompletedTasksHistory
-          onBack={toggleHistory}
-          items={completedTasks}
-          limit={COMPLETED_TASKS_TO_SHOW}
-        />
-      ) : (
-        <>
+          <div style={{ marginTop: "20px" }}>
+            <NewItem addItem={addItem} isInserting={isInserting} />
+          </div>
           <div
             style={{
               maxWidth: "800px",
-              margin: "40px auto 24px",
-              paddingLeft: "12px",
-              paddingRight: "12px",
+              margin: "46px auto 12px",
+              paddingLeft: "16px",
+              paddingRight: "16px",
               textAlign: "left",
-              background: "white",
-              borderRadius: "15px",
-              padding: "19px",
-              boxShadow: "18px 18px 35px #d4d4d4, -18px -18px 35px #ffffff",
             }}
           >
-            <div style={{ paddingLeft: "17px" }}>
-              <h1 style={{ fontSize: "2rem", marginBottom: "4px" }}>
-                Add Task
-              </h1>
-              <p style={{ fontSize: "0.95rem", color: "#666", margin: 0 }}>
-                Organize your tasks and track progress efficiently.
-              </p>
-            </div>
-
-            <div style={{ marginTop: "20px" }}>
-              <NewItem addItem={addItem} isInserting={isInserting} />
-            </div>
-            <div
+            <h2
               style={{
-                maxWidth: "800px",
-                margin: "46px auto 12px",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-                textAlign: "left",
+                fontSize: "1.2rem",
+                fontWeight: "500",
+                marginBottom: "22px",
+                color: "#333",
               }}
             >
-              <h2
+              Pending Tasks
+            </h2>
+            {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+            {isLoading && <CircularProgress />}
+
+            {!isLoading && (
+              <div
                 style={{
-                  fontSize: "1.2rem",
-                  fontWeight: "500",
-                  marginBottom: "22px",
-                  color: "#333",
+                  boxSizing: "border-box",
                 }}
               >
-                Pending Tasks
-              </h2>
-              {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
-              {isLoading && <CircularProgress />}
-
-              {!isLoading && (
-                <div
-                  style={{
-                    boxSizing: "border-box",
-                  }}
-                >
-                  {incompleteTasks.map((item) => (
+                {incompleteTasks.map((item) => (
+                  <div //Abre tarjeta padre
+                    key={item.id}
+                    style={{ position: "relative", marginBottom: "36px" }}
+                  >
                     <div
                       key={item.id}
                       style={{
                         width: "100%",
+                        position: "relative",
                         boxSizing: "border-box",
                         background: "#fff",
                         borderRadius: "22px",
@@ -439,10 +484,10 @@ function App() {
                         display: "flex",
                         flexDirection: "column",
                         gap: "12px",
-                        position: "relative",
                         border: "1px solid rgba(0, 0, 0, 0.05)",
                         marginBottom: "16px",
-                      }}
+                        zIndex: 2,
+                      }} //Abre tarjeta!!!!!!!!!
                     >
                       <div
                         style={{
@@ -661,81 +706,144 @@ function App() {
                           )}
                         </div>
                       )}
-
+                    </div>{" "}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "-6px",
+                        left: "0",
+                        width: "100%",
+                        height: "22px",
+                        backgroundColor: "#ddd",
+                        borderBottomLeftRadius: "22px",
+                        borderBottomRightRadius: "22px",
+                        overflow: "hidden",
+                        zIndex: 1,
+                        boxShadow: "inset 0 1px 4px rgba(0,0,0,0.3)",
+                      }}
+                    >
                       <div
                         style={{
+                          width: `${calculateProgress(subTasks[item.id])}%`,
+                          height: "100%",
+                          backgroundImage: `
+        linear-gradient(
+          90deg,
+          rgba(255, 0, 0, 0.8),
+          rgba(255, 100, 100, 0.9),
+          rgba(255, 0, 0, 0.8)
+        )
+      `,
+                          backgroundSize: "200% 100%",
+                          animation:
+                            "progressStripe 1.6s linear infinite, glowShift 2.5s ease-in-out infinite",
+                          transition: "width 0.5s ease-in-out",
+                          boxShadow: "inset 0 0 6px rgba(255, 255, 255, 0.3)",
+                        }}
+                      ></div>
+                      <span
+                        style={{
                           position: "absolute",
-                          bottom: "-9px",
-                          left: "0",
-                          height: "50px",
-                          width: "100%",
-                          background: "#e0e0e0",
-                          borderBottomLeftRadius: "22px",
-                          borderBottomRightRadius: "22px",
-                          borderTopRightRadius: "0px",
-                          borderTopLeftRadius: "0px",
-                          zIndex: -2,
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          fontSize: "0.8rem",
+                          fontWeight: "bold",
+                          color: "#fff",
+                          textShadow: "0 0 5px rgba(0,0,0,0.7)",
+                          zIndex: 2,
                         }}
                       >
-                        <div
-                          style={{
-                            width: `${calculateProgress(subTasks[item.id])}%`,
-                            height: "100%",
-                            background:
-                              "linear-gradient(135deg, rgba(255, 80, 80, 0.3) 25%, transparent 25%, transparent 50%, rgba(255, 80, 80, 0.3) 50%, rgba(255, 80, 80, 0.3) 75%, transparent 75%, transparent)",
-                            backgroundSize: "40px 40px",
-                            animation: "progressAnim 1.5s linear infinite",
-                            backgroundColor: "#d32f2f",
-                            position: "relative",
-                            zIndex: -1,
-                            overflow: "hidden",
-                            borderRadius: "22px",
-                            borderBottomLeftRadius: "22px",
-                            borderTopRightRadius: "0px",
-                            borderTopLeftRadius: "0px",
-                          }}
-                        ></div>
-                      </div>
+                        {Math.round(calculateProgress(subTasks[item.id]))}%
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
-          <CompletedTasksContainer>
-            <CompletedTasksHeader>
-              Latest Completed Tasks
-              <Button
-                variant="contained"
-                size="small"
-                onClick={toggleHistory}
-                style={{ marginLeft: "1rem" }}
-              >
-                View Full History
-              </Button>
-            </CompletedTasksHeader>
-          </CompletedTasksContainer>
-
-          <HoursDialog
-            open={showHoursDialog}
-            onClose={() => setShowHoursDialog(false)}
-            onConfirm={(realHours) => {
-              modifyItem(
-                currentTaskToClose.id,
-                currentTaskToClose.description,
-                true,
-                realHours
-              )
-                .then(() => {
-                  reloadOneItem(currentTaskToClose.id);
-                  setShowHoursDialog(false);
-                })
-                .catch((err) => setError(err));
+        <HoursDialog
+          open={showHoursDialog}
+          onClose={() => setShowHoursDialog(false)}
+          onConfirm={(realHours) => {
+            modifyItem(
+              currentTaskToClose.id,
+              currentTaskToClose.description,
+              true,
+              realHours
+            )
+              .then(() => {
+                reloadOneItem(currentTaskToClose.id);
+                setShowHoursDialog(false);
+              })
+              .catch((err) => setError(err));
+          }}
+        />
+        {!showHistory && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "30px",
+              right: "30px",
+              zIndex: 1000,
             }}
+          >
+            <style>
+              {`
+        @keyframes glowPulse {
+          0% {
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.7);
+          }
+          100% {
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
+          }
+        }
+      `}
+            </style>
+
+            <button
+              onClick={toggleHistory}
+              style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "linear-gradient(to right, #b31217, #e52d27)",
+                border: "none",
+                color: "white",
+                animation: "glowPulse 2s infinite",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.boxShadow =
+                  "0 0 16px rgba(255, 0, 0, 0.8)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "";
+              }}
+            >
+              <HistoryIcon style={{ fontSize: "36px" }} />
+            </button>
+          </div>
+        )}
+        {showHistory && (
+          <CompletedTasksHistory
+            onClose={toggleHistory}
+            items={completedTasks}
+            limit={COMPLETED_TASKS_TO_SHOW}
           />
-        </>
-      )}
+        )}
+      </>
     </div>
   );
 }
